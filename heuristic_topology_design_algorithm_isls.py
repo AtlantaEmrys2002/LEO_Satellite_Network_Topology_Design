@@ -1,12 +1,25 @@
 #TODO: test data
-# format tle input so can be used to calculate values - this will be sample input from hypatia
-# unit tests for each function
-# implement all functions,
-# find all input parameters for all functions (may need more than generate_plus_grid does for main function heuristic_topology_design_algorithm_isls)
+# unit tests for each function - need to ensure correctness
+# check through notes
 # this function will be placed in hypatia/satgenpy/satgen/isls
 # properly document your code with doxygen or similar
 # get orbital period from satellite orbiting at maximum height?
 # this function may be called once a snapshot, so check through code for Hypatia - might just need to pass topology for given time
+# Check it returns satellite IDs and not matrix indices - are they the same?
+# what is ISL shift?
+# Think this is the ns3 file that calls on ISL topology file built by this program - hypatia/ns3-sat-sim/simulator/contrib/satellite-network/model
+# /topology-satellite-network.cc - this is function called by something else - need to edit so reads ISL file with relevant counter (mybe pass argument to function)
+# above only contains functions, so need to find where the ns3 namespace is called (looking for function TopologySatelliteNetwork::ReadISLs()) - reading from
+# file in directory m_satellite_network_dir/isls.txt (are there multiple directories?). Files are created with ptr val basicSimulation
+# (passed to TopologySatelliteNetwork::TopologySatelliteNetwork constructor)
+# hypatia/ns3-sat-sim/simulator/scratch/main_satnet
+# /main_satnet.cc calls the <TopologySatelliteNetwork> object
+# Could be key for altitude and orbit decay - https://github.com/snkas/hypatia/blob/master/paper/satellite_networks_state/main_starlink_550.py
+# Need to use paper code - they have all the networks you want to test/work with (Starlink, Kuiper, Telesat, etc) - READ THROUGH
+# LIST OF INBUILT RESTRAINTS - e.g altitude, cone radius, etc.
+# Some satellites will always be visible to one another
+# ADAPT SO PER SNAPSHOT
+
 
 # Libraries
 import generate_tles_from_scratch as hypatia_data
@@ -16,13 +29,10 @@ from skyfield.api import wgs84  # https://rhodesmill.org/skyfield/toc.html - rec
 # satellites described by TLE format (will need to confirm everything is accurate and maybe write my own function
 # versions, but this will allow me to create a working version of the code)
 # Used to calculate TEME Coordinates from TLE
-# from sgp4.api import Satrec
-# from sgp4.api import SGP4_ERRORS
 from skyfield.api import EarthSatellite, load
 import math
 from astropy.time import Time
 from astropy import units as u
-import ephem
 import random
 
 # Function calls on Hypatia software function generate_tles_from_scratch_with_sgp
@@ -191,12 +201,13 @@ def dist(satellite_i, satellite_j, time_stamp):
 
 # Calculates the distance matrix for a snapshot of the network
 def distance_function(satellites, total_satellites, snapshot_time):
-    dist_matrix = [[0 for _ in range(total_satellites)] for _ in range(total_satellites)]
+
+    dist_matrix = [[0.0 for _ in range(total_satellites)] for _ in range(total_satellites)]
 
     # Alter satellite description to describe its position at snapshot_time t
 
     for i in range(total_satellites):
-        for j in range(i+1, total_satellites):
+        for j in range(i + 1, total_satellites):
             distance = dist(satellites[i], satellites[j], snapshot_time)
             dist_matrix[i][j] = distance
             dist_matrix[j][i] = distance
@@ -244,7 +255,7 @@ def degree_constrained_mst(cost_matrix, constraints):
 
     return tree
 
-
+degree_constrained_mst([[0, 56, 91, 350], [12, 0, 45, 61], [78, 45, 0, 31], [3, 2, 1, 0]], [3, 3, 3, 3])
 
 
 
@@ -284,7 +295,7 @@ def increase_connectivity(network, constraints, current_connection_number, costs
 # Writes results to file (in correct format) for hypatia to process
 def write_results_to_file(output_file, results, snapshot_id):
     # Write results to file for snapshot k
-    with open(output_file + "_snapshot_" + str(snapshot_id), 'w+') as f:
+    with open(output_file + "_snapshot_" + str(snapshot_id) + ".txt", 'w+') as f:
         total_satellites = len(results)
         for i in range(total_satellites):
             for j in range(i+1, total_satellites):
@@ -388,20 +399,24 @@ if __name__ == '__main__':
     # the time between snapshots is the time when network has no visibility changes
 
     # Run topology generation algorithm
-    heuristic_topology_design_algorithm_isls(satellite_data, data["n_orbits"], data["n_sats_per_orbit"], orbital_period, 1000, max_communication_dist, satellite_degree_constraints, "isls.txt")
+    heuristic_topology_design_algorithm_isls(satellite_data, data["n_orbits"], data["n_sats_per_orbit"], orbital_period, 1000, max_communication_dist, satellite_degree_constraints, "isls")
 
 
 # NOTE TO SELF PYEPHEM MAY AUTOMATE A LOT OF THIS PROCESS
 # NOTE TO SELF - astropy may calculate orbital period for you
 # https://docs.astropy.org/en/latest/coordinates/satellites.html
 
-
-
-
 # References:
 # Hypatia - https://github.com/snkas/hypatia/tree/master
 # Pyephem - https://github.com/brandon-rhodes/pyephem
 # Pyephem Documentation - https://rhodesmill.org/pyephem/quick
+# SkyField Documentation - https://rhodesmill.org/skyfield/
+# Prim's Algorithm - https://en.wikipedia.org/wiki/Prim%27s_algorithm
+# DCMST Primal Algorithm - https://www-sciencedirect-com.ezphost.dur.ac.uk/science/article/pii/0305054880900222?via%3Dihub
+# TLE Definitions - https://platform-cdn.leolabs.space/static/files/tle_definition.pdf?7ba94f05897b4ae630a3c5b65be7396c642d9c72
+# Orbital Distance - https://space.stackexchange.com/questions/27872/how-to-calculate-the-orbital-distance-between-2-satellites-given-the-tles
+# Earth Radius - https://en.wikipedia.org/wiki/Earth_radius
+# World Geodetic System - https://en.wikipedia.org/wiki/World_Geodetic_System#Definition
 
 # Notes
 # A description of each satellite is stored in an ephem EarthSatellite object with the following
