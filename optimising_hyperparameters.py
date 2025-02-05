@@ -27,6 +27,8 @@
 # consumed by network - include function to calculate total energy consumed by topology (possibly just maintenance energy,
 # as already considering on/off energy as looking at link churn). Energy efficiency also tied to distance.
 
+# CHANGE SO MATRIX BUILT FROM ISL FILE
+
 
 # Import Libraries
 from astropy.constants import c

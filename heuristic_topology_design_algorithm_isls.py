@@ -402,7 +402,7 @@ if __name__ == '__main__':
     heuristic_topology_design_algorithm_isls(satellite_data, data["n_orbits"], data["n_sats_per_orbit"], orbital_period, 1000, max_communication_dist, satellite_degree_constraints, "isls")
 
 
-# NOTE TO SELF PYEPHEM MAY AUTOMATE A LOT OF THIS PROCESS
+
 # NOTE TO SELF - astropy may calculate orbital period for you
 # https://docs.astropy.org/en/latest/coordinates/satellites.html
 
