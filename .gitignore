@@ -2,3 +2,4 @@
 .idea/
 Starlink_Test_TLEs.txt.tmp
 __pycache__/
+*.tmp
