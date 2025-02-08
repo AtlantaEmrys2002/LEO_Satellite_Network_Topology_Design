@@ -8,6 +8,13 @@
 # Improve visibility by looking at NSGA-III paper and the antenna direction - will need a way to get antenna direction
 # Visibility - if less than max dist, are they always visible - check papers!!!!!!!!!!!
 # SAVE DISTANCE MATRICES AND VISIBILITY MATRICES TO FILES SO DON'T HAVE TO CALCULATE AGAIN
+# CHECK THE 100 ms AGAIN - CAUSE IT CHANGES AFTER 1 SNAPSHOT
+# NEED TO CHECK TIME VISIBILITY - MAKE SURE THAT tv[0] (current snapshot) not taken into account or it won't work
+# IF DOING MULTIPLE SNAPSHOTS - MAKE SURE TO RESHUFFLE ORDER OF VISIBILITY MATRICES BEFORE FEEDING TO TIME VISIBILITY
+# (SO SNAPSHOT 0 IS CURRENT SNAPSHOT - THIS ASSUMES ALL SNAPSHOTS OVER CIRCULAR ORBIT)
+# CHECK TIME VISIBILITY WORKS FOR ONCES THAT COME BACK INTO VISIBILITY AND SHOULD BE IGNORED
+# WANT COST FUNCTION TO BE AS SMALL AS POSSIBLE FOR GOOD LINKS - THEREFORE INtRODUCED INVERSES - SEE IF BETTER WAY OF DOING thiS
+# CHECK CORRECTNESS OF ALGORITHM
 
 # Import Relevant Libraries
 from astropy.time import Time
@@ -19,13 +26,18 @@ import numpy as np
 import os
 import random
 import read_tles as hypatia_read_data
+from scipy.spatial.distance import cdist  # imported due to https://vaghefi.medium.com/fast-distance-calculation-in-
+# python-bb2bc9810ea5
 from skyfield.api import EarthSatellite, wgs84, load  # recommended by astropy for calculating information about
 # satellites described by TLE (convert to TEME), timescale is only defined once
 # (https://rhodesmill.org/skyfield/api-time.html#skyfield.timelib.Time)
+import time
 
 # Global Timescale (used for determining how to calculate time with Skyfield functions)
 ts = load.timescale()
 
+# Seed Random so results can be reproduced
+random.seed(42)
 
 # Function calls on Hypatia software function generate_tles_from_scratch_with_sgp to build physical description of
 # satellite network using TLE coordinate system and stores description in temporary file. Orbit eccentricity must be > 0
@@ -159,24 +171,11 @@ def snapshot_time_stamp(time_stamp):
     return ts.tdb(2000, 1, 1, hours, minutes, seconds)
 
 
-# Calculates the distance matrix for a snapshot of the network
-# def distance_function(satellites, total_satellites, snapshot_time):
-def distance_function(satellites, total_satellites):
+# Calculates the distance matrix (symmetrice) for a snapshot of the network. Distance between satellite and itself = 0km
+def distance_function(satellites):
 
-    # Calculate distance (Euclidean) between all satellite pairs i and j in the network and alter satellite description
-    # to describe its position at snapshot_time t
-    dist_matrix = [[np.linalg.norm(satellites[i] - satellites[j]) for j in range(i + 1, total_satellites)]
-                   for i in range(total_satellites)]
-
-    # Distance between satellite and itself is 0km
-    for i in dist_matrix:
-        i.insert(0, 0)
-
-    # Add in previously calculated values (to create symmetric matrix)
-    for i in range(total_satellites):
-        dist_matrix[i] = [dist_matrix[j][i] for j in range(i)] + dist_matrix[i]
-
-    return dist_matrix
+    # Calculate distance (Euclidean) between all satellite pairs i and j in the network
+    return cdist(satellites, satellites, metric='euclidean')
 
 
 # Calculate whether each satellite pair i, j can establish a connection (i.e. if they are visible to one another)
@@ -193,6 +192,160 @@ def visibility_function(distance_matrix, max_dist, total_satellites):
     return visibility_matrix
 
 
+# Calculates the number of future snapshots (from the current snapshot[0]) that each snapshot will remain visible
+# (WARNING: shuffle order of visibility matrices if going from snapshot other than 0, e.g. snapshot 4)
+def time_visibility_function(visibility_matrices, snapshot_num, total_satellites):
+
+    # If changed[i][j] == 1, indicates that satellite visibility has not changed
+    changed = np.ones((total_satellites, total_satellites))
+
+    # Want to know if all satellites visible to one another in snapshot 0 are also visible to one another in snapshot 1
+    # Initialise time visibility matrix for current snapshot
+    tv = np.zeros((total_satellites, total_satellites))
+
+    # For each snapshot
+    for t in range(1, snapshot_num):
+
+        # What has changed visibility-wise between last snapshot and current snapshot (i.e. what has become invisible)
+        changed_step = np.logical_and(visibility_matrices[t-1], visibility_matrices[t])
+
+        # Make sure hasn't changed in the past and now visible again - only important that visible satellites do not
+        # change
+        changed_step = np.logical_and(changed_step, changed)
+        changed = changed_step
+
+        # Add 1 to every satellite time visibility where visibility of satellite has not changed
+        tv = np.add(tv, 1, where=changed_step>0)
+
+    return tv
+
+
+# Calculates cost matrix (the weight of each edge in undirected graph representing satellite network where edges are
+# potential ISLs and nodes are satellites).
+def cost_function(visibility, time_visibility, distance, alpha, beta, total_satellites):
+
+    # Where satellites are not visible to one another, set the cost as infinity (represented by -1), otherwise 0
+    cost_matrix = np.where(visibility == 1, np.zeros((total_satellites, total_satellites)), -1)
+
+    # Calculate costs/weights according to cost function (included in paper)
+    cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1/time_visibility)) + (beta * distance))
+
+    return cost_matrix
+
+
+# Returns degree constrained minimum spanning tree of network, using greedy primal-cut branch algorithm (see paper for
+# references)
+def degree_constrained_minimum_spanning_tree_primal(cost_matrix, constraints, total_satellites):
+
+    # tree = np.zeros((total_satellites, total_satellites))
+    tree = [[0 for _ in range(total_satellites)] for _ in range(total_satellites)]
+
+    tree_vertices = []
+
+    # degrees = np.zeros(total_satellites)
+    degrees = [0 for _ in range(total_satellites)]
+
+    # Select arbitrary vertex/node (satellite) to put into tree
+    tree_vertices.append(random.randint(0, total_satellites))
+
+    minimum = -1
+
+    # Stores closest vertex not in tree
+    closest_vertex = 0
+    connected_to = 0
+
+    # While no DCMST found
+    while len(tree_vertices) < total_satellites:
+
+        # for each satellite in the network
+        for k in range(total_satellites):
+            # if satellite is not in the DCMST yet or the degree of the current satellite is already at its maximum
+            if (k not in tree_vertices) or (degrees[k] == constraints[k]):
+                continue
+            else:
+                # Find the smallest cost of ISL connection from current satellite to any other satellite where other
+                # satellite visible (i.e. cost>0)
+                min_row = np.min(np.extract(cost_matrix[k] > 0, cost_matrix[k]))
+                # Find the ID of the closest (cost-wise) satellite to satellite k
+                closest_vertex_temp = np.argwhere(cost_matrix[k] == min_row)[0][0]
+                # If minimum not found yet or min_row is the smallest cost found so far and the closest satellite is not
+                # in the DCMST tree and the degree of the closest satellite is not already at its maximum
+                if ((minimum < 0) or (min_row < minimum)) and (closest_vertex_temp not in tree_vertices) and (degrees[closest_vertex_temp] != constraints[closest_vertex_temp]):
+                    minimum = min_row
+                    closest_vertex = closest_vertex_temp
+                    connected_to = k
+
+
+
+        tree_vertices.append(closest_vertex)
+
+        tree[connected_to][closest_vertex] = 1
+        tree[closest_vertex][connected_to] = 1
+
+        degrees[closest_vertex] += 1
+
+    return tree
+
+
+def prims_algorithm(cost_matrix, constraints, total_satellites):
+
+    # Holds tree edges
+    tree = np.zeros((total_satellites, total_satellites))
+
+    # All the vertices within the tree
+    tree_vertices = []
+
+    # Select random initial vertex
+    tree_vertices.append(random.randint(0, total_satellites))
+
+    # While there is no path between all satellites
+    while len(tree_vertices) != total_satellites:
+
+        # Holds minimum cost of edge between any satellite in tree and any satellite not in tree - initialised as -1
+        minimum = -1
+        edge = [-1, -1]
+
+        # Find all potential edges to add to graph (i.e. edges that connect vertices in tree to vertices not in tree)
+        # and return edge with the smallest cost
+        for k in range(total_satellites):
+
+            # If k is not in tree, then ignore
+            if k not in tree_vertices:
+                continue
+            else:
+                # Find minimum cost value of edge between satellite in tree and satellite not in tree
+                for j in range(total_satellites):
+                    # Ignore if connecting two satellites already in tree
+                    if j in tree_vertices:
+                        continue
+                    else:
+                        # If edge is shorter than previously found edge
+                        if cost_matrix[k][j] != -1:
+                            if (cost_matrix[k][j] < minimum) or (minimum < 0):
+                                # Update minimum and edge values
+                                minimum = cost_matrix[k][j]
+                                edge = [k, j]
+
+
+
+        # If no new edge has been found, DCMST cannot be constructed
+        if minimum == -1:
+            raise AttributeError("A DCMST cannot be constructed.")
+
+        # Update list of vertices in tree and tree itself
+        tree_vertices.append(edge[1])
+        tree[edge[0]][edge[1]] = 1
+        tree[edge[1]][edge[0]] = 1
+
+    return tree
+
+
+
+
+
+
+
+
 
 def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_satellites, orbit_period, max_comm_dist, degree_constraints, output_filename_isls):
 
@@ -201,13 +354,13 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
         raise ValueError("Number of satellites must be greater than 3.")
 
     # In original Hypatia paper, snapshots of 100ms were utilised - this is continued here (all times are in seconds)
-    snapshot_interval = 0.001
+    snapshot_interval = 0.1
 
     # The number of snapshots over an orbital period
     num_snapshot = int(orbit_period/snapshot_interval)
 
-    # TEMPORARY CHANGE - TAKES A LONG TIME TO TAKE SNAPSHOTS
-    num_snapshot = 5
+    # TEMPORARY CHANGE - TAKES APPROX AN HOUR AND A BIT TO CALCULATE
+    num_snapshot = 100
 
     # Get TLEs-formatted data
     tles_data = read_file(input_file_name)
@@ -225,7 +378,7 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
     snapshot_times = [snapshot_time_stamp(snapshot_interval * k) for k in range(num_snapshot)]
 
     # Calculate distance matrices for each snapshot
-    distance_matrices = [distance_function([i.at(k).position.km for i in earth_satellite_objects], total_satellites) for k in
+    distance_matrices = [distance_function([i.at(k).position.km for i in earth_satellite_objects]) for k in
                          snapshot_times]
 
     ### VISIBILITY MATRICES ###
@@ -235,13 +388,38 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
     # Calculate visibility matrix - [i][j] is set to 0 if satellites are not visible to one another
     visibility_matrices = [visibility_function(distance_matrices[k], max_comm_dist, total_satellites) for k in range(num_snapshot)]
 
-    # GOT TO HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # Calculate time visibility matrix for current snapshot - need to rearrange order of visibility matrices to get time
+    # visibility matrices of other snapshots
+    time_visibility_matrix = time_visibility_function(visibility_matrices, num_snapshot, total_satellites)
 
-    # Calculate time visibility matrix for each snapshot
-    time_visibility_matrices = time_visibility_function(visibility_matrices, num_snapshot)
+    # Initialise list of the current number of active ISLs each satellite has
+    current_isl_number = np.zeros(total_satellites)
+
+    # Set hyperparameters (WILL INCLUDE MORE)
+    alpha, beta = 1, 1
+
+    # Calculate cost matrix. Calculating for current snapshot, so visibility matrix chosen is at pos
+    # 0 in array (same for distance matrix
+    cost_matrix = cost_function(visibility_matrices[0], time_visibility_matrix, distance_matrices[0], alpha, beta,
+                                total_satellites)
+
+
+    # GOT TO HERE
+
+    # Calculate degree constrained minimum spanning tree (where weights on edges are costs calculated by cost function)
+    # See original paper on DCMST and Prim's Algorithm (https://en.wikipedia.org/wiki/Prim%27s_algorithm).
+
+    tree = prims_algorithm(cost_matrix, degree_constraints, total_satellites)
+
+    print(tree)
+
+    tree = degree_constrained_minimum_spanning_tree_primal(cost_matrix, degree_constraints, total_satellites)
+
+    print(tree)
 
 
 
+    # ONLY NEED TO CALCULATE FOR CURRENT SNAPSHOT - ONLY DOING ONE SNAPSHOT - NEED TO SAVE VISIBILITY AND DISTANCE MATRICES AND ONLY CALCULATE IF FIRST SNAPSHot!!!!!!!!!!
     for snapshot in range(0, num_snapshot):    # NOTE TO SELF - DON'T FORGET TIME!!!
 
         # Initialise list of the current number of active ISLs each satellite has
@@ -314,12 +492,7 @@ def main(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclinat
     # Initialise degree constraint for each satellite - can be changed based on technical specifications of satellites
     satellite_degree_constraints = [3 for _ in range(len(satellite_data))]
 
-    # Initially, let us say that there are 1000 snapshots over the orbital period - will eventually change this so it
-    # the time between snapshots is the time when network has no visibility changes.
-
-    # GOT TO HERE - GOT TO CHANGE SO THAT IT ONLY RETURNS TOPOLOGY FOR CURRENT SNAPSHOT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    # Run topology generation algorithm
+    # Run topology generation algorithm (for current snapshot)
     heuristic_topology_design_algorithm_isls(file_name, satellite_data, total_sat, orbital_period, max_communication_dist, satellite_degree_constraints, "isls")
 
 
@@ -331,11 +504,17 @@ main("constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19)
 # References
 # DCMST Primal Algorithm - https://www-sciencedirect-com.ezphost.dur.ac.uk/science/article/pii/0305054880900222?via%3Dihub
 # Earth Radius - https://en.wikipedia.org/wiki/Earth_radius
+# Fast Calculation of Euclidean Distance - https://vaghefi.medium.com/fast-distance-calculation-in-python-bb2bc9810ea5
 # Hypatia - https://github.com/snkas/hypatia/tree/master
+# Loop Speed-Up - https://medium.com/@nirmalya.ghosh/13-ways-to-speedup-python-loops-e3ee56cd6b73
+# Numpy Documentation - https://numpy.org/doc/2.2/reference/index.html
+# Numpy Linalg Overhead - https://stackoverflow.com/questions/49866638/why-is-numpy-linalg-norm-slow-when-called-many-times-for-small-size-data
 # Orbital Distance - https://space.stackexchange.com/questions/27872/how-to-calculate-the-orbital-distance-between-2-satellites-given-the-tles
 # Prim's Algorithm - https://en.wikipedia.org/wiki/Prim%27s_algorithm
 # Pyephem Code - https://github.com/brandon-rhodes/pyephem
 # Pyephem Documentation - https://rhodesmill.org/pyephem/quick
+# Python Documentation - https://docs.python.org/3/
+# SciPy Documentation - https://docs.scipy.org/doc/scipy/reference/index.html
 # SkyField Documentation - https://rhodesmill.org/skyfield/ & https://rhodesmill.org/skyfield/toc.html
 # TLE Definitions - https://platform-cdn.leolabs.space/static/files/tle_definition.pdf?7ba94f05897b4ae630a3c5b65be7396c642d9c72
 # World Geodetic System - https://en.wikipedia.org/wiki/World_Geodetic_System#Definition
