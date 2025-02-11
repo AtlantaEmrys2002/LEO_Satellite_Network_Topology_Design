@@ -1,19 +1,14 @@
 #TODO
 # When running tests, check all data_generation params are correct (including defaults, e.g. does perigee arg change for
 # Kuiper?)
-# import ephem or pyephem
 # Find maximum transmission dist for Starlink, Kuiper and telesat - 27000 paper sets at 5014 km - also mentioned in code
-# Check correctness of distance measure between satellites (changing so calculated position of each and then found dist
-# between them - need to check!!)
 # Improve visibility by looking at NSGA-III paper and the antenna direction - will need a way to get antenna direction
-# Visibility - if less than max dist, are they always visible - check papers!!!!!!!!!!!
 # SAVE DISTANCE MATRICES AND VISIBILITY MATRICES TO FILES SO DON'T HAVE TO CALCULATE AGAIN
 # CHECK THE 100 ms AGAIN - CAUSE IT CHANGES AFTER 1 SNAPSHOT
 # NEED TO CHECK TIME VISIBILITY - MAKE SURE THAT tv[0] (current snapshot) not taken into account or it won't work
 # IF DOING MULTIPLE SNAPSHOTS - MAKE SURE TO RESHUFFLE ORDER OF VISIBILITY MATRICES BEFORE FEEDING TO TIME VISIBILITY
 # (SO SNAPSHOT 0 IS CURRENT SNAPSHOT - THIS ASSUMES ALL SNAPSHOTS OVER CIRCULAR ORBIT)
 # CHECK TIME VISIBILITY WORKS FOR ONCES THAT COME BACK INTO VISIBILITY AND SHOULD BE IGNORED
-# WANT COST FUNCTION TO BE AS SMALL AS POSSIBLE FOR GOOD LINKS - THEREFORE INtRODUCED INVERSES - SEE IF BETTER WAY OF DOING thiS
 # CHECK CORRECTNESS OF ALGORITHM
 
 # Import Relevant Libraries
@@ -171,13 +166,6 @@ def snapshot_time_stamp(time_stamp):
     return ts.tdb(2000, 1, 1, hours, minutes, seconds)
 
 
-# Calculates the distance matrix (symmetrice) for a snapshot of the network. Distance between satellite and itself = 0km
-def distance_function(satellites):
-
-    # Calculate distance (Euclidean) between all satellite pairs i and j in the network
-    return cdist(satellites, satellites, metric='euclidean')
-
-
 # Calculate whether each satellite pair i, j can establish a connection (i.e. if they are visible to one another)
 def visibility_function(distance_matrix, max_dist, total_satellites):
 
@@ -187,14 +175,42 @@ def visibility_function(distance_matrix, max_dist, total_satellites):
 
     # Satellites cannot be visible to themselves
     for i in range(total_satellites):
-        visibility_matrix[i][i] = 0
+        visibility_matrix[i,i] = 0
 
     return visibility_matrix
 
 
 # Calculates the number of future snapshots (from the current snapshot[0]) that each snapshot will remain visible
 # (WARNING: shuffle order of visibility matrices if going from snapshot other than 0, e.g. snapshot 4)
-def time_visibility_function(visibility_matrices, snapshot_num, total_satellites):
+# def time_visibility_function(visibility_matrices, snapshot_num, total_satellites):
+#
+#     # If changed[i][j] == 1, indicates that satellite visibility has not changed
+#     changed = np.ones((total_satellites, total_satellites))
+#
+#     # Want to know if all satellites visible to one another in snapshot 0 are also visible to one another in snapshot 1
+#     # Initialise time visibility matrix for current snapshot
+#     tv = np.zeros((total_satellites, total_satellites))
+#
+#     # For each snapshot
+#     for t in range(1, snapshot_num):
+#
+#         # What has changed visibility-wise between last snapshot and current snapshot (i.e. what has become invisible)
+#         changed_step = np.logical_and(visibility_matrices[t-1], visibility_matrices[t])
+#
+#         # Make sure hasn't changed in the past and now visible again - only important that visible satellites do not
+#         # change
+#         changed_step = np.logical_and(changed_step, changed)
+#         changed = changed_step
+#
+#         # Add 1 to every satellite time visibility where visibility of satellite has not changed
+#         tv = np.add(tv, 1, where=changed_step>0)
+#
+#     return tv
+
+
+# Calculates the number of future snapshots (from the current snapshot[0]) that each snapshot will remain visible
+# (WARNING: shuffle order of visibility matrices if going from snapshot other than 0, e.g. snapshot 4)
+def time_visibility_function_file_version(snapshot_num, total_satellites):
 
     # If changed[i][j] == 1, indicates that satellite visibility has not changed
     changed = np.ones((total_satellites, total_satellites))
@@ -207,7 +223,9 @@ def time_visibility_function(visibility_matrices, snapshot_num, total_satellites
     for t in range(1, snapshot_num):
 
         # What has changed visibility-wise between last snapshot and current snapshot (i.e. what has become invisible)
-        changed_step = np.logical_and(visibility_matrices[t-1], visibility_matrices[t])
+        # changed_step = np.logical_and(visibility_matrices[t-1], visibility_matrices[t])
+        changed_step = np.logical_and(np.load("./visibility_matrices/visibility_matrix_" + str(t-1) + ".npy"),
+                                      np.load("./visibility_matrices/visibility_matrix_" + str(t) + ".npy"))
 
         # Make sure hasn't changed in the past and now visible again - only important that visible satellites do not
         # change
@@ -218,6 +236,14 @@ def time_visibility_function(visibility_matrices, snapshot_num, total_satellites
         tv = np.add(tv, 1, where=changed_step>0)
 
     return tv
+
+
+
+
+
+
+
+
 
 
 # Calculates cost matrix (the weight of each edge in undirected graph representing satellite network where edges are
@@ -295,8 +321,21 @@ def prims_algorithm(cost_matrix, constraints, total_satellites):
     # All the vertices within the tree
     tree_vertices = []
 
+    # Stores the current degree of all satellites
+    degree = np.zeros(total_satellites)
+
     # Select random initial vertex
     tree_vertices.append(random.randint(0, total_satellites))
+
+    # Status - in tree or not in tree
+    # tree_status = np.ones((total_satellites, total_satellites))
+
+    # Set vertices in tree to 0
+    # tree_status[tree_vertices[0]] = np.zeros(total_satellites)
+    # tree_status.T[tree_vertices[0]] = np.zeros(total_satellites)
+
+    # degree_np = np.zeros((total_satellites, total_satellites))
+    # constraints_np = np.tile(np.asarray(constraints), (total_satellites,))
 
     # While there is no path between all satellites
     while len(tree_vertices) != total_satellites:
@@ -309,24 +348,49 @@ def prims_algorithm(cost_matrix, constraints, total_satellites):
         # and return edge with the smallest cost
         for k in range(total_satellites):
 
-            # If k is not in tree, then ignore
-            if k not in tree_vertices:
+            # If k is not in tree or has already established the maximum number of ISLs it can establish, then ignore
+            if (k not in tree_vertices) or (degree[k] == constraints[k]):
                 continue
             else:
                 # Find minimum cost value of edge between satellite in tree and satellite not in tree
                 for j in range(total_satellites):
-                    # Ignore if connecting two satellites already in tree
-                    if j in tree_vertices:
+                    # Ignore if connecting two satellites already in tree or has already established the maximum number
+                    # of ISLs it can establish
+                    if (j in tree_vertices) or (degree[j] == constraints[j]):
                         continue
                     else:
                         # If edge is shorter than previously found edge
-                        if cost_matrix[k][j] != -1:
-                            if (cost_matrix[k][j] < minimum) or (minimum < 0):
+                        # if cost_matrix[k][j] != -1:
+                        if cost_matrix[k, j] != -1:
+                            # if (cost_matrix[k][j] < minimum) or (minimum < 0):
+                            if (cost_matrix[k,j] < minimum) or (minimum < 0):
                                 # Update minimum and edge values
-                                minimum = cost_matrix[k][j]
+                                # minimum = cost_matrix[k][j]
+                                minimum = cost_matrix[k,j]
                                 edge = [k, j]
 
 
+
+        # All edges where one endpoint in tree
+        # potential_edges = np.where(tree_status == 0, cost_matrix, -1)
+
+        # Select smallest edge where
+        # minimum_np = np.min(cost_matrix, where=potential_edges & cost_matrix>=0 & degree_np != constraints_np)
+
+        # initial = np.logical_and(np.logical_and(potential_edges, cost_matrix>0), degree_np != constraints_np)
+
+        # print(initial)
+
+        # minimum_np = np.min(cost_matrix, where=initial)
+
+        # Find edge
+        # edge_np = np.argwhere(cost_matrix==minimum_np)[0]
+
+        # print(edge_np)
+        print(edge)
+
+        # degree_np[edge_np[0]] += 1
+        # degree_np[edge_np[1]] += 1
 
         # If no new edge has been found, DCMST cannot be constructed
         if minimum == -1:
@@ -336,6 +400,19 @@ def prims_algorithm(cost_matrix, constraints, total_satellites):
         tree_vertices.append(edge[1])
         tree[edge[0]][edge[1]] = 1
         tree[edge[1]][edge[0]] = 1
+
+        # Update degree count
+        degree[edge[0]] += 1
+        degree[edge[1]] += 1
+
+        # Update status
+        # tree_status[edge[1]] = np.zeros(total_satellites)
+        # tree_status.T[edge[1]] = np.zeros(total_satellites)
+
+        # print(len(tree_vertices))
+
+    # print(list(tree[0]))
+    # print(list(degree))
 
     return tree
 
@@ -378,19 +455,65 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
     snapshot_times = [snapshot_time_stamp(snapshot_interval * k) for k in range(num_snapshot)]
 
     # Calculate distance matrices for each snapshot
-    distance_matrices = [distance_function([i.at(k).position.km for i in earth_satellite_objects]) for k in
-                         snapshot_times]
+    # distance_matrices = [distance_function([i.at(k).position.km for i in earth_satellite_objects]) for k in
+    #                      snapshot_times]
+
+    # Create directory to store the distance matrix for each snapshot in individual file within directory (can't process
+    # all at once otherwise)
+    if os.path.isdir("./distance_matrices") is False:
+
+        # Create directory in which to store distance matrices
+        os.mkdir("./distance_matrices")
+
+        # Keep track of file ID
+        file_id = 0
+
+        # Calculate the distance matrix (symmetric) for each snapshot of the network. Distance between satellite and
+        # itself = 0km.
+        for k in snapshot_times:
+
+            # Calculates position of all satellites in the network at snapshot time k
+            satellites_at_k = [i.at(k).position.km for i in earth_satellite_objects]
+
+            # Calculate distance (Euclidean) between all satellite pairs i and j in the network at snapshot time k
+            dist_matrix = cdist(satellites_at_k, satellites_at_k, metric='euclidean')
+
+            # Save distance matrix to .npy file
+            np.save("./distance_matrices/dist_matrix_"+str(file_id) + ".npy", dist_matrix)
+
+            # Increment ID counter
+            file_id += 1
 
     ### VISIBILITY MATRICES ###
 
     # Calculate visibility and time visibility matrices for all snapshots
 
     # Calculate visibility matrix - [i][j] is set to 0 if satellites are not visible to one another
-    visibility_matrices = [visibility_function(distance_matrices[k], max_comm_dist, total_satellites) for k in range(num_snapshot)]
+    # visibility_matrices = [visibility_function(distance_matrices[k], max_comm_dist, total_satellites) for k in range(num_snapshot)]
+
+    # Create directory to store the visibility matrix for each snapshot in individual file within directory (can't
+    # process all at once otherwise) - within a visibility matrix, element [i][j] is set to 0 if satellites are not
+    # visible to one another
+    if os.path.isdir("./visibility_matrices") is False:
+
+        # Create directory in which to store distance matrices
+        os.mkdir("./visibility_matrices")
+
+        # Calculate all distance matrices
+        for k in range(num_snapshot):
+
+            # Calculate visibility matrix for snapshot and save to .npy file - load distance from corresponding distance
+            # matrix file
+            visibility_matrix = visibility_function(np.load("./distance_matrices/dist_matrix_"+str(k) + ".npy"),
+                                                    max_comm_dist, total_satellites)
+
+            np.save("./visibility_matrices/visibility_matrix_" + str(k) + ".npy", visibility_matrix)
 
     # Calculate time visibility matrix for current snapshot - need to rearrange order of visibility matrices to get time
     # visibility matrices of other snapshots
-    time_visibility_matrix = time_visibility_function(visibility_matrices, num_snapshot, total_satellites)
+    # time_visibility_matrix = time_visibility_function(visibility_matrices, num_snapshot, total_satellites)
+
+    time_visibility_matrix = time_visibility_function_file_version(num_snapshot, total_satellites)
 
     # Initialise list of the current number of active ISLs each satellite has
     current_isl_number = np.zeros(total_satellites)
@@ -400,7 +523,10 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
 
     # Calculate cost matrix. Calculating for current snapshot, so visibility matrix chosen is at pos
     # 0 in array (same for distance matrix
-    cost_matrix = cost_function(visibility_matrices[0], time_visibility_matrix, distance_matrices[0], alpha, beta,
+
+    # cost_matrix = cost_function(visibility_matrices[0], time_visibility_matrix, distance_matrices[0], alpha, beta,
+    #                             total_satellites)
+    cost_matrix = cost_function(np.load("./visibility_matrices/visibility_matrix_0.npy"), time_visibility_matrix, np.load("./distance_matrices/dist_matrix_0.npy"), alpha, beta,
                                 total_satellites)
 
 
@@ -411,11 +537,11 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
 
     tree = prims_algorithm(cost_matrix, degree_constraints, total_satellites)
 
-    print(tree)
+    # print(tree)
 
-    tree = degree_constrained_minimum_spanning_tree_primal(cost_matrix, degree_constraints, total_satellites)
+    # tree = degree_constrained_minimum_spanning_tree_primal(cost_matrix, degree_constraints, total_satellites)
 
-    print(tree)
+    # print(tree)
 
 
 
@@ -506,6 +632,8 @@ main("constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19)
 # Earth Radius - https://en.wikipedia.org/wiki/Earth_radius
 # Fast Calculation of Euclidean Distance - https://vaghefi.medium.com/fast-distance-calculation-in-python-bb2bc9810ea5
 # Hypatia - https://github.com/snkas/hypatia/tree/master
+# Hyperparameter Tuning Introduction - https://aws.amazon.com/what-is/hyperparameter-tuning/
+# Iterating over Numpy Columns - https://stackoverflow.com/questions/10148818/numpy-how-to-iterate-over-columns-of-array
 # Loop Speed-Up - https://medium.com/@nirmalya.ghosh/13-ways-to-speedup-python-loops-e3ee56cd6b73
 # Numpy Documentation - https://numpy.org/doc/2.2/reference/index.html
 # Numpy Linalg Overhead - https://stackoverflow.com/questions/49866638/why-is-numpy-linalg-norm-slow-when-called-many-times-for-small-size-data

@@ -3,3 +3,5 @@
 Starlink_Test_TLEs.txt.tmp
 __pycache__/
 *.tmp
+distance_matrices/
+visibility_matrices/
