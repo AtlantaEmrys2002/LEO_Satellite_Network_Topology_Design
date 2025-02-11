@@ -212,14 +212,6 @@ def time_visibility_function(snapshot_num, total_satellites):
     return tv
 
 
-
-
-
-
-
-
-
-
 # Calculates cost matrix (the weight of each edge in undirected graph representing satellite network where edges are
 # potential ISLs and nodes are satellites).
 def cost_function(visibility, time_visibility, distance, alpha, beta, total_satellites):
@@ -240,44 +232,32 @@ def prims_algorithm(cost_matrix, constraints, total_satellites):
     # Holds tree edges
     tree = np.zeros((total_satellites, total_satellites))
 
-    # All the vertices within the tree
-    tree_vertices = []
+    # All the vertices within the tree - select random initial vertex. Convert to set - quicker to search
+    tree_vertices = set([random.randint(0, total_satellites)])
 
     # Stores the current degree of all satellites
     degree = np.zeros(total_satellites)
-
-    # Select random initial vertex
-    tree_vertices.append(random.randint(0, total_satellites))
-
-    # Status - in tree or not in tree
-    # tree_status = np.ones((total_satellites, total_satellites))
-
-    # Set vertices in tree to 0
-    # tree_status[tree_vertices[0]] = np.zeros(total_satellites)
-    # tree_status.T[tree_vertices[0]] = np.zeros(total_satellites)
-
-    # degree_np = np.zeros((total_satellites, total_satellites))
-    # constraints_np = np.tile(np.asarray(constraints), (total_satellites,))
-
-    # Cost Matrix Values sorted
 
     # Create array of edges and their associated costs - take j in range (k+1, total_satellites) as the matrix is
     # symmetric and reduces search space
     sorted_costs = np.asarray([[cost_matrix[k, j], k, j] for k in range(total_satellites) for j in range(k+1, total_satellites)])
 
     # Sort the costs in increasing order according to cost
-    positions = np.argsort(sorted_costs, axis=0).T[0]
-    sorted_costs = np.asarray([sorted_costs[k] for k in positions])
+    sorted_costs = sorted_costs[np.argsort(sorted_costs, axis=0).T[0], :]
 
     # Ignore all costs < 0
-    costs_less_than_zero = np.argwhere(sorted_costs.T[0] >= 0)[0][0]
+    costs_less_than_zero = np.searchsorted(sorted_costs.T[0], 0)
+
     sorted_costs = sorted_costs[costs_less_than_zero:]
+
+    # Only need the edges (not the costs) now that they are sorted
+    sorted_costs = sorted_costs.T[1:].T.astype(int)
 
     # Number of potential edges that could be in tree
     potential_edges_num = len(sorted_costs)
 
     # While vertices not included in tree - i.e. while there does not exist a path between every pair of vertices
-    while len(tree_vertices) != total_satellites:
+    for _ in range(total_satellites - 1):
 
         # Take the first edge (as sorted by cost) that meets the condition that it connects one vertex in tree to one
         # vertex not in tree and degree constraint of both vertices is not at maximum
@@ -286,104 +266,36 @@ def prims_algorithm(cost_matrix, constraints, total_satellites):
 
         # Find the edge with the lowest cost that satisfies conditions - i.e. edge that connects vertex in tree to
         # vertex not in tree where both vertices have a degree less than their assigned maximum
-        while (((sorted_costs[current_pos, 1] in tree_vertices) and (sorted_costs[current_pos, 2] in tree_vertices)) or ((sorted_costs[current_pos, 1] not in tree_vertices) and (sorted_costs[current_pos, 2] not in tree_vertices))) or ((degree[int(sorted_costs[current_pos, 2])] == constraints[int(sorted_costs[current_pos, 2])]) or (degree[int(sorted_costs[current_pos, 1])] == constraints[int(sorted_costs[current_pos, 1])])):
-            current_pos += 1
+        while True:
+            first = sorted_costs[current_pos, 0]
+            second = sorted_costs[current_pos, 1]
 
-            if current_pos == potential_edges_num:
-                raise AttributeError("A DCMST cannot be constructed.")
+            if (((first in tree_vertices) and (second in tree_vertices)) or ((first not in tree_vertices) and (second
+                    not in tree_vertices))) or ((degree[second] == constraints[second]) or (degree[first] == constraints[first])):
+                current_pos += 1
+                if current_pos == potential_edges_num:
+                    raise AttributeError("A DCMST cannot be constructed.")
+            else:
+                break
 
-        edge = [sorted_costs[current_pos][1], sorted_costs[current_pos][2]]
+        edge = [sorted_costs[current_pos, 0], sorted_costs[current_pos, 1]]
 
         # Update tree
+        tree[edge[0], edge[1]] = 1
+        tree[edge[1], edge[0]] = 1
 
         # Update list of vertices in tree
         if edge[0] not in tree_vertices:
-            tree_vertices.append(edge[0])
+            tree_vertices.add(edge[0])
         else:
-            tree_vertices.append(edge[1])
+            tree_vertices.add(edge[1])
 
         # Update degree count
-        degree[int(edge[0])] += 1
-        degree[int(edge[1])] += 1
+        degree[edge[0]] += 1
+        degree[edge[1]] += 1
 
-
-
-    # # While there is no path between all satellites
-    # while len(tree_vertices) != total_satellites:
-    #
-    #     # Holds minimum cost of edge between any satellite in tree and any satellite not in tree - initialised as -1
-    #     minimum = -1
-    #     edge = [-1, -1]
-    #
-    #     # Find all potential edges to add to graph (i.e. edges that connect vertices in tree to vertices not in tree)
-    #     # and return edge with the smallest cost
-    #     for k in range(total_satellites):
-    #
-    #         # If k is not in tree or has already established the maximum number of ISLs it can establish, then ignore
-    #         if (k not in tree_vertices) or (degree[k] == constraints[k]):
-    #             continue
-    #         else:
-    #             # Find minimum cost value of edge between satellite in tree and satellite not in tree
-    #             for j in range(total_satellites):
-    #                 # Ignore if connecting two satellites already in tree or has already established the maximum number
-    #                 # of ISLs it can establish
-    #                 if (j in tree_vertices) or (degree[j] == constraints[j]):
-    #                     continue
-    #                 else:
-    #                     # If edge is shorter than previously found edge
-    #                     # if cost_matrix[k][j] != -1:
-    #                     if cost_matrix[k, j] != -1:
-    #                         # if (cost_matrix[k][j] < minimum) or (minimum < 0):
-    #                         if (cost_matrix[k,j] < minimum) or (minimum < 0):
-    #                             # Update minimum and edge values
-    #                             # minimum = cost_matrix[k][j]
-    #                             minimum = cost_matrix[k,j]
-    #                             edge = [k, j]
-    #
-    #
-    #
-    #     # All edges where one endpoint in tree
-    #     # potential_edges = np.where(tree_status == 0, cost_matrix, -1)
-    #
-    #     # Select smallest edge where
-    #     # minimum_np = np.min(cost_matrix, where=potential_edges & cost_matrix>=0 & degree_np != constraints_np)
-    #
-    #     # initial = np.logical_and(np.logical_and(potential_edges, cost_matrix>0), degree_np != constraints_np)
-    #
-    #     # print(initial)
-    #
-    #     # minimum_np = np.min(cost_matrix, where=initial)
-    #
-    #     # Find edge
-    #     # edge_np = np.argwhere(cost_matrix==minimum_np)[0]
-    #
-    #     # print(edge_np)
-    #     # print(edge)
-    #
-    #     # degree_np[edge_np[0]] += 1
-    #     # degree_np[edge_np[1]] += 1
-    #
-    #     # If no new edge has been found, DCMST cannot be constructed
-    #     if minimum == -1:
-    #         raise AttributeError("A DCMST cannot be constructed.")
-    #
-    #     # Update list of vertices in tree and tree itself
-    #     tree_vertices.append(edge[1])
-    #     tree[edge[0]][edge[1]] = 1
-    #     tree[edge[1]][edge[0]] = 1
-    #
-    #     # Update degree count
-    #     degree[edge[0]] += 1
-    #     degree[edge[1]] += 1
-
-        # Update status
-        # tree_status[edge[1]] = np.zeros(total_satellites)
-        # tree_status.T[edge[1]] = np.zeros(total_satellites)
-
-        # print(len(tree_vertices))
-
-    # print(list(tree[0]))
-    # print(list(degree))
+    print(len(tree_vertices))
+    print(np.sum(tree))
 
     return tree, degree
 
@@ -418,6 +330,8 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
 
     # The number of snapshots over an orbital period
     num_snapshot = int(orbit_period/snapshot_interval)
+
+    print(num_snapshot)
 
     # TEMPORARY CHANGE - TAKES APPROX AN HOUR AND A BIT TO CALCULATE
     num_snapshot = 100
@@ -518,20 +432,10 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
     # Current ISL number holds the degree of each node in the graph - i.e. the number of active ISLs each satellite
     # possesses
 
-    # tree, current_isl_number = prims_algorithm(cost_matrix, degree_constraints, total_satellites)
-
     tree, current_isl_number = dcmst(cost_matrix, degree_constraints, total_satellites)
 
 
 
-    # print(tree)
-
-    # tree = degree_constrained_minimum_spanning_tree_primal(cost_matrix, degree_constraints, total_satellites)
-
-
-
-    # Initialise list of the current number of active ISLs each satellite has
-    # current_isl_number = np.zeros(total_satellites)
 
 
     for snapshot in range(0, num_snapshot):
@@ -600,6 +504,8 @@ main("constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19)
 # Earth Radius - https://en.wikipedia.org/wiki/Earth_radius
 # Fast Calculation of Euclidean Distance - https://vaghefi.medium.com/fast-distance-calculation-in-python-bb2bc9810ea5
 # File Handling - https://www.w3schools.com/python/python_file_handling.asp
+# First Occurrence of Value - https://stackoverflow.com/questions/16243955/numpy-first-occurrence-of-value-greater-than-existing-value
+# Float vs Integer Comparisons - https://stackoverflow.com/questions/30100725/why-are-some-float-integer-comparisons-four-times-slower-than-others
 # Hypatia - https://github.com/snkas/hypatia/tree/master
 # Hyperparameter Tuning Introduction - https://aws.amazon.com/what-is/hyperparameter-tuning/
 # Iterating over Numpy Columns - https://stackoverflow.com/questions/10148818/numpy-how-to-iterate-over-columns-of-array
@@ -607,6 +513,7 @@ main("constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19)
 # Numpy Documentation - https://numpy.org/doc/2.2/reference/index.html
 # Numpy Linalg Overhead - https://stackoverflow.com/questions/49866638/why-is-numpy-linalg-norm-slow-when-called-many-times-for-small-size-data
 # Orbital Distance - https://space.stackexchange.com/questions/27872/how-to-calculate-the-orbital-distance-between-2-satellites-given-the-tles
+# Or Order - https://stackoverflow.com/questions/55503078/why-does-the-order-of-statements-in-an-or-condition-matter
 # OS Library Commands - https://stackoverflow.com/questions/8933237/how-do-i-check-if-a-directory-exists-in-python
 # Prim's Algorithm - https://en.wikipedia.org/wiki/Prim%27s_algorithm
 # Pyephem Code - https://github.com/brandon-rhodes/pyephem
@@ -614,6 +521,9 @@ main("constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19)
 # Python Documentation - https://docs.python.org/3/
 # Saving Numpy Data to Files - https://stackoverflow.com/questions/28439701/how-to-save-and-load-numpy-array-data-properly
 # SciPy Documentation - https://docs.scipy.org/doc/scipy/reference/index.html
+# Selecting Numpy Rows - https://stackoverflow.com/questions/58079075/numpy-select-rows-based-on-condition
+# Selecting Specific Numpy Rows - https://stackoverflow.com/questions/22927181/selecting-specific-rows-and-columns-from-numpy-array
+# Set vs List Search - https://stackoverflow.com/questions/5993621/fastest-way-to-search-a-list-in-python
 # SkyField Documentation - https://rhodesmill.org/skyfield/ & https://rhodesmill.org/skyfield/toc.html
 # TLE Definitions - https://platform-cdn.leolabs.space/static/files/tle_definition.pdf?7ba94f05897b4ae630a3c5b65be7396c642d9c72
 # World Geodetic System - https://en.wikipedia.org/wiki/World_Geodetic_System#Definition
