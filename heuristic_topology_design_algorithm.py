@@ -13,6 +13,8 @@
 # CHECK CORRECTNESS OF TIME VISIBILITY MATRIX CALCULATION
 # EXPERIMENT WITH INCREASE CONNECTIVITY FUNC - IN FREE OPTICAL SPACE NETWORKS PAPER (BROADBAND NOT SATELLITE), THEY
 # CONNECT LARGEST COST EDGES - REDUCES GRAPH DIAMETER AT EXPENSE OF ENERGY EFFICIENCY
+# ADDED 1 to TIME VISIBILITY MATRIX IN COST FUNCTION - IS THIS JUST TEMPORARY FIX OR IS IT CORRECT - NEED TO CHECK!!!!
+# Randomly select edge from all edges with same cost rather than just selecting first one
 
 # Import Relevant Libraries
 from astropy.time import Time
@@ -220,8 +222,24 @@ def cost_function(visibility, time_visibility, distance, alpha, beta, total_sate
     # Where satellites are not visible to one another, set the cost as infinity (represented by -1), otherwise 0
     cost_matrix = np.where(visibility == 1, np.zeros((total_satellites, total_satellites)), -1)
 
-    # Calculate costs/weights according to cost function (included in paper)
-    cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1/time_visibility)) + (beta * distance))
+    # Min-Max Scale/Normalise distances to ensure equal consideration of distance and other metrics included in cost
+    min_dist = np.nanmin(np.where(distance > 0, distance, np.nan))
+    max_dist = np.max(distance)
+
+    if np.isnan(min_dist):
+        raise ValueError("Minimum distance between satellites must be greater than 0.")
+    elif max_dist == -1:
+        raise ValueError("Maximum distance between satellites must be greater than 0.")
+
+    if min_dist == max_dist:
+        distance /= max_dist
+    else:
+        distance = (distance - min_dist) / (max_dist - min_dist)
+
+    # Calculate costs/weights according to cost function (included in paper) - added  1 to time_visibility to ensure no
+    # divide by 0 error
+    # cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1/time_visibility)) + (beta * distance))
+    cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1 / (time_visibility + 1))) + (beta * distance))
 
     return cost_matrix
 
@@ -306,7 +324,8 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
     # List edges in the tree
     tree_edges = np.argwhere(tree > 0)
 
-    # Sort edges and remove duplicates (undirected edges
+    # Sort edges and remove duplicates (undirected edges)
+
     tree_edges = np.unique(np.sort(tree_edges), axis=0)
 
     # Evaluate each edge
@@ -351,19 +370,6 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
                     if x[0] not in subtree_i:
                         subtree_i.add(x[0])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     return tree, degree
 
 
@@ -384,11 +390,50 @@ def dcmst(cost_matrix, constraints, total_satellites):
 
 
 # Adds edges (i.e. ISLs) to topology greedily (in order of increasing cost)
-def increase_connectivity(tree, degree_constraints, current_isl_number, cost_matrix):
+def increase_connectivity(tree, degree_constraints, current_isl_number, cost_matrix, total_satellites):
 
-    # NEED TO IMPLEMENT
+    # Ensure all feasible edges (i.e. ISL can be established between satellites) not in tree are considered
+    cost_matrix = np.where(tree == 0, cost_matrix, -1)
+    edges = np.argwhere(cost_matrix >= 0)
 
-    # Select all edges where cost matrix not less than 0 (i.e. ISL cannot be established) 
+    # Sort edges and remove duplicates (undirected edges)
+    edges = np.unique(np.sort(edges), axis=0)
+
+    # Create array of potential edges and their associated costs and sort by cost
+    costs = np.asarray([[cost_matrix[edge[0], edge[1]], edge[0], edge[1]] for edge in edges])
+    sorted_costs = costs[np.argsort(costs, axis=0).T[0], :]
+
+    # Once sorted, costs are no longer needed
+    sorted_costs = sorted_costs.T[1:].T.astype(int)
+
+    for k in range(total_satellites):
+        # If satellite has already met degree constraint, ignore and move to next satellite
+        if current_isl_number[k] == degree_constraints[k]:
+            continue
+        else:
+
+            # Select all edges incident to vertex k
+            potential_edges = sorted_costs[sorted_costs[:, 0] == k, :]
+
+            # If no more potential edges
+            if potential_edges.size == 0:
+                continue
+            else:
+                pos = 0
+                potential_edges_num = len(potential_edges)
+                while (pos < potential_edges_num) and (current_isl_number[k] < degree_constraints[k]):
+
+                    # Add edge
+                    tree[potential_edges[pos][0], potential_edges[pos][1]] = 1
+                    tree[potential_edges[pos][1], potential_edges[pos][0]] = 1
+
+                    # Update the current number of active ISLs satellite k has established
+                    current_isl_number[k] += 1
+
+                    # Select next edge
+                    pos += 1
+
+    print(np.sum(tree))
 
     return tree
 
@@ -520,7 +565,7 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
                                 np.load("./distance_matrices/dist_matrix_0.npy"), alpha, beta, total_satellites)
 
 
-    # GOT TO HERE
+    # GOT TO HERE - ONLY NEED TO FINISH DCMST FUNCTION NOW
 
     ### BUILD DEGREE CONSTRAINED MINIMUM SPANNING TREE (HEURISTICALLY) ###
 
@@ -534,24 +579,12 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
     tree, current_isl_number = dcmst(cost_matrix, degree_constraints, total_satellites)
 
 
-    ######## NEED TO DO!!!!!!!!!!!!!!!!
-
     # Add edges in increasing order of cost (experiment with decreasing cost) until no longer possible to increase
     # connectivity (and, therefore, reliability/fault tolerance) at expense of energy efficiency
-    isls = increase_connectivity(tree, degree_constraints, current_isl_number, cost_matrix)
+    isls = increase_connectivity(tree, degree_constraints, current_isl_number, cost_matrix, total_satellites)
 
     # Convert final topology for given snapshot to correct format and save algorithm results to file.
     write_results_to_file(output_filename_isls, isls)
-
-
-    for snapshot in range(0, num_snapshot):
-
-        tree = degree_constrained_mst(cost_matrix, degree_constraints)
-
-        # Adding Edges
-        # Cost matrix has -1 where link is not possible
-        isls = increase_connectivity(tree, degree_constraints, current_isl_number, cost_matrix
-
 
 
 # Main Function used to test code - constellation name specified name of network to build topology for
@@ -605,6 +638,7 @@ main("constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19)
 # DCMST Primal Algorithm - https://www-sciencedirect-com.ezphost.dur.ac.uk/science/article/pii/0305054880900222?via%3Dihub
 # Earth Radius - https://en.wikipedia.org/wiki/Earth_radius
 # Fast Calculation of Euclidean Distance - https://vaghefi.medium.com/fast-distance-calculation-in-python-bb2bc9810ea5
+# Feature Scaling - https://en.wikipedia.org/wiki/Feature_scaling
 # File Handling - https://www.w3schools.com/python/python_file_handling.asp
 # First Occurrence of Value - https://stackoverflow.com/questions/16243955/numpy-first-occurrence-of-value-greater-than-existing-value
 # Float vs Integer Comparisons - https://stackoverflow.com/questions/30100725/why-are-some-float-integer-comparisons-four-times-slower-than-others
