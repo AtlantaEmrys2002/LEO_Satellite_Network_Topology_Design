@@ -3,7 +3,6 @@
 # Kuiper?)
 # Find maximum transmission dist for Starlink, Kuiper and telesat - 27000 paper sets at 5014 km - also mentioned in code
 # Improve visibility by looking at NSGA-III paper and the antenna direction - will need a way to get antenna direction
-# SAVE DISTANCE MATRICES AND VISIBILITY MATRICES TO FILES SO DON'T HAVE TO CALCULATE AGAIN
 # CHECK THE 100 ms AGAIN - CAUSE IT CHANGES AFTER 1 SNAPSHOT
 # NEED TO CHECK TIME VISIBILITY - MAKE SURE THAT tv[0] (current snapshot) not taken into account or it won't work
 # IF DOING MULTIPLE SNAPSHOTS - MAKE SURE TO RESHUFFLE ORDER OF VISIBILITY MATRICES BEFORE FEEDING TO TIME VISIBILITY
@@ -12,6 +11,8 @@
 # CHECK CORRECTNESS OF ALGORITHM
 # INCLUDE OTHER HYPERPARAMETERS - PROBABILITY OF FAILURE/SUNLIGHT AND BANDWIDTH
 # CHECK CORRECTNESS OF TIME VISIBILITY MATRIX CALCULATION
+# EXPERIMENT WITH INCREASE CONNECTIVITY FUNC - IN FREE OPTICAL SPACE NETWORKS PAPER (BROADBAND NOT SATELLITE), THEY
+# CONNECT LARGEST COST EDGES - REDUCES GRAPH DIAMETER AT EXPENSE OF ENERGY EFFICIENCY
 
 # Import Relevant Libraries
 from astropy.time import Time
@@ -225,7 +226,7 @@ def cost_function(visibility, time_visibility, distance, alpha, beta, total_sate
     return cost_matrix
 
 
-# Function constructs initial DCMST by greedily adding the shortest edges that connect vertices not currently within the
+# Function constructs initial DCST by greedily adding the shortest edges that connect vertices not currently within the
 # tree to vertices already within the tree. Function returns tree and degree of each vertex in the tree.
 def prims_algorithm(cost_matrix, constraints, total_satellites):
 
@@ -294,31 +295,128 @@ def prims_algorithm(cost_matrix, constraints, total_satellites):
         degree[edge[0]] += 1
         degree[edge[1]] += 1
 
-    print(len(tree_vertices))
-    print(np.sum(tree))
+    return tree, degree
+
+
+# NEED TO FINISH IMPLEMENTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# This performs the edge exchange portion of the primal cut algorithm
+def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
+
+    # List edges in the tree
+    tree_edges = np.argwhere(tree > 0)
+
+    # Sort edges and remove duplicates (undirected edges
+    tree_edges = np.unique(np.sort(tree_edges), axis=0)
+
+    # Evaluate each edge
+    for m in range(total_satellites):
+
+        # Edge in tree
+        edge = tree_edges[m]
+
+        # Tree without edge (i.e. two subtrees with edge removed)
+        temp_tree_edges = np.delete(tree_edges, (m), axis=0)
+
+        # Identify 2 subtrees created by deleting edge
+        subtree_i = set([edge[0]])
+        subtree_j = set([edge[1]])
+
+        current_i = edge[0]
+        current_j = edge[1]
+
+        # While 2 subtrees do not contain all vertices
+        while len(subtree_i) + len(subtree_j) != total_satellites:
+
+            # Select all edges where vertex endpoint of edge is connected to current vertex
+            next_i = np.append(temp_tree_edges[temp_tree_edges[:,0] == current_i],
+                               temp_tree_edges[temp_tree_edges[:, 1] == current_i], axis=0)
+
+            next_j = np.append(temp_tree_edges[temp_tree_edges[:, 0] == current_j],
+                               temp_tree_edges[temp_tree_edges[:, 1] == current_j], axis=0)
+
+            # If no other edges in tree contain vertex
+            if next_i.size == 0:
+                for k in range(total_satellites):
+                    if k not in subtree_j and k not in subtree_i:
+                        subtree_j.add(k)
+            # If no other edges in tree contain vertex
+            elif next_j.size == 0:
+                for k in range(total_satellites):
+                    if k not in subtree_i and k not in subtree_j:
+                        subtree_i.add(k)
+            # Add next vertices to their respective subtrees
+            else:
+                for x in next_i:
+                    if x[0] not in subtree_i:
+                        subtree_i.add(x[0])
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     return tree, degree
 
 
-# Returns degree constrained minimum spanning tree of network, using greedy primal-cut branch algorithm (see paper for
-# references)
+# Returns heuristic approximation of degree constrained minimum spanning tree of network, using primal-cut branch
+# algorithm (see paper for references)
 def dcmst(cost_matrix, constraints, total_satellites):
 
-    # Construct initial DCMST using modified version of Prim's algorithm (modified so number of edges incident to any
-    # given vertex cannot be greater than constraint (maximum degree) of given vertex)
+    # Construct initial DCST (Degree-Constrained Spanning Tree) using modified version of Prim's algorithm (modified so
+    # number of edges incident to any given vertex cannot be greater than constraint (maximum degree) of given vertex)
     tree, degree = prims_algorithm(cost_matrix, constraints, total_satellites)
 
-    # Run second stage where edges are gradually swapped over time
+    # NEED TO IMPLEMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    #### NEED TO IMPLEMENT!!! ####
+    # Run second stage where edges are swapped if better connection found
+    # tree, degree = edge_exchange(cost_matrix, constraints, total_satellites, tree, degree)
 
     return tree, degree
 
 
+# Adds edges (i.e. ISLs) to topology greedily (in order of increasing cost)
+def increase_connectivity(tree, degree_constraints, current_isl_number, cost_matrix):
+
+    # NEED TO IMPLEMENT
+
+    # Select all edges where cost matrix not less than 0 (i.e. ISL cannot be established) 
+
+    return tree
 
 
+# Write resulting topology for given snapshot to file
+def write_results_to_file(file_name, topology):
+
+    # Create directory to store the topologies for each snapshot
+    if os.path.isdir("./isl_topologies") is False:
+
+        # Create directory in which to store distance matrices
+        try:
+            os.mkdir("./isl_topologies")
+        except OSError:
+            print("Directory to store distance matrices could not be created.")
+
+    # Select all ISLs within topology
+    # List edges in the tree
+    tree_edges = np.argwhere(topology > 0)
+
+    # Sort edges and remove duplicates (undirected edges
+    tree_edges = np.unique(np.sort(tree_edges), axis=0)
+
+    # Save results to file compatible with simulation software
+    np.savetxt("./isl_topologies/" + str(file_name), tree_edges, fmt='%i %i')
 
 
+# Builds ISL topology for a single snapshot
 def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_satellites, orbit_period, max_comm_dist, degree_constraints, output_filename_isls):
 
     # Check satellite network has a sufficient number of satellites and orbits
@@ -330,8 +428,6 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
 
     # The number of snapshots over an orbital period
     num_snapshot = int(orbit_period/snapshot_interval)
-
-    print(num_snapshot)
 
     # TEMPORARY CHANGE - TAKES APPROX AN HOUR AND A BIT TO CALCULATE
     num_snapshot = 100
@@ -426,7 +522,10 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
 
     # GOT TO HERE
 
-    # Calculate degree constrained minimum spanning tree (where weights on edges are costs calculated by cost function)
+    ### BUILD DEGREE CONSTRAINED MINIMUM SPANNING TREE (HEURISTICALLY) ###
+
+    # Using a heuristic algorithm, find the (approx.) degree constrained minimum spanning tree (where weights on edges
+    # are costs calculated by cost function).
     # See original paper on DCMST and Prim's Algorithm (https://en.wikipedia.org/wiki/Prim%27s_algorithm). Tree holds a
     # graphical representation of the network topology (1 where an ISL exists between satellites i and j, 0 otherwise).
     # Current ISL number holds the degree of each node in the graph - i.e. the number of active ISLs each satellite
@@ -435,7 +534,14 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
     tree, current_isl_number = dcmst(cost_matrix, degree_constraints, total_satellites)
 
 
+    ######## NEED TO DO!!!!!!!!!!!!!!!!
 
+    # Add edges in increasing order of cost (experiment with decreasing cost) until no longer possible to increase
+    # connectivity (and, therefore, reliability/fault tolerance) at expense of energy efficiency
+    isls = increase_connectivity(tree, degree_constraints, current_isl_number, cost_matrix)
+
+    # Convert final topology for given snapshot to correct format and save algorithm results to file.
+    write_results_to_file(output_filename_isls, isls)
 
 
     for snapshot in range(0, num_snapshot):
@@ -444,11 +550,7 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
 
         # Adding Edges
         # Cost matrix has -1 where link is not possible
-        isls = increase_connectivity(tree, degree_constraints, current_isl_number, cost_matrix)
-
-        # Convert list_isls to correct format and save results of algorithm in file
-        # Note to self - may want to throw error if list_isls is None (and catch)
-        write_results_to_file(output_filename_isls, isls, snapshot)
+        isls = increase_connectivity(tree, degree_constraints, current_isl_number, cost_matrix
 
 
 
@@ -491,7 +593,7 @@ def main(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclinat
     satellite_degree_constraints = [3 for _ in range(len(satellite_data))]
 
     # Run topology generation algorithm (for current snapshot)
-    heuristic_topology_design_algorithm_isls(file_name, satellite_data, total_sat, orbital_period, max_communication_dist, satellite_degree_constraints, "isls")
+    heuristic_topology_design_algorithm_isls(file_name, satellite_data, total_sat, orbital_period, max_communication_dist, satellite_degree_constraints, "isls.txt")
 
 
 # Used for testing
@@ -512,6 +614,7 @@ main("constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19)
 # Loop Speed-Up - https://medium.com/@nirmalya.ghosh/13-ways-to-speedup-python-loops-e3ee56cd6b73
 # Numpy Documentation - https://numpy.org/doc/2.2/reference/index.html
 # Numpy Linalg Overhead - https://stackoverflow.com/questions/49866638/why-is-numpy-linalg-norm-slow-when-called-many-times-for-small-size-data
+# Numpy savetxt Format - https://stackoverflow.com/questions/71499463/how-to-export-numpy-array-without-brackets
 # Orbital Distance - https://space.stackexchange.com/questions/27872/how-to-calculate-the-orbital-distance-between-2-satellites-given-the-tles
 # Or Order - https://stackoverflow.com/questions/55503078/why-does-the-order-of-statements-in-an-or-condition-matter
 # OS Library Commands - https://stackoverflow.com/questions/8933237/how-do-i-check-if-a-directory-exists-in-python
@@ -525,5 +628,8 @@ main("constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19)
 # Selecting Specific Numpy Rows - https://stackoverflow.com/questions/22927181/selecting-specific-rows-and-columns-from-numpy-array
 # Set vs List Search - https://stackoverflow.com/questions/5993621/fastest-way-to-search-a-list-in-python
 # SkyField Documentation - https://rhodesmill.org/skyfield/ & https://rhodesmill.org/skyfield/toc.html
+# Sorting by Column - https://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-column
 # TLE Definitions - https://platform-cdn.leolabs.space/static/files/tle_definition.pdf?7ba94f05897b4ae630a3c5b65be7396c642d9c72
+# Unique Values from List - https://stackoverflow.com/questions/12897374/get-unique-values-from-a-list-in-python
 # World Geodetic System - https://en.wikipedia.org/wiki/World_Geodetic_System#Definition
+# Zero-Size Reduction - https://www.reddit.com/r/learnpython/comments/lhljgh/valueerror_zerosize_array_to_reduction_operation/
