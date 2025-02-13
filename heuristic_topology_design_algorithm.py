@@ -19,6 +19,7 @@
 # Import Relevant Libraries
 from astropy.time import Time
 from astropy import units as u
+from collections import deque
 import ephem
 import generate_tles_from_scratch as hypatia_data
 from itertools import product
@@ -263,7 +264,11 @@ def prims_algorithm(cost_matrix, constraints, total_satellites):
     sorted_costs = np.asarray([[cost_matrix[k, j], k, j] for k in range(total_satellites) for j in range(k+1, total_satellites)])
 
     # Sort the costs in increasing order according to cost
-    sorted_costs = sorted_costs[np.argsort(sorted_costs, axis=0).T[0], :]
+    # CHANGED SORTING ALGORITHM - Replaced below because other method is quicker
+    # sorted_costs = sorted_costs[np.argsort(sorted_costs, axis=0).T[0], :]
+    sorted_costs = sorted_costs[sorted_costs[:, 0].argsort()]
+
+    # print(False in sorted_costs == tmp)
 
     # Ignore all costs < 0
     costs_less_than_zero = np.searchsorted(sorted_costs.T[0], 0)
@@ -329,6 +334,8 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
 
     tree_edges = np.unique(np.sort(tree_edges), axis=0)
 
+    start = time.time()
+
     # Evaluate each edge
     for m in range(total_satellites - 1):
 
@@ -340,119 +347,162 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
         ### CREATE TWO SUBTREES CREATED BY EDGE REMOVAL ###
 
         # Tree without edge (i.e. two subtrees with edge removed)
-        temp_tree_edges = np.delete(tree_edges, (m), axis=0)
+        temp_tree_edges = np.delete(tree_edges, m, axis=0)
 
         # Identify 2 subtrees created by deleting edge
         subtree_i = set([edge[0]])
         subtree_j = set([edge[1]])
 
-        current_i = [edge[0]]
-        current_j = [edge[1]]
+        current_i = deque([edge[0]])
+        current_j = deque([edge[1]])
 
         # While 2 subtrees do not contain all vertices
-        # while len(subtree_i) + len(subtree_j) != total_satellites:
         while len(current_i) != 0 or len(current_j) != 0:
 
+            # If all remaining vertices in subtree j
             if len(current_i) == 0:
-                for k in range(total_satellites):
-                    if k not in subtree_i and k not in subtree_j:
-                        subtree_j.add(k)
+                subtree_j.update(set(range(total_satellites)) - subtree_i - subtree_j)
                 break
+            # If all remaining vertices in subtree i
             elif len(current_j) == 0:
-                for k in range(total_satellites):
-                    if k not in subtree_i and k not in subtree_j:
-                        subtree_i.add(k)
+                subtree_j.update(set(range(total_satellites)) - subtree_i - subtree_j)
                 break
             else:
 
+                # Fetch current_i[0] and current_j[0] from their respective queues
+                current_i_first_val = current_i.popleft()
+                current_j_first_val = current_j.popleft()
+
                 # Select all edges where vertex endpoint of edge is connected to current vertex
-                next_i = np.append(temp_tree_edges[temp_tree_edges[:,0] == current_i[0]],
-                                   temp_tree_edges[temp_tree_edges[:, 1] == current_i[0]], axis=0)
+                next_i = np.append(temp_tree_edges[temp_tree_edges[:,0] == current_i_first_val],
+                                   temp_tree_edges[temp_tree_edges[:, 1] == current_i_first_val], axis=0)
 
-                next_j = np.append(temp_tree_edges[temp_tree_edges[:, 0] == current_j[0]],
-                                   temp_tree_edges[temp_tree_edges[:, 1] == current_j[0]], axis=0)
-
-                # Remove current_i[0] and current_j[0] from their respective queues
-                current_i.pop(0)
-                current_j.pop(0)
+                next_j = np.append(temp_tree_edges[temp_tree_edges[:, 0] == current_j_first_val],
+                                   temp_tree_edges[temp_tree_edges[:, 1] == current_j_first_val], axis=0)
 
                 # Select all points not in subtree i or j
-                next_i = np.array([k for k in next_i.flatten() if k not in subtree_i])
-                next_j = np.array([k for k in next_j.flatten() if k not in subtree_j])
+                next_i_tmp = set(next_i.flatten()) - subtree_i
+                next_i = np.fromiter(next_i_tmp, int, len(next_i_tmp))
+
+                next_j_tmp = set(next_j.flatten()) - subtree_j
+                next_j = np.fromiter(next_j_tmp, int, len(next_j_tmp))
 
                 # Add unexplored vertices to queues and subtrees
-                for x in next_i:
-                    current_i.append(x)
-                    subtree_i.add(x)
-                for y in next_j:
-                    current_j.append(y)
-                    subtree_j.add(y)
+                current_i.extend(next_i)
+                current_j.extend(next_j)
+
+                subtree_i.update(next_i)
+                subtree_j.update(next_j)
 
         # Convert sets to numpy arrays
         subtree_i = np.fromiter(subtree_i, int, len(subtree_i))
         subtree_j = np.fromiter(subtree_j, int, len(subtree_j))
 
+        ### ANALYSE EDGE COSTS ###
 
         # Look at all edges connecting subtree i to subtree j
-        potential_better_edges = np.fromiter(product(subtree_i, subtree_j), dtype=np.dtype((int, 2)))
+        # potential_better_edges = np.fromiter(product(subtree_i, subtree_j), dtype=np.dtype((int, 2)))
+        potential_better_edges = np.array(np.meshgrid(subtree_i, subtree_j)).T.reshape(-1, 2)
 
-        # Create list of edges with their associated costs
-        potential_better_edges_costs = np.asarray([[cost_matrix[e[0], e[1]], e[0], e[1]] for e in potential_better_edges])
+        # Create list of edges with their associated costs - only take costs and edges where costs >= 0
+
+        # potential_better_edges_costs = np.asarray([[cost_matrix[e[0], e[1]], e[0], e[1]] for e in potential_better_edges if cost_matrix[e[0], e[1]] >= 0])
+
+        # test = np.asarray(
+        #     [[cost_matrix[e[0], e[1]], e[0], e[1]] for e in potential_better_edges])
+
+        # Select all costs for relevant edges - stack them with corresponding edges
+        potential_better_edge_costs = cost_matrix[potential_better_edges.T[0], potential_better_edges.T[1]]
+
+        tmp = np.vstack((potential_better_edge_costs, potential_better_edges.T[0], potential_better_edges.T[1])).T
+
+        # TRUE
+        # print(np.array_equal(np.argsort(tmp.T[0]), tmp[:, 0].argsort()))
+
+        # FALSE
+        # print(np.array_equal(np.argsort(test, axis=0), np.argsort(tmp.T[0])))
+        #
+        # print(np.argsort(test, axis=0).T[0])
+        # print(tmp[:, 0].argsort())
+
+        # Sort according to cost in increasing order
+
+        tmp = tmp[tmp[:, 0].argsort()]
+
+        # Proof of sorting
+        # test = np.array([[0.1, 2, 3], [0, 5, 4], [-1, 7, 3]])
+        # print(test[test[:, 0].argsort()])
+        # print(test[np.argsort(test, axis=0).T[0]])
+
+        # Remove all costs less than 0
+        costs_less_than_zero = np.searchsorted(tmp.T[0], 0)
+        sorted_costs = tmp[costs_less_than_zero:]
 
         # Sort potential edges costs (in increasing order)
-        sorted_costs = potential_better_edges_costs[np.argsort(potential_better_edges_costs, axis=0).T[0], :]
+        # sorted_costs_2 = potential_better_edges_costs[np.argsort(potential_better_edges_costs, axis=0).T[0]]
 
-        # Remove all edges with costs < 0
+        # print(sorted_costs_2.shape)
+        # print(sorted_costs.shape)
+        #
+        # for k in range(len(sorted_costs)):
+        #     if False in (sorted_costs[k] == sorted_costs_2[k]):
+        #         print("FALSE")
+        #         print(sorted_costs[k])
+        #         print(sorted_costs_2[k])
 
         # Ignore all costs < 0 and take all edges with cost less than OR equal to current cost of edge connecting subtree i to
         # subtree j
-        costs_less_than_zero = np.searchsorted(sorted_costs.T[0], 0)
-        # sorted_costs = sorted_costs[costs_less_than_zero:]
 
+        # costs_less_than_zero, costs_less_than_current_cost = np.searchsorted(sorted_costs.T[0], [-1, cost_of_edge], side='right')
         costs_less_than_current_cost = np.searchsorted(sorted_costs.T[0], cost_of_edge, side='right')
-        sorted_costs = sorted_costs[costs_less_than_zero:costs_less_than_current_cost]
+
+        # sorted_costs = sorted_costs[costs_less_than_zero:costs_less_than_current_cost]
+        sorted_costs = sorted_costs[:costs_less_than_current_cost]
 
         # Stores potential new edge
-        new_edge = edge
+        new_edge = np.array([])
 
         # If edge exists with cost smaller than or equal to current edge's cost
         if sorted_costs.size > 1:
             # If there exists edge with smaller cost than current edge
+
             pos_of_smaller_cost = np.searchsorted(sorted_costs.T[0], cost_of_edge)
+
             if pos_of_smaller_cost != 0:
                 # Iterate over all edges with smaller cost than current edge
-                for x in sorted_costs[:pos_of_smaller_cost]:
-                    if degree[int(x[1])] != constraints[int(x[1])] and degree[int(x[2])] != constraints[int(x[2])]:
-                        new_edge = [int(x[1]), int(x[2])]
+                for x in sorted_costs[:pos_of_smaller_cost].T[1:].T.astype(int):
+                    if degree[x[0]] != constraints[x[0]] and degree[x[1]] != constraints[x[1]]:
+                        new_edge = x
                         break
+
             else:
                 # If degrees of either vertex are at maximum, see if edge with equal cost that does not have max degree
                 # for one or both vertices
-                if degree[edge[0]] == constraints[edge[1]] or degree[edge[0]] == constraints[edge[1]]:
-                    for x in sorted_costs:
-                        if degree[int(x[1])] != constraints[int(x[1])] and degree[int(x[2])] != degree[int(x[2])]:
-                            new_edge = [int(x[1]), int(x[2])]
+                if degree[edge[0]] == constraints[edge[0]] or degree[edge[1]] == constraints[edge[1]]:
+                    for x in sorted_costs.T[1:].T.astype(int):
+                        if degree[x[0]] != constraints[x[0]] and degree[x[1]] != degree[x[1]]:
+                            new_edge = x
                             break
 
-        edge.sort()
-        new_edge.sort()
+            # If new (better) edge has been found, update tree and degree values
+            if new_edge.size > 0:
+                # Update tree
+                tree[edge[0], edge[1]] = 0
+                tree[edge[1], edge[0]] = 0
 
-        if (new_edge[0] != edge[0]) or (new_edge[1] != edge[1]):
-            # Update tree
-            tree[edge[0], edge[1]] = 0
-            tree[edge[1], edge[0]] = 0
+                tree[new_edge[0], new_edge[1]] = 1
+                tree[new_edge[1], new_edge[0]] = 1
 
-            tree[new_edge[0], new_edge[1]] = 0
-            tree[new_edge[1], new_edge[0]] = 0
+                # Update degree
+                degree[edge[0]] -= 1
+                degree[edge[1]] -= 1
 
-            # Update degree
-            degree[edge[0]] -= 1
-            degree[edge[1]] -= 1
+                degree[new_edge[0]] += 1
+                degree[new_edge[1]] += 1
 
-            degree[new_edge[0]] -= 1
-            degree[new_edge[1]] -= 1
+    print(time.time() - start)
 
-        print(m)
+        # print(m)
 
     return tree, degree
 
@@ -465,7 +515,10 @@ def dcmst(cost_matrix, constraints, total_satellites):
     # number of edges incident to any given vertex cannot be greater than constraint (maximum degree) of given vertex)
     tree, degree = prims_algorithm(cost_matrix, constraints, total_satellites)
 
+    print("TWO")
+
     # Run second stage where edges are swapped if better connection found
+
     tree, degree = edge_exchange(cost_matrix, constraints, total_satellites, tree, degree)
 
     return tree, degree
@@ -483,7 +536,10 @@ def increase_connectivity(tree, degree_constraints, current_isl_number, cost_mat
 
     # Create array of potential edges and their associated costs and sort by cost
     costs = np.asarray([[cost_matrix[edge[0], edge[1]], edge[0], edge[1]] for edge in edges])
-    sorted_costs = costs[np.argsort(costs, axis=0).T[0], :]
+
+    # CHANGED SORTING
+    # sorted_costs = costs[np.argsort(costs, axis=0).T[0], :]
+    sorted_costs = costs[costs[:, 0].argsort()]
 
     # Once sorted, costs are no longer needed
     sorted_costs = sorted_costs.T[1:].T.astype(int)
@@ -514,8 +570,6 @@ def increase_connectivity(tree, degree_constraints, current_isl_number, cost_mat
 
                     # Select next edge
                     pos += 1
-
-    print(np.sum(tree))
 
     return tree
 
@@ -658,13 +712,19 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
     # Current ISL number holds the degree of each node in the graph - i.e. the number of active ISLs each satellite
     # possesses
 
+    print("ONE")
+
     tree, current_isl_number = dcmst(cost_matrix, degree_constraints, total_satellites)
+
+    print("THREE")
 
     ### INCREASE CONNECTIVITY ###
 
     # Add edges in increasing order of cost (experiment with decreasing cost) until no longer possible to increase
     # connectivity (and, therefore, reliability/fault tolerance) at expense of energy efficiency
     isls = increase_connectivity(tree, degree_constraints, current_isl_number, cost_matrix, total_satellites)
+
+    print("FOUR")
 
     ### SAVE TOPOLOGY ###
 
@@ -710,8 +770,12 @@ def main(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclinat
     # Initialise degree constraint for each satellite - can be changed based on technical specifications of satellites
     satellite_degree_constraints = [3 for _ in range(len(satellite_data))]
 
+    start = time.time()
+
     # Run topology generation algorithm (for current snapshot)
     heuristic_topology_design_algorithm_isls(file_name, satellite_data, total_sat, orbital_period, max_communication_dist, satellite_degree_constraints, "isls.txt")
+
+    print("Time: " + str(time.time() - start))
 
 
 # Used for testing
@@ -720,6 +784,7 @@ main("constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19)
 
 
 # References
+# Combinations of Arrays - https://stackoverflow.com/questions/1208118/using-numpy-to-build-an-array-of-all-combinations-of-two-arrays
 # DCMST Primal Algorithm - https://www-sciencedirect-com.ezphost.dur.ac.uk/science/article/pii/0305054880900222?via%3Dihub
 # Earth Radius - https://en.wikipedia.org/wiki/Earth_radius
 # Fast Calculation of Euclidean Distance - https://vaghefi.medium.com/fast-distance-calculation-in-python-bb2bc9810ea5
