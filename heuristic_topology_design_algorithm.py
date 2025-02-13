@@ -21,6 +21,7 @@ from astropy.time import Time
 from astropy import units as u
 import ephem
 import generate_tles_from_scratch as hypatia_data
+from itertools import product
 import math
 import numpy as np
 import os
@@ -329,10 +330,14 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
     tree_edges = np.unique(np.sort(tree_edges), axis=0)
 
     # Evaluate each edge
-    for m in range(total_satellites):
+    for m in range(total_satellites - 1):
 
         # Edge in tree
         edge = tree_edges[m]
+
+        cost_of_edge = cost_matrix[edge[0], edge[1]]
+
+        ### CREATE TWO SUBTREES CREATED BY EDGE REMOVAL ###
 
         # Tree without edge (i.e. two subtrees with edge removed)
         temp_tree_edges = np.delete(tree_edges, (m), axis=0)
@@ -341,34 +346,113 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
         subtree_i = set([edge[0]])
         subtree_j = set([edge[1]])
 
-        current_i = edge[0]
-        current_j = edge[1]
+        current_i = [edge[0]]
+        current_j = [edge[1]]
 
         # While 2 subtrees do not contain all vertices
-        while len(subtree_i) + len(subtree_j) != total_satellites:
+        # while len(subtree_i) + len(subtree_j) != total_satellites:
+        while len(current_i) != 0 or len(current_j) != 0:
 
-            # Select all edges where vertex endpoint of edge is connected to current vertex
-            next_i = np.append(temp_tree_edges[temp_tree_edges[:,0] == current_i],
-                               temp_tree_edges[temp_tree_edges[:, 1] == current_i], axis=0)
-
-            next_j = np.append(temp_tree_edges[temp_tree_edges[:, 0] == current_j],
-                               temp_tree_edges[temp_tree_edges[:, 1] == current_j], axis=0)
-
-            # If no other edges in tree contain vertex
-            if next_i.size == 0:
+            if len(current_i) == 0:
                 for k in range(total_satellites):
-                    if k not in subtree_j and k not in subtree_i:
+                    if k not in subtree_i and k not in subtree_j:
                         subtree_j.add(k)
-            # If no other edges in tree contain vertex
-            elif next_j.size == 0:
+                break
+            elif len(current_j) == 0:
                 for k in range(total_satellites):
                     if k not in subtree_i and k not in subtree_j:
                         subtree_i.add(k)
-            # Add next vertices to their respective subtrees
+                break
             else:
+
+                # Select all edges where vertex endpoint of edge is connected to current vertex
+                next_i = np.append(temp_tree_edges[temp_tree_edges[:,0] == current_i[0]],
+                                   temp_tree_edges[temp_tree_edges[:, 1] == current_i[0]], axis=0)
+
+                next_j = np.append(temp_tree_edges[temp_tree_edges[:, 0] == current_j[0]],
+                                   temp_tree_edges[temp_tree_edges[:, 1] == current_j[0]], axis=0)
+
+                # Remove current_i[0] and current_j[0] from their respective queues
+                current_i.pop(0)
+                current_j.pop(0)
+
+                # Select all points not in subtree i or j
+                next_i = np.array([k for k in next_i.flatten() if k not in subtree_i])
+                next_j = np.array([k for k in next_j.flatten() if k not in subtree_j])
+
+                # Add unexplored vertices to queues and subtrees
                 for x in next_i:
-                    if x[0] not in subtree_i:
-                        subtree_i.add(x[0])
+                    current_i.append(x)
+                    subtree_i.add(x)
+                for y in next_j:
+                    current_j.append(y)
+                    subtree_j.add(y)
+
+        # Convert sets to numpy arrays
+        subtree_i = np.fromiter(subtree_i, int, len(subtree_i))
+        subtree_j = np.fromiter(subtree_j, int, len(subtree_j))
+
+
+        # Look at all edges connecting subtree i to subtree j
+        potential_better_edges = np.fromiter(product(subtree_i, subtree_j), dtype=np.dtype((int, 2)))
+
+        # Create list of edges with their associated costs
+        potential_better_edges_costs = np.asarray([[cost_matrix[e[0], e[1]], e[0], e[1]] for e in potential_better_edges])
+
+        # Sort potential edges costs (in increasing order)
+        sorted_costs = potential_better_edges_costs[np.argsort(potential_better_edges_costs, axis=0).T[0], :]
+
+        # Remove all edges with costs < 0
+
+        # Ignore all costs < 0 and take all edges with cost less than OR equal to current cost of edge connecting subtree i to
+        # subtree j
+        costs_less_than_zero = np.searchsorted(sorted_costs.T[0], 0)
+        # sorted_costs = sorted_costs[costs_less_than_zero:]
+
+        costs_less_than_current_cost = np.searchsorted(sorted_costs.T[0], cost_of_edge, side='right')
+        sorted_costs = sorted_costs[costs_less_than_zero:costs_less_than_current_cost]
+
+        # Stores potential new edge
+        new_edge = edge
+
+        # If edge exists with cost smaller than or equal to current edge's cost
+        if sorted_costs.size > 1:
+            # If there exists edge with smaller cost than current edge
+            pos_of_smaller_cost = np.searchsorted(sorted_costs.T[0], cost_of_edge)
+            if pos_of_smaller_cost != 0:
+                # Iterate over all edges with smaller cost than current edge
+                for x in sorted_costs[:pos_of_smaller_cost]:
+                    if degree[int(x[1])] != constraints[int(x[1])] and degree[int(x[2])] != constraints[int(x[2])]:
+                        new_edge = [int(x[1]), int(x[2])]
+                        break
+            else:
+                # If degrees of either vertex are at maximum, see if edge with equal cost that does not have max degree
+                # for one or both vertices
+                if degree[edge[0]] == constraints[edge[1]] or degree[edge[0]] == constraints[edge[1]]:
+                    for x in sorted_costs:
+                        if degree[int(x[1])] != constraints[int(x[1])] and degree[int(x[2])] != degree[int(x[2])]:
+                            new_edge = [int(x[1]), int(x[2])]
+                            break
+
+        edge.sort()
+        new_edge.sort()
+
+        if (new_edge[0] != edge[0]) or (new_edge[1] != edge[1]):
+            # Update tree
+            tree[edge[0], edge[1]] = 0
+            tree[edge[1], edge[0]] = 0
+
+            tree[new_edge[0], new_edge[1]] = 0
+            tree[new_edge[1], new_edge[0]] = 0
+
+            # Update degree
+            degree[edge[0]] -= 1
+            degree[edge[1]] -= 1
+
+            degree[new_edge[0]] -= 1
+            degree[new_edge[1]] -= 1
+
+        print(m)
 
     return tree, degree
 
@@ -381,10 +465,8 @@ def dcmst(cost_matrix, constraints, total_satellites):
     # number of edges incident to any given vertex cannot be greater than constraint (maximum degree) of given vertex)
     tree, degree = prims_algorithm(cost_matrix, constraints, total_satellites)
 
-    # NEED TO IMPLEMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
     # Run second stage where edges are swapped if better connection found
-    # tree, degree = edge_exchange(cost_matrix, constraints, total_satellites, tree, degree)
+    tree, degree = edge_exchange(cost_matrix, constraints, total_satellites, tree, degree)
 
     return tree, degree
 
@@ -578,10 +660,13 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
 
     tree, current_isl_number = dcmst(cost_matrix, degree_constraints, total_satellites)
 
+    ### INCREASE CONNECTIVITY ###
 
     # Add edges in increasing order of cost (experiment with decreasing cost) until no longer possible to increase
     # connectivity (and, therefore, reliability/fault tolerance) at expense of energy efficiency
     isls = increase_connectivity(tree, degree_constraints, current_isl_number, cost_matrix, total_satellites)
+
+    ### SAVE TOPOLOGY ###
 
     # Convert final topology for given snapshot to correct format and save algorithm results to file.
     write_results_to_file(output_filename_isls, isls)
@@ -663,6 +748,7 @@ main("constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19)
 # Set vs List Search - https://stackoverflow.com/questions/5993621/fastest-way-to-search-a-list-in-python
 # SkyField Documentation - https://rhodesmill.org/skyfield/ & https://rhodesmill.org/skyfield/toc.html
 # Sorting by Column - https://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-column
+# Threshold Values with Numpy - https://stackoverflow.com/questions/37973135/numpy-argmin-for-elements-greater-than-a-threshold
 # TLE Definitions - https://platform-cdn.leolabs.space/static/files/tle_definition.pdf?7ba94f05897b4ae630a3c5b65be7396c642d9c72
 # Unique Values from List - https://stackoverflow.com/questions/12897374/get-unique-values-from-a-list-in-python
 # World Geodetic System - https://en.wikipedia.org/wiki/World_Geodetic_System#Definition
