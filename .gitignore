@@ -5,3 +5,5 @@ __pycache__/
 *.tmp
 distance_matrices/
 visibility_matrices/
+de421.bsp
+sunlight_matrices/

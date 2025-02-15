@@ -22,7 +22,6 @@ from astropy import units as u
 from collections import deque
 import ephem
 import generate_tles_from_scratch as hypatia_data
-from itertools import product
 import math
 import numpy as np
 import os
@@ -37,6 +36,9 @@ import time
 
 # Global Timescale (used for determining how to calculate time with Skyfield functions)
 ts = load.timescale()
+
+# Sun's Ephemeris - used to calculate whether satellite is in sunlight or not
+eph = load('de421.bsp')
 
 # Seed Random so results can be reproduced
 random.seed(42)
@@ -187,6 +189,21 @@ def visibility_function(distance_matrix, max_dist, total_satellites):
     return visibility_matrix
 
 
+# Calculate whether each satellite is within sunlight or not (i.e. vulnerable to damage from solar flares) then add 1 to
+# all elements where edge connected to a satellite vulnerable to solar flares (i.e. in sunlight) - this an approximation
+# used to determine if satellites are vulnerable to solar flares
+def sunlight_function(satellites_in_sun, total_satellites):
+
+    sunlight_matrix = np.zeros((total_satellites, total_satellites))
+
+    # in_sun = np.argwhere(np.asarray(satellites_in_sun)).T[0]
+    in_sun = np.argwhere(satellites_in_sun).T[0]
+
+    sunlight_matrix[np.ix_(in_sun, in_sun)] = 1
+
+    return sunlight_matrix
+
+
 # Calculates the number of future snapshots (from the current snapshot[0]) that each snapshot will remain visible
 # (WARNING: shuffle order of visibility matrices if going from snapshot other than 0, e.g. snapshot 4)
 def time_visibility_function(snapshot_num, total_satellites):
@@ -219,7 +236,7 @@ def time_visibility_function(snapshot_num, total_satellites):
 
 # Calculates cost matrix (the weight of each edge in undirected graph representing satellite network where edges are
 # potential ISLs and nodes are satellites).
-def cost_function(visibility, time_visibility, distance, alpha, beta, total_satellites):
+def cost_function(visibility, time_visibility, distance, sunlight, alpha, beta, gamma, total_satellites):
 
     # Where satellites are not visible to one another, set the cost as infinity (represented by -1), otherwise 0
     cost_matrix = np.where(visibility == 1, np.zeros((total_satellites, total_satellites)), -1)
@@ -238,10 +255,13 @@ def cost_function(visibility, time_visibility, distance, alpha, beta, total_sate
     else:
         distance = (distance - min_dist) / (max_dist - min_dist)
 
+
+
     # Calculate costs/weights according to cost function (included in paper) - added  1 to time_visibility to ensure no
-    # divide by 0 error
+    # divide by 0 error. Gamma is probability of satellite failure due to solar flares - 0 if in Earth's shadow,
+    # otherwise gamma (gamma could be found via deep learning image classification of pictures of sun)
     # cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1/time_visibility)) + (beta * distance))
-    cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1 / (time_visibility + 1))) + (beta * distance))
+    cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1 / (time_visibility + 1))) + (beta * distance) + (gamma * sunlight))
 
     return cost_matrix
 
@@ -414,8 +434,11 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
         # Select all costs for relevant edges - stack them with corresponding edges
         potential_better_edge_costs = cost_matrix[potential_better_edges.T[0], potential_better_edges.T[1]]
 
+        # CHANGED SO NO TRANSPOSE
         tmp = np.vstack((potential_better_edge_costs, potential_better_edges.T[0], potential_better_edges.T[1])).T
+        # tmp = np.vstack((potential_better_edge_costs, potential_better_edges.T[0], potential_better_edges.T[1]))
 
+        ### EXPERIMENT STARTS
         # TRUE
         # print(np.array_equal(np.argsort(tmp.T[0]), tmp[:, 0].argsort()))
 
@@ -425,22 +448,31 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
         # print(np.argsort(test, axis=0).T[0])
         # print(tmp[:, 0].argsort())
 
-        # Sort according to cost in increasing order
-
-        tmp = tmp[tmp[:, 0].argsort()]
-
         # Proof of sorting
         # test = np.array([[0.1, 2, 3], [0, 5, 4], [-1, 7, 3]])
         # print(test[test[:, 0].argsort()])
         # print(test[np.argsort(test, axis=0).T[0]])
+        ### EXPERIMENT ENDS
+
+        # CHANGED SO NO TRANSPOSE
+        # Sort according to cost in increasing order
+        tmp = tmp[tmp[:, 0].argsort()]
+        # tmp = tmp[tmp[0].argsort()]
+
 
         # Remove all costs less than 0
+        # CHANGED SO NO TRANSPOSE
         costs_less_than_zero = np.searchsorted(tmp.T[0], 0)
+        # costs_less_than_zero = np.searchsorted(tmp[0], 0)
+
+        # CHANGED SO USES TRANSPOSE
         sorted_costs = tmp[costs_less_than_zero:]
+        # sorted_costs = (tmp.T[costs_less_than_zero:]).T
 
         # Sort potential edges costs (in increasing order)
         # sorted_costs_2 = potential_better_edges_costs[np.argsort(potential_better_edges_costs, axis=0).T[0]]
 
+        ### EXPERIMENT STARTS
         # print(sorted_costs_2.shape)
         # print(sorted_costs.shape)
         #
@@ -449,15 +481,23 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
         #         print("FALSE")
         #         print(sorted_costs[k])
         #         print(sorted_costs_2[k])
+        ### EXPERIMENT ENDS
 
         # Ignore all costs < 0 and take all edges with cost less than OR equal to current cost of edge connecting subtree i to
         # subtree j
 
         # costs_less_than_zero, costs_less_than_current_cost = np.searchsorted(sorted_costs.T[0], [-1, cost_of_edge], side='right')
+
+        # WORKING VERSION BELOW
         costs_less_than_current_cost = np.searchsorted(sorted_costs.T[0], cost_of_edge, side='right')
+        # CHANGED SO NO TRANSPOSE
+        # costs_less_than_current_cost = np.searchsorted(sorted_costs[0], cost_of_edge, side='right')
 
         # sorted_costs = sorted_costs[costs_less_than_zero:costs_less_than_current_cost]
+        # WORKING VERSION BELOW
         sorted_costs = sorted_costs[:costs_less_than_current_cost]
+        # CHANGED SO NO TRANSPOSE
+        # sorted_costs = (sorted_costs.T[:costs_less_than_current_cost]).T
 
         # Stores potential new edge
         new_edge = np.array([])
@@ -466,11 +506,16 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
         if sorted_costs.size > 1:
             # If there exists edge with smaller cost than current edge
 
+            # CHANGED SO NO TRANSPOSE
             pos_of_smaller_cost = np.searchsorted(sorted_costs.T[0], cost_of_edge)
+            # pos_of_smaller_cost = np.searchsorted(sorted_costs[0], cost_of_edge)
 
             if pos_of_smaller_cost != 0:
                 # Iterate over all edges with smaller cost than current edge
+
+                # CHANGED SO NO TRANSPOSE
                 for x in sorted_costs[:pos_of_smaller_cost].T[1:].T.astype(int):
+                # for x in sorted_costs[:pos_of_smaller_cost][1:].astype(int):
                     if degree[x[0]] != constraints[x[0]] and degree[x[1]] != constraints[x[1]]:
                         new_edge = x
                         break
@@ -480,6 +525,7 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
                 # for one or both vertices
                 if degree[edge[0]] == constraints[edge[0]] or degree[edge[1]] == constraints[edge[1]]:
                     for x in sorted_costs.T[1:].T.astype(int):
+                    # for x in sorted_costs[1:].astype(int):
                         if degree[x[0]] != constraints[x[0]] and degree[x[1]] != degree[x[1]]:
                             new_edge = x
                             break
@@ -598,7 +644,7 @@ def write_results_to_file(file_name, topology):
 
 
 # Builds ISL topology for a single snapshot
-def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_satellites, orbit_period, max_comm_dist, degree_constraints, output_filename_isls):
+def heuristic_topology_design_algorithm_isls(input_file_name, total_satellites, orbit_period, max_comm_dist, degree_constraints, output_filename_isls):
 
     # Check satellite network has a sufficient number of satellites and orbits
     if total_satellites < 3:
@@ -607,10 +653,13 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
     # In original Hypatia paper, snapshots of 100ms were utilised - this is continued here (all times are in seconds)
     snapshot_interval = 0.1
 
+    # TEMPORARY CHANGE
+    snapshot_interval = 10
+
     # The number of snapshots over an orbital period
     num_snapshot = int(orbit_period/snapshot_interval)
 
-    # TEMPORARY CHANGE - TAKES APPROX AN HOUR AND A BIT TO CALCULATE
+    # TEMPORARY CHANGE
     num_snapshot = 100
 
     # Get TLEs-formatted data
@@ -684,6 +733,35 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
 
             np.save("./visibility_matrices/visibility_matrix_" + str(k) + ".npy", visibility_matrix)
 
+
+    ### SUNLIGHT MATRICES ###
+
+    # Calculate whether satellites are in sunlight (i.e. vulnerable to solar flares) or on the opposite side of the
+    # Earth
+
+    if os.path.isdir("./sunlight_matrices") is False:
+
+        # Create directory in which to store distance matrices
+        try:
+            os.mkdir("./sunlight_matrices")
+        except OSError:
+            print("Directory to store sunlight matrices could not be created.")
+
+        file_id = 0
+
+        # Calculate all distance matrices
+        for k in snapshot_times:
+
+            # Calculate whether each satellite is in sunlight or not
+            satellites_in_sun = [i.at(k).is_sunlit(eph) for i in earth_satellite_objects]
+
+            # Update matrix such that element sunlight_matrix[i][j] is set to 1 if i or j is in sunlight and save to
+            # file
+            np.save("./sunlight_matrices/sunlight_matrix_" + str(file_id) + ".npy", sunlight_function(satellites_in_sun,
+                                                                                                      total_satellites))
+
+            file_id += 1
+
     # Calculate time visibility matrix for current snapshot - need to rearrange order of visibility matrices to get time
     # visibility matrices of other snapshots
     time_visibility_matrix = time_visibility_function(num_snapshot, total_satellites)
@@ -693,15 +771,12 @@ def heuristic_topology_design_algorithm_isls(input_file_name, satellites, total_
     # Calculates cost matrix for current snapshot
 
     # Set hyperparameters
-    alpha, beta = 1, 1
+    alpha, beta, gamma = 1, 1, 0.2
 
     # Calculate cost matrix. Calculating for current snapshot, so visibility matrix chosen is at pos
     # 0 in array (same for distance matrix
     cost_matrix = cost_function(np.load("./visibility_matrices/visibility_matrix_0.npy"), time_visibility_matrix,
-                                np.load("./distance_matrices/dist_matrix_0.npy"), alpha, beta, total_satellites)
-
-
-    # GOT TO HERE - ONLY NEED TO FINISH DCMST FUNCTION NOW
+                                np.load("./distance_matrices/dist_matrix_0.npy"), np.load("./sunlight_matrices/sunlight_matrix_0.npy"), alpha, beta, gamma, total_satellites)
 
     ### BUILD DEGREE CONSTRAINED MINIMUM SPANNING TREE (HEURISTICALLY) ###
 
@@ -773,7 +848,7 @@ def main(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclinat
     start = time.time()
 
     # Run topology generation algorithm (for current snapshot)
-    heuristic_topology_design_algorithm_isls(file_name, satellite_data, total_sat, orbital_period, max_communication_dist, satellite_degree_constraints, "isls.txt")
+    heuristic_topology_design_algorithm_isls(file_name, total_sat, orbital_period, max_communication_dist, satellite_degree_constraints, "isls.txt")
 
     print("Time: " + str(time.time() - start))
 
@@ -807,6 +882,7 @@ main("constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19)
 # Pyephem Documentation - https://rhodesmill.org/pyephem/quick
 # Python Documentation - https://docs.python.org/3/
 # Saving Numpy Data to Files - https://stackoverflow.com/questions/28439701/how-to-save-and-load-numpy-array-data-properly
+# Scaling vs Normalisation - https://www.kaggle.com/code/alexisbcook/scaling-and-normalization
 # SciPy Documentation - https://docs.scipy.org/doc/scipy/reference/index.html
 # Selecting Numpy Rows - https://stackoverflow.com/questions/58079075/numpy-select-rows-based-on-condition
 # Selecting Specific Numpy Rows - https://stackoverflow.com/questions/22927181/selecting-specific-rows-and-columns-from-numpy-array
@@ -818,3 +894,12 @@ main("constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19)
 # Unique Values from List - https://stackoverflow.com/questions/12897374/get-unique-values-from-a-list-in-python
 # World Geodetic System - https://en.wikipedia.org/wiki/World_Geodetic_System#Definition
 # Zero-Size Reduction - https://www.reddit.com/r/learnpython/comments/lhljgh/valueerror_zerosize_array_to_reduction_operation/
+
+# Extra Code Used During Analysis, Optimisation, and Debugging
+
+# Used to check that visibility matrices change over time (confirming theory)
+# for k in range(1, num_snapshot):
+#     previous = np.load("./visibility_matrices/visibility_matrix_" + str(k) + ".npy")
+#     now = np.load("./visibility_matrices/visibility_matrix_" + str(k - 1) + ".npy")
+#     if np.array_equal(previous, now) is False:
+#         print("yes")
