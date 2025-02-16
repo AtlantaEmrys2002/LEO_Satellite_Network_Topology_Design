@@ -3,14 +3,10 @@
 # Kuiper?)
 # Find maximum transmission dist for Starlink, Kuiper and telesat - 27000 paper sets at 5014 km - also mentioned in code
 # Improve visibility by looking at NSGA-III paper and the antenna direction - will need a way to get antenna direction
-# CHECK THE 100 ms AGAIN - CAUSE IT CHANGES AFTER 1 SNAPSHOT
-# NEED TO CHECK TIME VISIBILITY - MAKE SURE THAT tv[0] (current snapshot) not taken into account or it won't work
 # IF DOING MULTIPLE SNAPSHOTS - MAKE SURE TO RESHUFFLE ORDER OF VISIBILITY MATRICES BEFORE FEEDING TO TIME VISIBILITY
 # (SO SNAPSHOT 0 IS CURRENT SNAPSHOT - THIS ASSUMES ALL SNAPSHOTS OVER CIRCULAR ORBIT)
-# CHECK TIME VISIBILITY WORKS FOR ONCES THAT COME BACK INTO VISIBILITY AND SHOULD BE IGNORED
 # CHECK CORRECTNESS OF ALGORITHM
-# INCLUDE OTHER HYPERPARAMETERS - PROBABILITY OF FAILURE/SUNLIGHT AND BANDWIDTH
-# CHECK CORRECTNESS OF TIME VISIBILITY MATRIX CALCULATION
+# INCLUDE OTHER HYPERPARAMETERS - BANDWIDTH
 # EXPERIMENT WITH INCREASE CONNECTIVITY FUNC - IN FREE OPTICAL SPACE NETWORKS PAPER (BROADBAND NOT SATELLITE), THEY
 # CONNECT LARGEST COST EDGES - REDUCES GRAPH DIAMETER AT EXPENSE OF ENERGY EFFICIENCY
 # ADDED 1 to TIME VISIBILITY MATRIX IN COST FUNCTION - IS THIS JUST TEMPORARY FIX OR IS IT CORRECT - NEED TO CHECK!!!!
@@ -205,8 +201,9 @@ def sunlight_function(satellites_in_sun, total_satellites):
 
 
 # Calculates the number of future snapshots (from the current snapshot[0]) that each snapshot will remain visible
-# (WARNING: shuffle order of visibility matrices if going from snapshot other than 0, e.g. snapshot 4)
-def time_visibility_function(snapshot_num, total_satellites):
+# (WARNING: shuffle order of visibility matrices if going from snapshot other than 0, e.g. snapshot 4). ID is the
+# current snapshot for which a topology is being built
+def time_visibility_function(snapshot_num, total_satellites, id_num, constellation_name):
 
     # If changed[i][j] == 1, indicates that satellite visibility has not changed
     changed = np.ones((total_satellites, total_satellites))
@@ -215,13 +212,24 @@ def time_visibility_function(snapshot_num, total_satellites):
     # Initialise time visibility matrix for current snapshot
     tv = np.zeros((total_satellites, total_satellites))
 
+
+    current_id = id_num + 1
+
     # For each snapshot
     for t in range(1, snapshot_num):
 
         # What has changed visibility-wise between last snapshot and current snapshot (i.e. what has become invisible)
         # changed_step = np.logical_and(visibility_matrices[t-1], visibility_matrices[t])
-        changed_step = np.logical_and(np.load("./visibility_matrices/visibility_matrix_" + str(t-1) + ".npy"),
-                                      np.load("./visibility_matrices/visibility_matrix_" + str(t) + ".npy"))
+        # changed_step = np.logical_and(np.load("./visibility_matrices/visibility_matrix_" + str(t-1) + ".npy"),
+        #                               np.load("./visibility_matrices/visibility_matrix_" + str(t) + ".npy"))
+
+        if current_id != 0:
+            changed_step = np.logical_and(np.load("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(current_id - 1) + ".npy"),
+                                          np.load("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(current_id) + ".npy"))
+        else:
+            changed_step = np.logical_and(np.load(
+                "./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(snapshot_num - 1) + ".npy"),
+                                          np.load("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(current_id) + ".npy"))
 
         # Make sure hasn't changed in the past and now visible again - only important that visible satellites do not
         # change
@@ -230,6 +238,11 @@ def time_visibility_function(snapshot_num, total_satellites):
 
         # Add 1 to every satellite time visibility where visibility of satellite has not changed
         tv = np.add(tv, 1, where=changed_step>0)
+
+        if current_id == snapshot_num -1:
+            current_id = 0
+        else:
+            current_id += 1
 
     return tv
 
@@ -262,6 +275,8 @@ def cost_function(visibility, time_visibility, distance, sunlight, alpha, beta, 
     # otherwise gamma (gamma could be found via deep learning image classification of pictures of sun)
     # cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1/time_visibility)) + (beta * distance))
     cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1 / (time_visibility + 1))) + (beta * distance) + (gamma * sunlight))
+    # cost_matrix = np.where(visibility == 0, cost_matrix,
+    #                        (alpha * (1 / time_visibility)) + (beta * distance) + (gamma * sunlight))
 
     return cost_matrix
 
@@ -548,8 +563,6 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
 
     print(time.time() - start)
 
-        # print(m)
-
     return tree, degree
 
 
@@ -565,7 +578,7 @@ def dcmst(cost_matrix, constraints, total_satellites):
 
     # Run second stage where edges are swapped if better connection found
 
-    tree, degree = edge_exchange(cost_matrix, constraints, total_satellites, tree, degree)
+    # tree, degree = edge_exchange(cost_matrix, constraints, total_satellites, tree, degree)
 
     return tree, degree
 
@@ -644,7 +657,7 @@ def write_results_to_file(file_name, topology):
 
 
 # Builds ISL topology for a single snapshot
-def heuristic_topology_design_algorithm_isls(input_file_name, total_satellites, orbit_period, max_comm_dist, degree_constraints, output_filename_isls):
+def heuristic_topology_design_algorithm_isls(input_file_name, constellation_name, total_satellites, orbit_period, max_comm_dist, degree_constraints, snapshot_id, params, output_filename_isls):
 
     # Check satellite network has a sufficient number of satellites and orbits
     if total_satellites < 3:
@@ -654,13 +667,13 @@ def heuristic_topology_design_algorithm_isls(input_file_name, total_satellites, 
     snapshot_interval = 0.1
 
     # TEMPORARY CHANGE
-    snapshot_interval = 10
+    snapshot_interval = 60
 
     # The number of snapshots over an orbital period
     num_snapshot = int(orbit_period/snapshot_interval)
 
     # TEMPORARY CHANGE
-    num_snapshot = 100
+    # num_snapshot = 10
 
     # Get TLEs-formatted data
     tles_data = read_file(input_file_name)
@@ -681,11 +694,13 @@ def heuristic_topology_design_algorithm_isls(input_file_name, total_satellites, 
 
     # Create directory to store the distance matrix for each snapshot in individual file within directory (can't process
     # all at once otherwise)
-    if os.path.isdir("./distance_matrices") is False:
+    # if os.path.isdir("./distance_matrices") is False:
+    if os.path.isdir("./"+constellation_name+"/distance_matrices") is False:
 
         # Create directory in which to store distance matrices
         try:
-            os.mkdir("./distance_matrices")
+            # os.mkdir("./distance_matrices")
+            os.makedirs("./"+constellation_name+"/distance_matrices")
         except OSError:
             print("Directory to store distance matrices could not be created.")
 
@@ -703,7 +718,8 @@ def heuristic_topology_design_algorithm_isls(input_file_name, total_satellites, 
             dist_matrix = cdist(satellites_at_k, satellites_at_k, metric='euclidean')
 
             # Save distance matrix to .npy file
-            np.save("./distance_matrices/dist_matrix_"+str(file_id) + ".npy", dist_matrix)
+            # np.save("./distance_matrices/dist_matrix_"+str(file_id) + ".npy", dist_matrix)
+            np.save("./"+constellation_name+"/distance_matrices/dist_matrix_" + str(file_id) + ".npy", dist_matrix)
 
             # Increment ID counter
             file_id += 1
@@ -715,11 +731,13 @@ def heuristic_topology_design_algorithm_isls(input_file_name, total_satellites, 
     # Create directory to store the visibility matrix for each snapshot in individual file within directory (can't
     # process all at once otherwise) - within a visibility matrix, element [i][j] is set to 0 if satellites are not
     # visible to one another
-    if os.path.isdir("./visibility_matrices") is False:
+    # if os.path.isdir("./visibility_matrices") is False:
+    if os.path.isdir("./"+constellation_name+"/visibility_matrices") is False:
 
         # Create directory in which to store distance matrices
         try:
-            os.mkdir("./visibility_matrices")
+            # os.mkdir("./visibility_matrices")
+            os.makedirs("./"+constellation_name+"/visibility_matrices")
         except OSError:
             print("Directory to store visibility matrices could not be created.")
 
@@ -728,10 +746,13 @@ def heuristic_topology_design_algorithm_isls(input_file_name, total_satellites, 
 
             # Calculate visibility matrix for snapshot and save to .npy file - load distance from corresponding distance
             # matrix file
-            visibility_matrix = visibility_function(np.load("./distance_matrices/dist_matrix_"+str(k) + ".npy"),
+            # visibility_matrix = visibility_function(np.load("./distance_matrices/dist_matrix_"+str(k) + ".npy"),
+            #                                         max_comm_dist, total_satellites)
+            visibility_matrix = visibility_function(np.load("./"+constellation_name+"/distance_matrices/dist_matrix_" + str(k) + ".npy"),
                                                     max_comm_dist, total_satellites)
 
-            np.save("./visibility_matrices/visibility_matrix_" + str(k) + ".npy", visibility_matrix)
+            # np.save("./visibility_matrices/visibility_matrix_" + str(k) + ".npy", visibility_matrix)
+            np.save("./"+constellation_name+"/visibility_matrices/visibility_matrix_" + str(k) + ".npy", visibility_matrix)
 
 
     ### SUNLIGHT MATRICES ###
@@ -739,11 +760,13 @@ def heuristic_topology_design_algorithm_isls(input_file_name, total_satellites, 
     # Calculate whether satellites are in sunlight (i.e. vulnerable to solar flares) or on the opposite side of the
     # Earth
 
-    if os.path.isdir("./sunlight_matrices") is False:
+    # if os.path.isdir("./sunlight_matrices") is False:
+    if os.path.isdir("./"+constellation_name+"/sunlight_matrices") is False:
 
         # Create directory in which to store distance matrices
         try:
-            os.mkdir("./sunlight_matrices")
+            # os.mkdir("./sunlight_matrices")
+            os.makedirs("./"+constellation_name+"/sunlight_matrices")
         except OSError:
             print("Directory to store sunlight matrices could not be created.")
 
@@ -757,26 +780,40 @@ def heuristic_topology_design_algorithm_isls(input_file_name, total_satellites, 
 
             # Update matrix such that element sunlight_matrix[i][j] is set to 1 if i or j is in sunlight and save to
             # file
-            np.save("./sunlight_matrices/sunlight_matrix_" + str(file_id) + ".npy", sunlight_function(satellites_in_sun,
+            # np.save("./sunlight_matrices/sunlight_matrix_" + str(file_id) + ".npy", sunlight_function(satellites_in_sun,
+            #                                                                                           total_satellites))
+            np.save("./"+constellation_name+"/sunlight_matrices/sunlight_matrix_" + str(file_id) + ".npy", sunlight_function(satellites_in_sun,
                                                                                                       total_satellites))
 
             file_id += 1
 
     # Calculate time visibility matrix for current snapshot - need to rearrange order of visibility matrices to get time
     # visibility matrices of other snapshots
-    time_visibility_matrix = time_visibility_function(num_snapshot, total_satellites)
+    # time_visibility_matrix = time_visibility_function(num_snapshot, total_satellites)
+    time_visibility_matrix = time_visibility_function(num_snapshot, total_satellites, snapshot_id, constellation_name)
 
     ### COST MATRIX ###
 
     # Calculates cost matrix for current snapshot
 
     # Set hyperparameters
-    alpha, beta, gamma = 1, 1, 0.2
+    # alpha, beta, gamma = 1, 1, 0.2
+    alpha, beta, gamma = params
 
     # Calculate cost matrix. Calculating for current snapshot, so visibility matrix chosen is at pos
     # 0 in array (same for distance matrix
-    cost_matrix = cost_function(np.load("./visibility_matrices/visibility_matrix_0.npy"), time_visibility_matrix,
-                                np.load("./distance_matrices/dist_matrix_0.npy"), np.load("./sunlight_matrices/sunlight_matrix_0.npy"), alpha, beta, gamma, total_satellites)
+    # cost_matrix = cost_function(np.load("./visibility_matrices/visibility_matrix_0.npy"), time_visibility_matrix,
+    #                             np.load("./distance_matrices/dist_matrix_0.npy"), np.load("./sunlight_matrices/sunlight_matrix_0.npy"), alpha, beta, gamma, total_satellites)
+    # cost_matrix = cost_function(np.load("./"+constellation_name+"/visibility_matrices/visibility_matrix_0.npy"), time_visibility_matrix,
+    #                             np.load("./"+constellation_name+"/distance_matrices/dist_matrix_0.npy"),
+    #                             np.load("./"+constellation_name+"/sunlight_matrices/sunlight_matrix_0.npy"), alpha, beta, gamma,
+    #                             total_satellites)
+
+    cost_matrix = cost_function(np.load("./"+constellation_name+"/visibility_matrices/visibility_matrix_"+str(snapshot_id)+".npy"), time_visibility_matrix,
+                                np.load("./"+constellation_name+"/distance_matrices/dist_matrix_"+str(snapshot_id)+".npy"),
+                                np.load("./"+constellation_name+"/sunlight_matrices/sunlight_matrix_"+str(snapshot_id)+".npy"), alpha, beta, gamma,
+                                total_satellites)
+
 
     ### BUILD DEGREE CONSTRAINED MINIMUM SPANNING TREE (HEURISTICALLY) ###
 
@@ -809,7 +846,7 @@ def heuristic_topology_design_algorithm_isls(input_file_name, total_satellites, 
 
 # Main Function used to test code - constellation name specified name of network to build topology for
 # Multi-shell indicates if satellites orbit at different heights
-def main(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree, mean_motion_rev_per_day, multi_shell=False):
+def main(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree, mean_motion_rev_per_day, snapshot_ids, params, multi_shell=False):
 
     # Calculate the number of satellites in the network
     total_sat = num_sats_per_orbit * num_orbits
@@ -845,17 +882,16 @@ def main(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclinat
     # Initialise degree constraint for each satellite - can be changed based on technical specifications of satellites
     satellite_degree_constraints = [3 for _ in range(len(satellite_data))]
 
-    start = time.time()
-
     # Run topology generation algorithm (for current snapshot)
-    heuristic_topology_design_algorithm_isls(file_name, total_sat, orbital_period, max_communication_dist, satellite_degree_constraints, "isls.txt")
-
-    print("Time: " + str(time.time() - start))
+    for t in snapshot_ids:
+        start = time.time()
+        heuristic_topology_design_algorithm_isls(file_name, constellation_name, total_sat, orbital_period, max_communication_dist, satellite_degree_constraints, t, params, "./" + constellation_name + "_isls_" + str(t) + ".txt")
+        print("Time: " + str(time.time() - start))
 
 
 # Used for testing
 # Data from: https://github.com/AtlantaEmrys2002/hypatia/tree/master/paper/satellite_networks_state
-main("constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19)
+# main("starlink-constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19, [3, 7])
 
 
 # References
