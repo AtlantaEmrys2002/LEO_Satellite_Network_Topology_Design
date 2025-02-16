@@ -3,8 +3,6 @@
 # Kuiper?)
 # Find maximum transmission dist for Starlink, Kuiper and telesat - 27000 paper sets at 5014 km - also mentioned in code
 # Improve visibility by looking at NSGA-III paper and the antenna direction - will need a way to get antenna direction
-# IF DOING MULTIPLE SNAPSHOTS - MAKE SURE TO RESHUFFLE ORDER OF VISIBILITY MATRICES BEFORE FEEDING TO TIME VISIBILITY
-# (SO SNAPSHOT 0 IS CURRENT SNAPSHOT - THIS ASSUMES ALL SNAPSHOTS OVER CIRCULAR ORBIT)
 # CHECK CORRECTNESS OF ALGORITHM
 # INCLUDE OTHER HYPERPARAMETERS - BANDWIDTH
 # EXPERIMENT WITH INCREASE CONNECTIVITY FUNC - IN FREE OPTICAL SPACE NETWORKS PAPER (BROADBAND NOT SATELLITE), THEY
@@ -907,6 +905,7 @@ def main(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclinat
 # Hyperparameter Tuning Introduction - https://aws.amazon.com/what-is/hyperparameter-tuning/
 # Iterating over Numpy Columns - https://stackoverflow.com/questions/10148818/numpy-how-to-iterate-over-columns-of-array
 # Loop Speed-Up - https://medium.com/@nirmalya.ghosh/13-ways-to-speedup-python-loops-e3ee56cd6b73
+# Multiplying Numpy Array with Scalar - https://stackoverflow.com/questions/53485221/numpy-multiply-array-with-scalar
 # Numpy Documentation - https://numpy.org/doc/2.2/reference/index.html
 # Numpy Linalg Overhead - https://stackoverflow.com/questions/49866638/why-is-numpy-linalg-norm-slow-when-called-many-times-for-small-size-data
 # Numpy savetxt Format - https://stackoverflow.com/questions/71499463/how-to-export-numpy-array-without-brackets

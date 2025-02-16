@@ -1,35 +1,13 @@
 #TODO
-# Based on theoretical recommendations by Network Performance of pLEO Topologies in a
-# High-Inclination Walker Delta Satellite Constellation
-# Involves using Monte Carlo methods to evaluate different topology designs
-# Satellite links already in adjacency matrix (need to create function in heuristic_topology_
-# design_algorithm_isls.py that allows you to specify format (file or adjacency matrix)
-# Need to figure out latency matrix. Use Shortest Path (Dijkstra) to find shortest paths between all pairs of
-# vertices (need to state that that is our routing algorithm)
 # Can add in random failures (like original paper)
 # CALCULATE propagation latency using classic speed = distance/time with speed being c (speed of light) and
 # distance being straight-line distance between satellites
 # NEED 2 FUNCtiONS - one with random failures and one without random failures (see which
 # set of params works best with random failures - works well with solar flares idea)
-# Say assume no queueing delay at actual satellites
-# NEED TO DO FOR DIFFERENT SNAPSHOTS OF NETWORK
-# Put everything in main function (make sure all tidy and neat)
 # State in report precision of signal_speed (speed of light used)
-# NEED TO CHECK IF DISTANCE MATRIX IN KM OR M - SO CAN MATCH SPEED OF LIGHT UNITS
-# See if need to calculate number of nodes
-# Adapt Dijkstra to use priority queue?
-# might need case where - raise error if no path between two satellites in Dijkstra
-# NEED LOTS OF ERROR HANDLING IN BOTH FILES
-# Do i need to calculate the number of satellites or jsut pass to function - cleaner to calculate length once (so no confusion between
-# function calls)
-# RANDOMLY SELECT SNAPSHOTS SO NOT ALL FOR SAME NETWORK OR PERFORM FOR MULTIPLE RANDOM SNAPSHOTS (EACH RUN, NETWORK IS STATIC)
 # If update alg to use cone of visibility from Load Balancing Paper and Energy Efficiency - three equations to calculate energy
 # consumed by network - include function to calculate total energy consumed by topology (possibly just maintenance energy,
 # as already considering on/off energy as looking at link churn). Energy efficiency also tied to distance.
-# SOMETHING WEIRD GOING ON WITH DIJKSTRA WHERE PREV[NODE] is -9999 - said it is source == desination, put I'm not sure
-
-# CHANGE SO MATRIX BUILT FROM ISL FILE
-
 
 # Import Libraries
 from astropy.constants import c
@@ -39,7 +17,7 @@ import csv
 import random
 from random import sample
 import numpy as np
-import heuristic_topology_design_algorithm as topology_build # NEED TO CREATE TEST FUNCTION THAT RETURNS MATRICES RATHER THAN FILE
+import heuristic_topology_design_algorithm as topology_build
 
 # Seed random generators to ensure reproducible results
 np.random.seed(42)
@@ -67,64 +45,7 @@ random.seed(42)
 # Set default signal speed to speed of light. Uses time = propagation speed * total distance of ISL path between
 # satellites
 def propagation_latency(total_distance):
-    return total_distance * c.value
-
-
-# # Implementation of Dijkstra's Algorithm - used to calculate the length of the shortest path between two satellites
-# def dijkstras_algorithm(distance_matrix, source, destination, num_nodes):
-#
-#     # Convert distance_matrix to list of lists
-#     distance_matrix = distance_matrix.tolist()
-#
-#     # Stores unexplored vertices
-#     q = list(range(num_nodes))
-#     # Stores distance to vertex v from source
-#     dist = [-1 for _ in range(num_nodes)]
-#     # Stores previous node in the shortest path from source u to vertex v
-#     prev = [-1 for _ in range(num_nodes)]
-#
-#     # Initialise source
-#     dist[source] = 0
-#     q.remove(source)
-#     current_node = source
-#
-#     # Find Shortest Path
-#     while len(q) != 0:
-#         # NEED TO CHECK ALL DISTANCES MUST BE GREATER THAN 0 IF ISL EXISTS BETWEEN THEM
-#         current_node = min([distance_matrix[current_node].index(x) for x in distance_matrix[current_node] if x not in q and x > 0])
-#
-#         if current_node == destination:
-#
-#             # Calculate hop count of path between two satellites - count must be at least one (as no satellite ever
-#             # establishes ISL with itself)
-#             hop_count = 1
-#             new_node = prev[current_node]
-#             while new_node != source:
-#                 new_node = prev[new_node]
-#                 hop_count += 1
-#             return [dist[current_node], hop_count]
-#
-#         q.remove(current_node)
-#
-#         for v in range(num_nodes):
-#             if v not in q:
-#                 continue
-#             else:
-#                 alt = dist[current_node] + distance_matrix[current_node][v]
-#                 if alt < dist[v] or dist[v] == -1:
-#                     dist[v] = alt
-#                     prev[v] = current_node
-#
-#     # If destination node has been found
-#     if (dist[current_node] != -1) and (current_node == destination):
-#         hop_count = 1
-#         new_node = prev[current_node]
-#         while new_node != source:
-#             new_node = prev[new_node]
-#             hop_count += 1
-#         return [dist[current_node], hop_count]
-#     else:
-#         raise ValueError("No path exists between given satellite pair.")
+    return total_distance * c.to('km/s').value
 
 
 def dijkstras_algorithm(distance_matrix, source, destination):
@@ -146,6 +67,8 @@ def dijkstras_algorithm(distance_matrix, source, destination):
     hop_count = 1
     current_node = prev[destination]
     while current_node != source:
+        if prev[current_node] == -9999:
+            raise ValueError("No path exists between given satellite pair.")
         current_node = prev[current_node]
         hop_count += 1
 
@@ -169,8 +92,6 @@ def latency_hop_count_calculation(topology_matrix, distance_matrix, num_random_p
     distance_matrix = np.where(topology_matrix == 1, distance_matrix, 0)
 
     # Calculate distance and hop count between each pair of vertices
-    # path_distances = [dijkstras_algorithm(distance_matrix, satellite_pairs[i][0], satellite_pairs[i][1], num_satellites - 1) for i in range(num_random_pairs)]
-
     path_distances = [dijkstras_algorithm(distance_matrix, satellite_pairs[i][0], satellite_pairs[i][1]) for i in range(num_random_pairs)]
 
     # Calculate propagation latencies between each pair of satellites
@@ -190,7 +111,9 @@ def latency_hop_count_calculation(topology_matrix, distance_matrix, num_random_p
 # pairs (e.g. a thousand random satellite pairs) - stores then calls Dijkstra to find the shortest path between each set
 # of pairs (storing the sequence of satellites visited along path, e.g. 70, 31, 54). Find distances of paths and stores
 # in corresponding distance matrix. Then, calculates propagation delay for paths (using distance matrix and seq from
-# total distances. Experiments with different weights for cost function
+# total distances. Experiments with different weights for cost function. Theoretical Monte Carlo simulations are similar
+# to and inspired by those used in paper titled 'Network Performance of pLEO Topologies in a High-Inclination Walker
+# Delta Satellite Constellation' (see report for full reference).
 def experiment(num_param_sets, num_snapshots, num_snapshots_to_sample, num_satellites, constellation_name, num_random_pairs):
 
     # Temporarily Store Results
@@ -244,7 +167,9 @@ experiment(10, 94, 1, 1584, "Starlink-550", 1000)
 # IBM What is Monte Carlo Simulation? - https://www.ibm.com/think/topics/monte-carlo-simulation
 # Monte Carlo Method - https://en.wikipedia.org/wiki/Monte_Carlo_method#
 # Numpy Documentation - https://numpy.org/doc/2.1/user/index.html
-# Python Documentation - https://docs.python.org/3/reference/simple_stmts.html#raise
 # Numpy-List Conversion - https://stackoverflow.com/questions/10346336/list-of-lists-into-numpy-array
+# Numpy Type Conversion - https://stackoverflow.com/questions/12648624/python-converting-an-numpy-array-data-type-from-int64-to-int
+# # Python Documentation - https://docs.python.org/3/reference/simple_stmts.html#raise
 # Raising Errors and Termination - https://stackoverflow.com/questions/65152176/does-raise-alone-make-the-program-terminate-or-not
+# Scipy Documentation - https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csgraph.dijkstra.html#scipy.sparse.csgraph.dijkstra
 # Writing Dictionaries to Files - https://pythonspot.com/save-a-dictionary-to-a-file/
