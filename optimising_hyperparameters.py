@@ -45,7 +45,7 @@ random.seed(42)
 # Set default signal speed to speed of light. Uses time = propagation speed * total distance of ISL path between
 # satellites
 def propagation_latency(total_distance):
-    return total_distance * c.to('km/s').value
+    return total_distance / c.to('km/s').value
 
 
 def dijkstras_algorithm(distance_matrix, source, destination):
@@ -102,7 +102,7 @@ def latency_hop_count_calculation(topology_matrix, distance_matrix, num_random_p
     mean_latency = sum(prop_latencies) / num_random_pairs
 
     # Calculate average hop count for topology
-    average_hop_count = sum([x[1] for x in path_distances])
+    average_hop_count = sum([x[1] for x in path_distances]) / num_random_pairs
 
     return [max_latency, mean_latency, average_hop_count]
 
