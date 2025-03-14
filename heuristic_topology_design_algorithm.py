@@ -670,6 +670,8 @@ def heuristic_topology_design_algorithm_isls(input_file_name, constellation_name
     # The number of snapshots over an orbital period
     num_snapshot = int(orbit_period/snapshot_interval)
 
+    print(num_snapshot)
+
     # TEMPORARY CHANGE
     # num_snapshot = 10
 
@@ -890,6 +892,8 @@ def main(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclinat
 # Used for testing
 # Data from: https://github.com/AtlantaEmrys2002/hypatia/tree/master/paper/satellite_networks_state
 # main("starlink-constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19, [3, 7])
+
+# main("starlink-constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19, [2, 6, 10, 14], [1, 1, 0.2])
 
 
 # References
