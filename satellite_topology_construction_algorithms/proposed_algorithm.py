@@ -15,7 +15,8 @@ from astropy.time import Time
 from astropy import units as u
 from collections import deque
 # import ephem
-import generate_tles_from_scratch as hypatia_data
+# import generate_tles_from_scratch as hypatia_data
+import hypatia_data_extraction_code as netgen
 # import math
 import numpy as np
 import os
@@ -37,24 +38,6 @@ eph = load('de421.bsp')
 
 # Seed Random so results can be reproduced
 random.seed(42)
-
-# Function calls on Hypatia software function generate_tles_from_scratch_with_sgp to build physical description of
-# satellite network using TLE coordinate system and stores description in temporary file. Orbit eccentricity must be > 0
-# (according to Hypatia) - set close to 0 to ensure orbit approx. circular
-def data_generation(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree,
-                    mean_motion_rev_per_day, phase_diff=True, eccentricity=0.0000001, arg_of_perigee_degree=0.0):
-    # Check file does not already exist
-    if os.path.isfile("./" + file_name) is False:
-        hypatia_data.generate_tles_from_scratch_with_sgp(file_name, constellation_name, num_orbits, num_sats_per_orbit,
-                                                         phase_diff, inclination_degree, eccentricity,
-                                                         arg_of_perigee_degree, mean_motion_rev_per_day)
-    return
-
-# Function calls on Hypatia software function read_tles to build dictionary containing the total orbits in the
-# constellation, as well as the number of satellites per orbit, the epoch of the network, and a description of each
-# satellite's position
-def format_tle_data(file_name):
-    return hypatia_read_data.read_tles(file_name)
 
 
 # Returns the maximum transmission distance for satellite in network (values found through research). TEMPORARILY SET TO LARGE VALUES!!!!!!!
@@ -123,20 +106,6 @@ def snapshot_time_stamp(time_stamp):
     return ts.tdb(2000, 1, 1, hours, minutes, seconds)
 
 
-# # Calculate whether each satellite pair i, j can establish a connection (i.e. if they are visible to one another)
-# def visibility_function(distance_matrix, max_dist, total_satellites):
-#
-#     # Calculates whether satellites are within visible distance to each other
-#     visibility_matrix = np.asarray(distance_matrix) <= max_dist
-#     visibility_matrix = np.where(visibility_matrix == True, visibility_matrix, 0)
-#
-#     # Satellites cannot be visible to themselves
-#     for i in range(total_satellites):
-#         visibility_matrix[i,i] = 0
-#
-#     return visibility_matrix
-
-
 # Calculate whether each satellite is within sunlight or not (i.e. vulnerable to damage from solar flares) then add 1 to
 # all elements where edge connected to a satellite vulnerable to solar flares (i.e. in sunlight) - this an approximation
 # used to determine if satellites are vulnerable to solar flares
@@ -150,40 +119,6 @@ def sunlight_function(satellites_in_sun, total_satellites):
     sunlight_matrix[np.ix_(in_sun, in_sun)] = 1
 
     return sunlight_matrix
-
-
-# # Calculates cost matrix (the weight of each edge in undirected graph representing satellite network where edges are
-# # potential ISLs and nodes are satellites).
-# def cost_function(visibility, time_visibility, distance, sunlight, alpha, beta, gamma, total_satellites):
-#
-#     # Where satellites are not visible to one another, set the cost as infinity (represented by -1), otherwise 0
-#     cost_matrix = np.where(visibility == 1, np.zeros((total_satellites, total_satellites)), -1)
-#
-#     # Min-Max Scale/Normalise distances to ensure equal consideration of distance and other metrics included in cost
-#     min_dist = np.nanmin(np.where(distance > 0, distance, np.nan))
-#     max_dist = np.max(distance)
-#
-#     if np.isnan(min_dist):
-#         raise ValueError("Minimum distance between satellites must be greater than 0.")
-#     elif max_dist == -1:
-#         raise ValueError("Maximum distance between satellites must be greater than 0.")
-#
-#     if min_dist == max_dist:
-#         distance /= max_dist
-#     else:
-#         distance = (distance - min_dist) / (max_dist - min_dist)
-#
-#
-#
-#     # Calculate costs/weights according to cost function (included in paper) - added  1 to time_visibility to ensure no
-#     # divide by 0 error. Gamma is probability of satellite failure due to solar flares - 0 if in Earth's shadow,
-#     # otherwise gamma (gamma could be found via deep learning image classification of pictures of sun)
-#     # cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1/time_visibility)) + (beta * distance))
-#     cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1 / (time_visibility + 1))) + (beta * distance) + (gamma * sunlight))
-#     # cost_matrix = np.where(visibility == 0, cost_matrix,
-#     #                        (alpha * (1 / time_visibility)) + (beta * distance) + (gamma * sunlight))
-#
-#     return cost_matrix
 
 
 # Function constructs initial DCST by greedily adding the shortest edges that connect vertices not currently within the
@@ -761,11 +696,14 @@ def main(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclinat
 
     # Generate test data using network description from https://github.com/snkas/hypatia/blob/master/satgenpy/tests/test
     # _tles.py
-    data_generation(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree,
+    netgen.data_generation(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree,
                     mean_motion_rev_per_day)
 
     # Read test data into appropriate data structure (dictionary)
-    data = format_tle_data(file_name)
+    # data = format_tle_data(file_name)
+    data = netgen.format_tle_data(file_name)
+
+    print('done')
 
     # Extract description of satellite positions and unique orbits from data
     satellite_data = data["satellites"]
