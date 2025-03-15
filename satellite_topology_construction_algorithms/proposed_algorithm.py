@@ -14,9 +14,9 @@
 from astropy.time import Time
 from astropy import units as u
 from collections import deque
-import ephem
+# import ephem
 import generate_tles_from_scratch as hypatia_data
-import math
+# import math
 import numpy as np
 import os
 import random
@@ -56,53 +56,6 @@ def data_generation(file_name, constellation_name, num_orbits, num_sats_per_orbi
 def format_tle_data(file_name):
     return hypatia_read_data.read_tles(file_name)
 
-
-# Calculates (using mean motion) the orbital period of a satellite, using physics formula -
-# https://en.wikipedia.org/wiki/Mean_motion. Mean motion given in revolutions per day and converted to seconds following
-# astropy's assumption that 1 day == 86400 seconds - https://docs.astropy.org/en/stable/time/index.html
-def orbital_period_calculation(satellite_description, num_sat):
-    if isinstance(satellite_description, ephem.EarthSatellite):
-        return 86400 / satellite_description.n
-    else:
-        # Return longest orbital period (i.e. for the satellites that orbit at the greatest altitude
-        return max([86400/satellite_description[x].n for x in range(num_sat)])
-
-
-# Calculates a satellite's altitude above Earth given TLES coordinates of satellite
-def satellite_height_above_earth(name, s, t):
-
-    # Convert TLES to Geocentric Coordinates
-    sample_satellite = EarthSatellite(s, t, name, ts)
-
-    # Assuming satellite is travelling in a circular orbit (eccentricity is close to 0), and assume orbital height
-    # is approximately the same at all times. Set time to be fixed, e.g. 1st January 2000 Midnight (ensures
-    # deterministic behaviour when calculating position, as opposed to using ts.now()). Find satellite position at given
-    # time (as circular orbit, should not matter at what time the satellite position is recorded and retrieve height
-    # above earth value in km
-
-    height_above_earth = float(wgs84.height_of(sample_satellite.at(ts.tdb(2000, 1, 1, 0, 0))).km)
-
-    return height_above_earth
-
-# Based on recommendations in https://docs.astropy.org/en/latest/coordinates/satellites.html
-# From NSGA-III Paper, use formula to calculate maximum communication distance between two satellites at given altitude
-def maximum_communication_distance(data_file, num_sat):
-
-    # Constant - source of value: https://en.wikipedia.org/wiki/Earth_radius and https://github.com/AtlantaEmrys2002/hypatia/blob/master/paper/satellite_networks_state/main_starlink_550.py
-    earth_radius = 6378.135 # 6378.1370
-
-    # Get sample satellite TLES coordinates to calculate maximum communication distance
-    with open(data_file, 'r') as f:
-        lines = [line.strip() for line in f]
-
-    # Get data needed for calculating satellite position and calculate each satellite's altitude. Find the lowest
-    # orbital altitude - this will provide the "smallest" maximum communication distance, as closer to Earth.
-    lowest_satellite_altitude = min([satellite_height_above_earth(lines[line_index], lines[line_index + 1],
-                                                                  lines[line_index + 2]) for line_index in
-                                                                  range(1, num_sat, 3)])
-
-    # Return the maximum communication distance between two satellites at the lowest satellite altitude in the network
-    return 2 * math.sqrt(pow(earth_radius + lowest_satellite_altitude, 2) - pow(earth_radius, 2))
 
 # Returns the maximum transmission distance for satellite in network (values found through research). TEMPORARILY SET TO LARGE VALUES!!!!!!!
 def maximum_transmission_distance(name):
@@ -199,85 +152,38 @@ def sunlight_function(satellites_in_sun, total_satellites):
     return sunlight_matrix
 
 
-# Calculates the number of future snapshots (from the current snapshot[0]) that each snapshot will remain visible
-# (WARNING: shuffle order of visibility matrices if going from snapshot other than 0, e.g. snapshot 4). ID is the
-# current snapshot for which a topology is being built
-# def time_visibility_function(snapshot_num, total_satellites, id_num, constellation_name):
+# # Calculates cost matrix (the weight of each edge in undirected graph representing satellite network where edges are
+# # potential ISLs and nodes are satellites).
+# def cost_function(visibility, time_visibility, distance, sunlight, alpha, beta, gamma, total_satellites):
 #
-#     # If changed[i][j] == 1, indicates that satellite visibility has not changed
-#     changed = np.ones((total_satellites, total_satellites))
+#     # Where satellites are not visible to one another, set the cost as infinity (represented by -1), otherwise 0
+#     cost_matrix = np.where(visibility == 1, np.zeros((total_satellites, total_satellites)), -1)
 #
-#     # Want to know if all satellites visible to one another in snapshot 0 are also visible to one another in snapshot 1
-#     # Initialise time visibility matrix for current snapshot
-#     tv = np.zeros((total_satellites, total_satellites))
+#     # Min-Max Scale/Normalise distances to ensure equal consideration of distance and other metrics included in cost
+#     min_dist = np.nanmin(np.where(distance > 0, distance, np.nan))
+#     max_dist = np.max(distance)
+#
+#     if np.isnan(min_dist):
+#         raise ValueError("Minimum distance between satellites must be greater than 0.")
+#     elif max_dist == -1:
+#         raise ValueError("Maximum distance between satellites must be greater than 0.")
+#
+#     if min_dist == max_dist:
+#         distance /= max_dist
+#     else:
+#         distance = (distance - min_dist) / (max_dist - min_dist)
 #
 #
-#     current_id = id_num + 1
 #
-#     # For each snapshot
-#     for t in range(1, snapshot_num):
+#     # Calculate costs/weights according to cost function (included in paper) - added  1 to time_visibility to ensure no
+#     # divide by 0 error. Gamma is probability of satellite failure due to solar flares - 0 if in Earth's shadow,
+#     # otherwise gamma (gamma could be found via deep learning image classification of pictures of sun)
+#     # cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1/time_visibility)) + (beta * distance))
+#     cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1 / (time_visibility + 1))) + (beta * distance) + (gamma * sunlight))
+#     # cost_matrix = np.where(visibility == 0, cost_matrix,
+#     #                        (alpha * (1 / time_visibility)) + (beta * distance) + (gamma * sunlight))
 #
-#         # What has changed visibility-wise between last snapshot and current snapshot (i.e. what has become invisible)
-#         # changed_step = np.logical_and(visibility_matrices[t-1], visibility_matrices[t])
-#         # changed_step = np.logical_and(np.load("./visibility_matrices/visibility_matrix_" + str(t-1) + ".npy"),
-#         #                               np.load("./visibility_matrices/visibility_matrix_" + str(t) + ".npy"))
-#
-#         if current_id != 0:
-#             changed_step = np.logical_and(np.load("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(current_id - 1) + ".npy"),
-#                                           np.load("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(current_id) + ".npy"))
-#         else:
-#             changed_step = np.logical_and(np.load(
-#                 "./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(snapshot_num - 1) + ".npy"),
-#                                           np.load("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(current_id) + ".npy"))
-#
-#         # Make sure hasn't changed in the past and now visible again - only important that visible satellites do not
-#         # change
-#         changed_step = np.logical_and(changed_step, changed)
-#         changed = changed_step
-#
-#         # Add 1 to every satellite time visibility where visibility of satellite has not changed
-#         tv = np.add(tv, 1, where=changed_step>0)
-#
-#         if current_id == snapshot_num -1:
-#             current_id = 0
-#         else:
-#             current_id += 1
-#
-#     return tv
-
-
-# Calculates cost matrix (the weight of each edge in undirected graph representing satellite network where edges are
-# potential ISLs and nodes are satellites).
-def cost_function(visibility, time_visibility, distance, sunlight, alpha, beta, gamma, total_satellites):
-
-    # Where satellites are not visible to one another, set the cost as infinity (represented by -1), otherwise 0
-    cost_matrix = np.where(visibility == 1, np.zeros((total_satellites, total_satellites)), -1)
-
-    # Min-Max Scale/Normalise distances to ensure equal consideration of distance and other metrics included in cost
-    min_dist = np.nanmin(np.where(distance > 0, distance, np.nan))
-    max_dist = np.max(distance)
-
-    if np.isnan(min_dist):
-        raise ValueError("Minimum distance between satellites must be greater than 0.")
-    elif max_dist == -1:
-        raise ValueError("Maximum distance between satellites must be greater than 0.")
-
-    if min_dist == max_dist:
-        distance /= max_dist
-    else:
-        distance = (distance - min_dist) / (max_dist - min_dist)
-
-
-
-    # Calculate costs/weights according to cost function (included in paper) - added  1 to time_visibility to ensure no
-    # divide by 0 error. Gamma is probability of satellite failure due to solar flares - 0 if in Earth's shadow,
-    # otherwise gamma (gamma could be found via deep learning image classification of pictures of sun)
-    # cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1/time_visibility)) + (beta * distance))
-    cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1 / (time_visibility + 1))) + (beta * distance) + (gamma * sunlight))
-    # cost_matrix = np.where(visibility == 0, cost_matrix,
-    #                        (alpha * (1 / time_visibility)) + (beta * distance) + (gamma * sunlight))
-
-    return cost_matrix
+#     return cost_matrix
 
 
 # Function constructs initial DCST by greedily adding the shortest edges that connect vertices not currently within the
@@ -811,7 +717,7 @@ def heuristic_topology_design_algorithm_isls(input_file_name, constellation_name
     #                             np.load("./"+constellation_name+"/sunlight_matrices/sunlight_matrix_0.npy"), alpha, beta, gamma,
     #                             total_satellites)
 
-    cost_matrix = cost_function(np.load("./"+constellation_name+"/visibility_matrices/visibility_matrix_"+str(snapshot_id)+".npy"), time_visibility_matrix,
+    cost_matrix = satnet.cost_function(np.load("./"+constellation_name+"/visibility_matrices/visibility_matrix_"+str(snapshot_id)+".npy"), time_visibility_matrix,
                                 np.load("./"+constellation_name+"/distance_matrices/dist_matrix_"+str(snapshot_id)+".npy"),
                                 np.load("./"+constellation_name+"/sunlight_matrices/sunlight_matrix_"+str(snapshot_id)+".npy"), alpha, beta, gamma,
                                 total_satellites)
@@ -866,12 +772,13 @@ def main(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclinat
 
     # Calculate orbital period of network (or maximum orbital period if satellites orbit at different altitudes)
     if multi_shell is False:
-        orbital_period = orbital_period_calculation(satellite_data[0], total_sat)
+        orbital_period = satnet.orbital_period_calculation(satellite_data[0], total_sat)
     else:
-        orbital_period = orbital_period_calculation(satellite_data, total_sat)
+        orbital_period = satnet.orbital_period_calculation(satellite_data, total_sat)
 
     # Find the maximum communication distance between two satellites (may vary as satellite altitudes vary)
-    max_communication_dist = maximum_communication_distance(file_name, total_sat)
+    # max_communication_dist_1 = maximum_communication_distance(file_name, total_sat)
+    max_communication_dist = satnet.maximum_communication_distance(file_name, total_sat)
 
     # This is the maximum distance a satellite can establish signal (transmission power) - need to research for Kuiper
     # and StarLink satellites
