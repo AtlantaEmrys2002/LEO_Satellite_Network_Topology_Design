@@ -16,7 +16,8 @@ from astropy import units as u
 from collections import deque
 # import ephem
 # import generate_tles_from_scratch as hypatia_data
-import hypatia_data_extraction_code as netgen
+import data_handling
+import dcmst_construction_algorithms as topology_build
 # import math
 import numpy as np
 import os
@@ -49,46 +50,6 @@ def maximum_transmission_distance(name):
     else:  # Kuiper
         return 10000
 
-
-# This file is used to store raw TLE data rather than convert it to pyephem format
-# Please note that this function (the following 35 lines of code) is adapted from Hypatia code (read_tles.py in the
-# satgenpy module)
-def read_file(file_name):
-
-    tles_data = []
-    with open(file_name, 'r') as f:
-        _, _ = [int(n) for n in f.readline().split()]
-        universal_epoch = None
-        i = 0
-        for tles_line_1 in f:
-            tles_line_2 = f.readline()
-            tles_line_3 = f.readline()
-
-            # Retrieve name and identifier
-            name = tles_line_1
-            sid = int(name.split()[1])
-            if sid != i:
-                raise ValueError("Satellite identifier is not increasing by one each line")
-            i += 1
-
-            # Fetch and check the epoch from the TLES data
-            # In the TLE, the epoch is given with a Julian data of yyddd.fraction
-            # ddd is actually one-based, meaning e.g. 18001 is 1st of January, or 2018-01-01 00:00.
-            # As such, to convert it to Astropy Time, we add (ddd - 1) days to it
-            # See also: https://www.celestrak.com/columns/v04n03/#FAQ04
-            epoch_year = tles_line_2[18:20]
-            epoch_day = float(tles_line_2[20:32])
-            epoch = Time("20" + epoch_year + "-01-01 00:00:00", scale="tdb") + (epoch_day - 1) * u.day
-            if universal_epoch is None:
-                universal_epoch = epoch
-            if epoch != universal_epoch:
-                raise ValueError("The epoch of all TLES must be the same")
-
-            # Finally, store the satellite information
-            tles_data.append([tles_line_1.strip(), tles_line_2.strip(), tles_line_3.strip()])
-
-    return tles_data
-
 # Given time in orbit (based on snapshot number) in seconds, convert the time to TDB time format. Calculate time in
 # orbit and reformat for satellite. Assume 60 minutes in an hour and 60 seconds in a minute (no leap seconds), etc.
 def snapshot_time_stamp(time_stamp):
@@ -119,82 +80,6 @@ def sunlight_function(satellites_in_sun, total_satellites):
     sunlight_matrix[np.ix_(in_sun, in_sun)] = 1
 
     return sunlight_matrix
-
-
-# Function constructs initial DCST by greedily adding the shortest edges that connect vertices not currently within the
-# tree to vertices already within the tree. Function returns tree and degree of each vertex in the tree.
-def prims_algorithm(cost_matrix, constraints, total_satellites):
-
-    # Holds tree edges
-    tree = np.zeros((total_satellites, total_satellites))
-
-    # All the vertices within the tree - select random initial vertex. Convert to set - quicker to search
-    tree_vertices = set([random.randint(0, total_satellites)])
-
-    # Stores the current degree of all satellites
-    degree = np.zeros(total_satellites)
-
-    # Create array of edges and their associated costs - take j in range (k+1, total_satellites) as the matrix is
-    # symmetric and reduces search space
-    sorted_costs = np.asarray([[cost_matrix[k, j], k, j] for k in range(total_satellites) for j in range(k+1, total_satellites)])
-
-    # Sort the costs in increasing order according to cost
-    # CHANGED SORTING ALGORITHM - Replaced below because other method is quicker
-    # sorted_costs = sorted_costs[np.argsort(sorted_costs, axis=0).T[0], :]
-    sorted_costs = sorted_costs[sorted_costs[:, 0].argsort()]
-
-    # print(False in sorted_costs == tmp)
-
-    # Ignore all costs < 0
-    costs_less_than_zero = np.searchsorted(sorted_costs.T[0], 0)
-
-    sorted_costs = sorted_costs[costs_less_than_zero:]
-
-    # Only need the edges (not the costs) now that they are sorted
-    sorted_costs = sorted_costs.T[1:].T.astype(int)
-
-    # Number of potential edges that could be in tree
-    potential_edges_num = len(sorted_costs)
-
-    # While vertices not included in tree - i.e. while there does not exist a path between every pair of vertices
-    for _ in range(total_satellites - 1):
-
-        # Take the first edge (as sorted by cost) that meets the condition that it connects one vertex in tree to one
-        # vertex not in tree and degree constraint of both vertices is not at maximum
-
-        current_pos = 0
-
-        # Find the edge with the lowest cost that satisfies conditions - i.e. edge that connects vertex in tree to
-        # vertex not in tree where both vertices have a degree less than their assigned maximum
-        while True:
-            first = sorted_costs[current_pos, 0]
-            second = sorted_costs[current_pos, 1]
-
-            if (((first in tree_vertices) and (second in tree_vertices)) or ((first not in tree_vertices) and (second
-                    not in tree_vertices))) or ((degree[second] == constraints[second]) or (degree[first] == constraints[first])):
-                current_pos += 1
-                if current_pos == potential_edges_num:
-                    raise AttributeError("A DCMST cannot be constructed.")
-            else:
-                break
-
-        edge = [sorted_costs[current_pos, 0], sorted_costs[current_pos, 1]]
-
-        # Update tree
-        tree[edge[0], edge[1]] = 1
-        tree[edge[1], edge[0]] = 1
-
-        # Update list of vertices in tree
-        if edge[0] not in tree_vertices:
-            tree_vertices.add(edge[0])
-        else:
-            tree_vertices.add(edge[1])
-
-        # Update degree count
-        degree[edge[0]] += 1
-        degree[edge[1]] += 1
-
-    return tree, degree
 
 
 # NEED TO FINISH IMPLEMENTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -412,7 +297,8 @@ def dcmst(cost_matrix, constraints, total_satellites):
 
     # Construct initial DCST (Degree-Constrained Spanning Tree) using modified version of Prim's algorithm (modified so
     # number of edges incident to any given vertex cannot be greater than constraint (maximum degree) of given vertex)
-    tree, degree = prims_algorithm(cost_matrix, constraints, total_satellites)
+    # tree, degree = prims_algorithm(cost_matrix, constraints, total_satellites)
+    tree, degree = topology_build.modified_prims_algorithm(cost_matrix, constraints, total_satellites, random.randint(0, total_satellites))
 
     print("TWO")
 
@@ -472,30 +358,6 @@ def increase_connectivity(tree, degree_constraints, current_isl_number, cost_mat
 
     return tree
 
-
-# Write resulting topology for given snapshot to file
-def write_results_to_file(file_name, topology):
-
-    # Create directory to store the topologies for each snapshot
-    if os.path.isdir("./isl_topologies") is False:
-
-        # Create directory in which to store distance matrices
-        try:
-            os.mkdir("./isl_topologies")
-        except OSError:
-            print("Directory to store distance matrices could not be created.")
-
-    # Select all ISLs within topology
-    # List edges in the tree
-    tree_edges = np.argwhere(topology > 0)
-
-    # Sort edges and remove duplicates (undirected edges
-    tree_edges = np.unique(np.sort(tree_edges), axis=0)
-
-    # Save results to file compatible with simulation software
-    np.savetxt("./isl_topologies/" + str(file_name), tree_edges, fmt='%i %i')
-
-
 # Builds ISL topology for a single snapshot
 def heuristic_topology_design_algorithm_isls(input_file_name, constellation_name, total_satellites, orbit_period, max_comm_dist, degree_constraints, snapshot_id, params, output_filename_isls):
 
@@ -518,7 +380,7 @@ def heuristic_topology_design_algorithm_isls(input_file_name, constellation_name
     # num_snapshot = 10
 
     # Get TLEs-formatted data
-    tles_data = read_file(input_file_name)
+    tles_data = data_handling.read_file(input_file_name)
 
     # Convert TLES data to Skyfield EarthSatellite objects - used to convert satellite positions to geocentric
     # coordinates - all measurements in km
@@ -645,12 +507,6 @@ def heuristic_topology_design_algorithm_isls(input_file_name, constellation_name
 
     # Calculate cost matrix. Calculating for current snapshot, so visibility matrix chosen is at pos
     # 0 in array (same for distance matrix
-    # cost_matrix = cost_function(np.load("./visibility_matrices/visibility_matrix_0.npy"), time_visibility_matrix,
-    #                             np.load("./distance_matrices/dist_matrix_0.npy"), np.load("./sunlight_matrices/sunlight_matrix_0.npy"), alpha, beta, gamma, total_satellites)
-    # cost_matrix = cost_function(np.load("./"+constellation_name+"/visibility_matrices/visibility_matrix_0.npy"), time_visibility_matrix,
-    #                             np.load("./"+constellation_name+"/distance_matrices/dist_matrix_0.npy"),
-    #                             np.load("./"+constellation_name+"/sunlight_matrices/sunlight_matrix_0.npy"), alpha, beta, gamma,
-    #                             total_satellites)
 
     cost_matrix = satnet.cost_function(np.load("./"+constellation_name+"/visibility_matrices/visibility_matrix_"+str(snapshot_id)+".npy"), time_visibility_matrix,
                                 np.load("./"+constellation_name+"/distance_matrices/dist_matrix_"+str(snapshot_id)+".npy"),
@@ -684,7 +540,7 @@ def heuristic_topology_design_algorithm_isls(input_file_name, constellation_name
     ### SAVE TOPOLOGY ###
 
     # Convert final topology for given snapshot to correct format and save algorithm results to file.
-    write_results_to_file(output_filename_isls, isls)
+    data_handling.write_topology_to_file(output_filename_isls, isls)
 
 
 # Main Function used to test code - constellation name specified name of network to build topology for
@@ -696,14 +552,12 @@ def main(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclinat
 
     # Generate test data using network description from https://github.com/snkas/hypatia/blob/master/satgenpy/tests/test
     # _tles.py
-    netgen.data_generation(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree,
+    data_handling.data_generation(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree,
                     mean_motion_rev_per_day)
 
     # Read test data into appropriate data structure (dictionary)
     # data = format_tle_data(file_name)
-    data = netgen.format_tle_data(file_name)
-
-    print('done')
+    data = data_handling.format_tle_data(file_name)
 
     # Extract description of satellite positions and unique orbits from data
     satellite_data = data["satellites"]
