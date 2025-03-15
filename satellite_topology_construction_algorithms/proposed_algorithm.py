@@ -21,6 +21,7 @@ import numpy as np
 import os
 import random
 import read_tles as hypatia_read_data
+import satellite_network_attribute_functions as satnet
 from scipy.spatial.distance import cdist  # imported due to https://vaghefi.medium.com/fast-distance-calculation-in-
 # python-bb2bc9810ea5
 from skyfield.api import EarthSatellite, wgs84, load  # recommended by astropy for calculating information about
@@ -169,18 +170,18 @@ def snapshot_time_stamp(time_stamp):
     return ts.tdb(2000, 1, 1, hours, minutes, seconds)
 
 
-# Calculate whether each satellite pair i, j can establish a connection (i.e. if they are visible to one another)
-def visibility_function(distance_matrix, max_dist, total_satellites):
-
-    # Calculates whether satellites are within visible distance to each other
-    visibility_matrix = np.asarray(distance_matrix) <= max_dist
-    visibility_matrix = np.where(visibility_matrix == True, visibility_matrix, 0)
-
-    # Satellites cannot be visible to themselves
-    for i in range(total_satellites):
-        visibility_matrix[i,i] = 0
-
-    return visibility_matrix
+# # Calculate whether each satellite pair i, j can establish a connection (i.e. if they are visible to one another)
+# def visibility_function(distance_matrix, max_dist, total_satellites):
+#
+#     # Calculates whether satellites are within visible distance to each other
+#     visibility_matrix = np.asarray(distance_matrix) <= max_dist
+#     visibility_matrix = np.where(visibility_matrix == True, visibility_matrix, 0)
+#
+#     # Satellites cannot be visible to themselves
+#     for i in range(total_satellites):
+#         visibility_matrix[i,i] = 0
+#
+#     return visibility_matrix
 
 
 # Calculate whether each satellite is within sunlight or not (i.e. vulnerable to damage from solar flares) then add 1 to
@@ -201,48 +202,48 @@ def sunlight_function(satellites_in_sun, total_satellites):
 # Calculates the number of future snapshots (from the current snapshot[0]) that each snapshot will remain visible
 # (WARNING: shuffle order of visibility matrices if going from snapshot other than 0, e.g. snapshot 4). ID is the
 # current snapshot for which a topology is being built
-def time_visibility_function(snapshot_num, total_satellites, id_num, constellation_name):
-
-    # If changed[i][j] == 1, indicates that satellite visibility has not changed
-    changed = np.ones((total_satellites, total_satellites))
-
-    # Want to know if all satellites visible to one another in snapshot 0 are also visible to one another in snapshot 1
-    # Initialise time visibility matrix for current snapshot
-    tv = np.zeros((total_satellites, total_satellites))
-
-
-    current_id = id_num + 1
-
-    # For each snapshot
-    for t in range(1, snapshot_num):
-
-        # What has changed visibility-wise between last snapshot and current snapshot (i.e. what has become invisible)
-        # changed_step = np.logical_and(visibility_matrices[t-1], visibility_matrices[t])
-        # changed_step = np.logical_and(np.load("./visibility_matrices/visibility_matrix_" + str(t-1) + ".npy"),
-        #                               np.load("./visibility_matrices/visibility_matrix_" + str(t) + ".npy"))
-
-        if current_id != 0:
-            changed_step = np.logical_and(np.load("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(current_id - 1) + ".npy"),
-                                          np.load("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(current_id) + ".npy"))
-        else:
-            changed_step = np.logical_and(np.load(
-                "./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(snapshot_num - 1) + ".npy"),
-                                          np.load("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(current_id) + ".npy"))
-
-        # Make sure hasn't changed in the past and now visible again - only important that visible satellites do not
-        # change
-        changed_step = np.logical_and(changed_step, changed)
-        changed = changed_step
-
-        # Add 1 to every satellite time visibility where visibility of satellite has not changed
-        tv = np.add(tv, 1, where=changed_step>0)
-
-        if current_id == snapshot_num -1:
-            current_id = 0
-        else:
-            current_id += 1
-
-    return tv
+# def time_visibility_function(snapshot_num, total_satellites, id_num, constellation_name):
+#
+#     # If changed[i][j] == 1, indicates that satellite visibility has not changed
+#     changed = np.ones((total_satellites, total_satellites))
+#
+#     # Want to know if all satellites visible to one another in snapshot 0 are also visible to one another in snapshot 1
+#     # Initialise time visibility matrix for current snapshot
+#     tv = np.zeros((total_satellites, total_satellites))
+#
+#
+#     current_id = id_num + 1
+#
+#     # For each snapshot
+#     for t in range(1, snapshot_num):
+#
+#         # What has changed visibility-wise between last snapshot and current snapshot (i.e. what has become invisible)
+#         # changed_step = np.logical_and(visibility_matrices[t-1], visibility_matrices[t])
+#         # changed_step = np.logical_and(np.load("./visibility_matrices/visibility_matrix_" + str(t-1) + ".npy"),
+#         #                               np.load("./visibility_matrices/visibility_matrix_" + str(t) + ".npy"))
+#
+#         if current_id != 0:
+#             changed_step = np.logical_and(np.load("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(current_id - 1) + ".npy"),
+#                                           np.load("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(current_id) + ".npy"))
+#         else:
+#             changed_step = np.logical_and(np.load(
+#                 "./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(snapshot_num - 1) + ".npy"),
+#                                           np.load("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(current_id) + ".npy"))
+#
+#         # Make sure hasn't changed in the past and now visible again - only important that visible satellites do not
+#         # change
+#         changed_step = np.logical_and(changed_step, changed)
+#         changed = changed_step
+#
+#         # Add 1 to every satellite time visibility where visibility of satellite has not changed
+#         tv = np.add(tv, 1, where=changed_step>0)
+#
+#         if current_id == snapshot_num -1:
+#             current_id = 0
+#         else:
+#             current_id += 1
+#
+#     return tv
 
 
 # Calculates cost matrix (the weight of each edge in undirected graph representing satellite network where edges are
@@ -746,10 +747,10 @@ def heuristic_topology_design_algorithm_isls(input_file_name, constellation_name
 
             # Calculate visibility matrix for snapshot and save to .npy file - load distance from corresponding distance
             # matrix file
-            # visibility_matrix = visibility_function(np.load("./distance_matrices/dist_matrix_"+str(k) + ".npy"),
+            # visibility_matrix = visibility_function(np.load("./"+constellation_name+"/distance_matrices/dist_matrix_" + str(k) + ".npy"),
             #                                         max_comm_dist, total_satellites)
-            visibility_matrix = visibility_function(np.load("./"+constellation_name+"/distance_matrices/dist_matrix_" + str(k) + ".npy"),
-                                                    max_comm_dist, total_satellites)
+            visibility_matrix = satnet.visibility_function(np.load("./"+constellation_name+"/distance_matrices/dist_matrix_" + str(k) + ".npy"),
+                                                    max_comm_dist)
 
             # np.save("./visibility_matrices/visibility_matrix_" + str(k) + ".npy", visibility_matrix)
             np.save("./"+constellation_name+"/visibility_matrices/visibility_matrix_" + str(k) + ".npy", visibility_matrix)
@@ -790,7 +791,8 @@ def heuristic_topology_design_algorithm_isls(input_file_name, constellation_name
     # Calculate time visibility matrix for current snapshot - need to rearrange order of visibility matrices to get time
     # visibility matrices of other snapshots
     # time_visibility_matrix = time_visibility_function(num_snapshot, total_satellites)
-    time_visibility_matrix = time_visibility_function(num_snapshot, total_satellites, snapshot_id, constellation_name)
+    # time_visibility_matrix = time_visibility_function(num_snapshot, total_satellites, snapshot_id, constellation_name)
+    time_visibility_matrix = satnet.time_visibility_function(num_snapshot, total_satellites, snapshot_id, constellation_name)
 
     ### COST MATRIX ###
 
@@ -893,7 +895,7 @@ def main(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclinat
 # Data from: https://github.com/AtlantaEmrys2002/hypatia/tree/master/paper/satellite_networks_state
 # main("starlink-constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19, [3, 7])
 
-# main("starlink-constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19, [2, 6, 10, 14], [1, 1, 0.2])
+main("starlink-constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19, [2, 6, 10, 14], [1, 1, 0.2])
 
 
 # References
