@@ -1,5 +1,6 @@
 # Libraries
 import numpy as np
+import os
 
 # Calculates the number of future snapshots (from the current snapshot[0]) that each snapshot will remain visible
 # (WARNING: shuffle order of visibility matrices if going from snapshot other than 0, e.g. snapshot 4). ID is the
@@ -14,6 +15,7 @@ def time_visibility_function(snapshot_num:int, total_satellites:int, initial_id_
     :param constellation_name:
     :return:
     """
+
     # Declare common file name of all visibility matrices
     file_name = "./" + constellation_name + "/visibility_matrices/visibility_matrix_"
 
