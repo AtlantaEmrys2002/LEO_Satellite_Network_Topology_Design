@@ -1,17 +1,66 @@
 # Libraries
 from collections import deque
 import numpy as np
-from scipy.sparse.csgraph import dijkstra
+from scipy.sparse.csgraph import dijkstra, connected_components
 from scipy.sparse import csr_array
+import time
 
-def subtree_builder(total_satellites, tree_edges, pos):
-    """
-    Find the nodes in subtree i and subtree j if subtree i and subtree j are created by the deletion of edge in tree at position m in list of edges in tree.
-    :param total_satellites:
-    :param tree_edges:
-    :param pos:
-    :return:
-    """
+# def subtree_builder(total_satellites, tree_edges, pos):
+#     """
+#     Find the nodes in subtree i and subtree j if subtree i and subtree j are created by the deletion of edge in tree at position m in list of edges in tree.
+#     :param total_satellites:
+#     :param tree_edges:
+#     :param pos:
+#     :return:
+#     """
+#
+#     # Edge deleted from tree
+#     edge = tree_edges[pos]
+#
+#     ### CREATE TWO SUBTREES CREATED BY EDGE REMOVAL ###
+#
+#     # Tree without edge (i.e. two subtrees with edge removed)
+#     temp_tree_edges = np.delete(tree_edges, pos, axis=0)
+#
+#     # Identify 2 subtrees created by deleting edge
+#     subtree_i = {edge[0]}
+#     subtree_j = {edge[1]}
+#
+#     current_i = deque([edge[0]])
+#     current_j = deque([edge[1]])
+#
+#     tmp_i = current_i.popleft()
+#     tmp_j = current_j.popleft()
+#
+#     # Find edges that have a node in a subtree
+#
+#     while len(subtree_i) + len(subtree_j) != total_satellites:
+#
+#         potential_new_nodes_for_subtree_j = np.concatenate((temp_tree_edges[temp_tree_edges[:, 0] == tmp_j], temp_tree_edges[temp_tree_edges[:, 1] == tmp_j]), axis=None)
+#
+#         for j in potential_new_nodes_for_subtree_j:
+#             current_j.append(j)
+#             subtree_j.add(j)
+#
+#         potential_new_nodes_for_subtree_i = np.concatenate((temp_tree_edges[temp_tree_edges[:, 0] == tmp_i], temp_tree_edges[temp_tree_edges[:, 1] == tmp_i]), axis=None)
+#         for i in potential_new_nodes_for_subtree_i:
+#             current_i.append(i)
+#             subtree_i.add(i)
+#
+#         if len(current_j) == 0:
+#             subtree_i = set(range(0, total_satellites)) - subtree_j
+#             break
+#         elif len(current_i) == 0:
+#             subtree_j = set(range(0, total_satellites)) - subtree_i
+#             break
+#         else:
+#             tmp_i = current_i.popleft()
+#             tmp_j = current_j.popleft()
+#
+#     return subtree_i, subtree_j
+
+
+def subtree_builder(total_satellites, tree_edges, tree, pos):
 
     # Edge deleted from tree
     edge = tree_edges[pos]
@@ -19,90 +68,52 @@ def subtree_builder(total_satellites, tree_edges, pos):
     ### CREATE TWO SUBTREES CREATED BY EDGE REMOVAL ###
 
     # Tree without edge (i.e. two subtrees with edge removed)
-    temp_tree_edges = np.delete(tree_edges, pos, axis=0)
+    tree[edge[0], edge[1]] = 0
+    tree[edge[1], edge[0]] = 0
 
-    # Identify 2 subtrees created by deleting edge
-    subtree_i = {edge[0]}
-    subtree_j = {edge[1]}
+    # subtree_i = {edge[0]}
+    # subtree_j = {edge[1]}
 
-    current_i = deque([edge[0]])
-    current_j = deque([edge[1]])
+    graph = csr_array(tree)
 
-    tmp_i = current_i.popleft()
-    tmp_j = current_j.popleft()
+    # path_exists_i = dijkstra(csgraph=graph, directed=False, indices=edge[0])
+    #
+    # # path_exists_j = dijkstra(csgraph=graph, directed=False, indices=edge[1])
+    #
+    # subtree_i = np.argwhere(path_exists_i < np.inf).flatten()
+    # # subtree_j = np.argwhere(path_exists_j < np.inf).flatten()
+    # subtree_j = np.argwhere(path_exists_i == np.inf).flatten()
 
-    # Find edges that have a node in a subtree
+    # for sat in range(total_satellites):
+    #     if path_exists_i[sat] < np.inf:
+    #         subtree_i.add(sat)
+    #     elif path_exists_j[sat] < np.inf:
+    #         subtree_j.add(sat)
+    #     else:
+    #         raise ValueError("No path - DCMST does not exist.")
 
-    while len(subtree_i) + len(subtree_j) != total_satellites:
+    # for x in range(total_satellites):
+    #     if x not in subtree_i and x not in subtree_j:
+    #         raise ValueError("No path - DCMST does not exist.")
+    #
+    # subtree_i = set(np.argwhere(path_exists < np.inf).flatten())
+    # subtree_j = set(range(0, total_satellites)) - subtree_i
 
-        potential_new_nodes_for_subtree_j = np.concatenate((temp_tree_edges[temp_tree_edges[:, 0] == tmp_j], temp_tree_edges[temp_tree_edges[:, 1] == tmp_j]), axis=None)
+    # print(subtree_i)
+    # print(subtree_j)
 
-        for j in potential_new_nodes_for_subtree_j:
-            current_j.append(j)
-            subtree_j.add(j)
+    n, labels = connected_components(graph, directed=False, return_labels=True, connection='strong')
 
-        potential_new_nodes_for_subtree_i = np.concatenate((temp_tree_edges[temp_tree_edges[:, 0] == tmp_i], temp_tree_edges[temp_tree_edges[:, 1] == tmp_i]), axis=None)
-        for i in potential_new_nodes_for_subtree_i:
-            current_i.append(i)
-            subtree_i.add(i)
+    if n > 2:
+        raise ValueError("No path - DCMST does not exist.")
 
-        if len(current_j) == 0:
-            subtree_i = set(range(0, total_satellites)) - subtree_j
-            break
-        elif len(current_i) == 0:
-            subtree_j = set(range(0, total_satellites)) - subtree_i
-            break
-        else:
-            tmp_i = current_i.popleft()
-            tmp_j = current_j.popleft()
+    subtree_i = np.argwhere(labels > 0).flatten()
+    subtree_j = np.argwhere(labels == 0).flatten()
+
+    tree[edge[0], edge[1]] = 1
+    tree[edge[1], edge[0]] = 1
 
     return subtree_i, subtree_j
-
-
-# def subtree_builder_2(total_satellites, tree_edges, tree, pos):
-#
-#     # Edge deleted from tree
-#     edge = tree_edges[pos]
-#
-#     print(edge)
-#
-#     ### CREATE TWO SUBTREES CREATED BY EDGE REMOVAL ###
-#
-#     # Tree without edge (i.e. two subtrees with edge removed)
-#     tree[edge[0], edge[1]] = 0
-#     tree[edge[1], edge[0]] = 0
-#
-#     subtree_i = {edge[0]}
-#     subtree_j = {edge[1]}
-#
-#     graph = csr_array(tree)
-#
-#     path_exists_i = dijkstra(csgraph=graph, directed=False, indices=edge[0])
-#
-#     path_exists_j = dijkstra(csgraph=graph, directed=False, indices=edge[1])
-#
-#     print(path_exists_j)
-#     print(path_exists_i)
-#
-#     path_exists_i[edge[0]] = 0
-#     path_exists_j[edge[1]] = 0
-#
-#     for sat in range(total_satellites):
-#         if path_exists_i[sat] < np.inf:
-#             subtree_i.add(path_exists_i[sat])
-#         elif path_exists_j[sat] < np.inf:
-#             subtree_j.add(path_exists_j[sat])
-#         else:
-#             raise ValueError("No path - DCMST does not exist.")
-#
-#
-#
-#     # subtree_i = set(np.argwhere(path_exists < np.inf).flatten())
-#     # subtree_j = set(range(0, total_satellites)) - subtree_i
-#
-#     # print(subtree_i)
-#     # print(subtree_j)
-#     return subtree_i, subtree_j
 
 
 
@@ -288,12 +299,7 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
         cost_of_edge = cost_matrix[edge[0], edge[1]]
 
         # Construct subtrees created if edge m is deleted
-        # subtree_i, subtree_j = subtree_builder(total_satellites, tree_edges, m)
-        subtree_i, subtree_j = subtree_builder_2(total_satellites, tree_edges, tree, m)
-
-        # # Convert sets to numpy arrays
-        subtree_i = np.fromiter(subtree_i, int, len(subtree_i))
-        subtree_j = np.fromiter(subtree_j, int, len(subtree_j))
+        subtree_i, subtree_j = subtree_builder(total_satellites, tree_edges, tree, m)
 
         # Look at all edges connecting subtree i to subtree j
         potential_better_edges = np.array(np.meshgrid(subtree_i, subtree_j)).T.reshape(-1, 2)
@@ -328,6 +334,7 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
         # Find new edge with smaller cost with incident nodes not at maximum degree
         if sorted_costs_less_than_current.size != 0:
             for k in sorted_costs_less_than_current:
+                k = k.astype(int)
                 if (degree[k[1]] != constraints[k[1]]) and (degree[k[2]] != constraints[k[2]]):
                     new_edge = k[1:]
                     break
@@ -335,6 +342,7 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
         # If no new edge found, check if can find edge with incident nodes of a smaller degree
         if (new_edge.size == 0) and ((degree[edge[0]] == constraints[edge[0]]) or (degree[edge[1]] == constraints[edge[1]])) and (sorted_costs_equal_to_current.size != 0):
             for k in sorted_costs_equal_to_current:
+                k = k.astype(int)
                 if (degree[k[1]] < constraints[k[1]]) and (degree[k[2]] < constraints[k[2]]):
                     new_edge = k[1:]
                     break
@@ -362,6 +370,8 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
             else:
                 tree_edges[m][1], tree_edges[m][0] = new_edge[0], new_edge[1]
 
+        print(m)
+
     return tree
 
 
@@ -373,24 +383,24 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
 
 
 
-print(edge_exchange(np.asarray([[-1, 4, -1, -1, -1, -1, -1, 8, -1],
-                                 [4, -1, 8, -1, -1, -1, -1, 11, -1],
-                                 [-1, 8, -1, 7, -1, 4, -1, -1, 2],
-                                 [-1, -1, 7, -1, 9, 14, -1, -1, -1],
-                                 [-1, -1, -1, 9, -1, 10, -1, -1, -1],
-                                 [-1, -1, 4, 14, 10, -1, 2, -1, -1],
-                                 [-1, -1, -1, -1, -1, 2, -1, 1, 6],
-                                 [8, 11, -1, -1, -1, -1, 1, -1, 7],
-                                 [-1, -1, 2, -1, -1, -1, 6, 7, -1]]), np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]), 9, np.array(
-                 [[0, 1, 0, 0, 0, 0, 0, 0, 0],
-                  [1, 0, 1, 0, 0, 0, 0, 0, 0],
-                  [0, 1, 0, 1, 0, 0, 0, 0, 1],
-                  [0, 0, 1, 0, 1, 0, 0, 0, 0],
-                  [0, 0, 0, 1, 0, 1, 0, 0, 0],
-                  [0, 0, 0, 0, 1, 0, 1, 0, 0],
-                  [0, 0, 0, 0, 0, 1, 0, 1, 0],
-                  [0, 0, 0, 0, 0, 0, 1, 0, 0],
-                  [0, 0, 1, 0, 0, 0, 0, 0, 0]]), np.array([1, 2, 3, 1, 2, 3, 2, 1, 1])))
+# print(edge_exchange(np.asarray([[-1, 4, -1, -1, -1, -1, -1, 8, -1],
+#                                  [4, -1, 8, -1, -1, -1, -1, 11, -1],
+#                                  [-1, 8, -1, 7, -1, 4, -1, -1, 2],
+#                                  [-1, -1, 7, -1, 9, 14, -1, -1, -1],
+#                                  [-1, -1, -1, 9, -1, 10, -1, -1, -1],
+#                                  [-1, -1, 4, 14, 10, -1, 2, -1, -1],
+#                                  [-1, -1, -1, -1, -1, 2, -1, 1, 6],
+#                                  [8, 11, -1, -1, -1, -1, 1, -1, 7],
+#                                  [-1, -1, 2, -1, -1, -1, 6, 7, -1]]), np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]), 9, np.array(
+#                  [[0, 1, 0, 0, 0, 0, 0, 0, 0],
+#                   [1, 0, 1, 0, 0, 0, 0, 0, 0],
+#                   [0, 1, 0, 1, 0, 0, 0, 0, 1],
+#                   [0, 0, 1, 0, 1, 0, 0, 0, 0],
+#                   [0, 0, 0, 1, 0, 1, 0, 0, 0],
+#                   [0, 0, 0, 0, 1, 0, 1, 0, 0],
+#                   [0, 0, 0, 0, 0, 1, 0, 1, 0],
+#                   [0, 0, 0, 0, 0, 0, 1, 0, 0],
+#                   [0, 0, 1, 0, 0, 0, 0, 0, 0]]), np.array([1, 2, 3, 1, 2, 3, 2, 1, 1])))
 
 
 # Function constructs initial DCMST by greedily adding the shortest edges that connect vertices not currently within the

@@ -5,6 +5,7 @@ import dcmst_construction_algorithms as topology_build
 import numpy as np
 import random
 import satellite_network_attribute_functions as satnet
+import time
 
 # Returns heuristic approximation of degree constrained minimum spanning tree of network, using primal-cut branch
 # algorithm (see paper for references)
