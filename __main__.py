@@ -457,20 +457,51 @@ print(time.time() - start)
 
 
 # References
+# Argsort Error - https://stackoverflow.com/questions/53923914/weird-wrong-outpout-of-np-argsort
+# Asserting Numpy Equality - https://stackoverflow.com/questions/3302949/best-way-to-assert-for-numpy-array-equality
+# Building Project Documentation - https://medium.com/@pratikdomadiya123/build-project-documentation-quickly-with-the-sphinx-python-2a9732b66594
 # Combinations of Arrays - https://stackoverflow.com/questions/1208118/using-numpy-to-build-an-array-of-all-combinations-of-two-arrays
+# Combinations with Numpy - https://stackoverflow.com/questions/1208118/using-numpy-to-build-an-array-of-all-combinations-of-two-arrays
+# Common Elements of Numpy Array - https://stackoverflow.com/questions/44265572/find-common-elements-in-2d-numpy-arrays
+# Conditional List Comprehension - https://stackoverflow.com/questions/4260280/if-else-in-a-list-comprehension
+# Conversion with Numpy - https://stackoverflow.com/questions/17973507/why-is-converting-a-long-2d-list-to-numpy-array-so-slow
+# Conversion with Numpy 2 - https://stackoverflow.com/questions/8466014/how-to-convert-a-python-set-to-a-numpy-array
+# Critical Sections - https://stackoverflow.com/questions/29798635/python-locking-critical-section
+# Current Directory - https://stackoverflow.com/questions/5137497/find-the-current-directory-and-files-directory
 # DCMST Primal Algorithm - https://www-sciencedirect-com.ezphost.dur.ac.uk/science/article/pii/0305054880900222?via%3Dihub
+# Deleting Rows - https://stackoverflow.com/questions/3877491/deleting-rows-in-numpy-array
+# Docstrings - https://realpython.com/documenting-python-code/
+# Docstrings Tutorial - https://www.datacamp.com/tutorial/docstrings-python
 # Earth Radius - https://en.wikipedia.org/wiki/Earth_radius
+# Empty Numpy Array - https://stackoverflow.com/questions/11295609/how-can-i-check-whether-a-numpy-array-is-empty-or-not
+# Empty Numpy Array 2 - https://stackoverflow.com/questions/11295609/how-can-i-check-whether-a-numpy-array-is-empty-or-not
 # Fast Calculation of Euclidean Distance - https://vaghefi.medium.com/fast-distance-calculation-in-python-bb2bc9810ea5
 # Feature Scaling - https://en.wikipedia.org/wiki/Feature_scaling
+# File Existence - https://stackoverflow.com/questions/82831/how-do-i-check-whether-a-file-exists-without-exceptions
 # File Handling - https://www.w3schools.com/python/python_file_handling.asp
 # First Occurrence of Value - https://stackoverflow.com/questions/16243955/numpy-first-occurrence-of-value-greater-than-existing-value
 # Float vs Integer Comparisons - https://stackoverflow.com/questions/30100725/why-are-some-float-integer-comparisons-four-times-slower-than-others
 # Hypatia - https://github.com/snkas/hypatia/tree/master
 # Hyperparameter Tuning Introduction - https://aws.amazon.com/what-is/hyperparameter-tuning/
+# Importing - https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
+# Import Error - https://stackoverflow.com/questions/338768/python-error-importerror-no-module-named
+# __init__ Files - https://stackoverflow.com/questions/448271/what-is-init-py-for
+# Internal Imports - https://www.reddit.com/r/learnpython/comments/yusnr0/python_modulespackages_internal_imports/
+# Intersecting Arrays - https://stackoverflow.com/questions/25220975/find-the-non-intersecting-values-of-two-arrays
 # Iterating over Numpy Columns - https://stackoverflow.com/questions/10148818/numpy-how-to-iterate-over-columns-of-array
+# Itertools and Numpy Product - https://stackoverflow.com/questions/28684492/numpy-equivalent-of-itertools-product
 # Loop Speed-Up - https://medium.com/@nirmalya.ghosh/13-ways-to-speedup-python-loops-e3ee56cd6b73
+# Main Function Call - https://stackoverflow.com/questions/42012140/if-name-main-function-call
+# __main__ Use - https://stackoverflow.com/questions/4042905/what-is-main-py
+# Multiple Indices - https://stackoverflow.com/questions/14162026/how-to-get-the-values-from-a-numpy-array-using-multiple-indices
+# Multiprocessing Errors - https://www.reddit.com/r/learnpython/comments/yo8pab/why_does_multiprocessing_not_work_properly_in/
+# Multiprocessing Imap - https://stackoverflow.com/questions/19063238/in-what-situation-do-we-need-to-use-multiprocessing-pool-imap-unordered
 # Multiplying Numpy Array with Scalar - https://stackoverflow.com/questions/53485221/numpy-multiply-array-with-scalar
+# Multiprocessing Pool Errors - https://stackoverflow.com/questions/41169146/python-multiprocessing-pool-map-seems-to-not-call-function-at-all
+# Multiprocessing - https://stackoverflow.com/questions/35675114/multiprocessing-in-python-going-from-a-for-loop-to-multiprocessing-for-loop?rq=3
+# Nested For Loop List Comprehension - https://stackoverflow.com/questions/3633140/nested-for-loops-using-list-comprehension
 # Numpy Documentation - https://numpy.org/doc/2.2/reference/index.html
+# Numpy Equality - https://stackoverflow.com/questions/10580676/comparing-two-numpy-arrays-for-equality-element-wise
 # Numpy Linalg Overhead - https://stackoverflow.com/questions/49866638/why-is-numpy-linalg-norm-slow-when-called-many-times-for-small-size-data
 # Numpy savetxt Format - https://stackoverflow.com/questions/71499463/how-to-export-numpy-array-without-brackets
 # Orbital Distance - https://space.stackexchange.com/questions/27872/how-to-calculate-the-orbital-distance-between-2-satellites-given-the-tles
@@ -480,18 +511,38 @@ print(time.time() - start)
 # Pyephem Code - https://github.com/brandon-rhodes/pyephem
 # Pyephem Documentation - https://rhodesmill.org/pyephem/quick
 # Python Documentation - https://docs.python.org/3/
+# Reading Files - https://stackoverflow.com/questions/3277503/how-to-read-a-file-line-by-line-into-a-list
+# Reading Files Line By Line - https://stackoverflow.com/questions/3277503/how-to-read-a-file-line-by-line-into-a-list
+# Relative Imports - https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
 # Saving Numpy Data to Files - https://stackoverflow.com/questions/28439701/how-to-save-and-load-numpy-array-data-properly
 # Scaling vs Normalisation - https://www.kaggle.com/code/alexisbcook/scaling-and-normalization
 # SciPy Documentation - https://docs.scipy.org/doc/scipy/reference/index.html
+# Selecting Columns - https://stackoverflow.com/questions/22927181/selecting-specific-rows-and-columns-from-numpy-array
 # Selecting Numpy Rows - https://stackoverflow.com/questions/58079075/numpy-select-rows-based-on-condition
+# Selecting Rows - https://stackoverflow.com/questions/73733370/select-rows-of-numpy-array-based-on-column-values
+# Selecting Rows 2 - https://stackoverflow.com/questions/56419519/selecting-rows-of-numpy-array-that-contains-all-the-given-values
+# Selecting Rows 3 - https://stackoverflow.com/questions/23359886/selecting-rows-in-numpy-ndarray-based-on-the-value-of-two-columns
 # Selecting Specific Numpy Rows - https://stackoverflow.com/questions/22927181/selecting-specific-rows-and-columns-from-numpy-array
 # Set vs List Search - https://stackoverflow.com/questions/5993621/fastest-way-to-search-a-list-in-python
 # SkyField Documentation - https://rhodesmill.org/skyfield/ & https://rhodesmill.org/skyfield/toc.html
+# Skyfield Timings - https://stackoverflow.com/questions/49494082/skyfield-achieve-sgp4-results-with-1-second-periodicity-for-given-time-interval
+# Speedup For Loops - https://stackoverflow.com/questions/8770791/how-to-speed-up-python-loop
+# Spg4 Import Error - https://stackoverflow.com/questions/72639365/no-module-named-sgp4-but-requirement-already-satisfied-sgp4-in-c
+# Sphinx - https://www.sphinx-doc.org/en/master/tutorial/automatic-doc-generation.html
 # Sorting by Column - https://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-column
+# Subset of Rows - https://stackoverflow.com/questions/70341932/select-subset-of-rows-of-numpy-array-based-on-a-selection-of-rows-in-another-arr
+# Sys Arguments - https://stackoverflow.com/questions/11853508/how-to-make-sys-argv-arguments-optional
+# Take (Numpy) - https://stackoverflow.com/questions/60192041/python-numpy-np-take-with-2-dimensional-array
 # Threshold Values with Numpy - https://stackoverflow.com/questions/37973135/numpy-argmin-for-elements-greater-than-a-threshold
+# Threshold Zero - https://stackoverflow.com/questions/28430904/set-numpy-array-elements-to-zero-if-they-are-above-a-specific-threshold
 # TLE Definitions - https://platform-cdn.leolabs.space/static/files/tle_definition.pdf?7ba94f05897b4ae630a3c5b65be7396c642d9c72
+# Type Hinting - https://stackoverflow.com/questions/35673895/type-hinting-annotation-pep-484-for-numpy-ndarray
+# Type Hinting with Numpy - https://stackoverflow.com/questions/58877370/pycharm-typehint-for-numpy-array-of-objects
+# Type Hinting with Numpy - https://stackoverflow.com/questions/70714087/how-to-typehint-numpy-array-of-floats-and-or-integers
+# Typing - https://stackoverflow.com/questions/14113187/how-do-you-set-a-conditional-in-python-based-on-datatypes
 # Unique Values from List - https://stackoverflow.com/questions/12897374/get-unique-values-from-a-list-in-python
 # World Geodetic System - https://en.wikipedia.org/wiki/World_Geodetic_System#Definition
+# Writing Packages - https://stackoverflow.com/questions/15746675/how-to-write-a-python-module-package
 # Zero-Size Reduction - https://www.reddit.com/r/learnpython/comments/lhljgh/valueerror_zerosize_array_to_reduction_operation/
 
 # Extra Code Used During Analysis, Optimisation, and Debugging

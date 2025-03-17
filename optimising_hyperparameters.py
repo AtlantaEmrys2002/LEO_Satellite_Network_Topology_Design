@@ -192,9 +192,11 @@ experiment(10, 94, 1, 1584, "Starlink-550", 1000)
 # Astropy Documentation - https://docs.astropy.org/en/latest/index_user_docs.html
 # CSV File - https://docs.python.org/3/library/csv.html#csv.DictWriter
 # Dijkstra's Algorithm Pseudocode - https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+# Floyd-Warshall - https://medium.com/100-days-of-algorithms/day-65-floyd-warshall-2d10a6d6c49d
 # If/Else List Comprehension Order - https://stackoverflow.com/questions/4406389/if-else-in-a-list-comprehension
 # IBM What is Monte Carlo Simulation? - https://www.ibm.com/think/topics/monte-carlo-simulation
 # Monte Carlo Method - https://en.wikipedia.org/wiki/Monte_Carlo_method#
+# Multi-Objective Optimisation - https://en.wikipedia.org/wiki/Multi-objective_optimization
 # Numpy Documentation - https://numpy.org/doc/2.1/user/index.html
 # Numpy-List Conversion - https://stackoverflow.com/questions/10346336/list-of-lists-into-numpy-array
 # Numpy Type Conversion - https://stackoverflow.com/questions/12648624/python-converting-an-numpy-array-data-type-from-int64-to-int

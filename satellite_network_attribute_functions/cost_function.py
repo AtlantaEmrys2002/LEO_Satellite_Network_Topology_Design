@@ -40,3 +40,6 @@ def cost_function(visibility, time_visibility, distance, sunlight, alpha:float, 
     cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1 / (time_visibility + 1))) + (beta * distance) + (gamma * sunlight))
 
     return cost_matrix
+
+# References
+# Adding 1 to Numpy Array - https://www.reddit.com/r/learnpython/comments/12hsf8k/trying_to_add_1_to_the_element_at_a_certain_index/

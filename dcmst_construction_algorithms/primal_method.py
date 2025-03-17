@@ -239,4 +239,6 @@ def modified_prims_algorithm(cost_matrix, constraints, total_satellites:int, ini
     return tree.astype(int), degree
 
 # References
+# Connected Components - https://www.geeksforgeeks.org/connected-components-in-an-undirected-graph/
+# csgraph - https://www.geeksforgeeks.org/scipy-csgraph-compressed-sparse-graph/
 # Prim's Algorithm - https://en.wikipedia.org/wiki/Prim%27s_algorithm
