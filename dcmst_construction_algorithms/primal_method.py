@@ -1,14 +1,17 @@
 # Libraries
 from collections import deque
 import numpy as np
-from scipy.sparse.csgraph import dijkstra, connected_components
+from scipy.sparse.csgraph import connected_components
 from scipy.sparse import csr_array
-import time
 
 def subtree_builder(tree, deleted_edge):
-
+    """
+    Finds the two subtrees created by deleting a given edge from a given degree constrained minimum spanning tree.
+    :param tree:
+    :param deleted_edge:
+    :return:
+    """
     # Edge deleted from tree
-    # edge = tree_edges[pos]
     edge = deleted_edge
 
     ### CREATE TWO SUBTREES CREATED BY EDGE REMOVAL ###
