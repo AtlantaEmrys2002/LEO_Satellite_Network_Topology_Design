@@ -19,7 +19,6 @@ import csv
 import random
 from random import sample
 import numpy as np
-import heuristic_topology_design_algorithm as topology_build
 import time
 
 # Seed random generators to ensure reproducible results

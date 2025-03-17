@@ -33,6 +33,62 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
 
         self.assertTrue(np.array_equal(dcmst_construction_algorithms.modified_prims_algorithm(test_costs, np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]), 9, 0)[0], answer))
 
+    def test_edge_exchange(self):
+        # Tests whether function that constructs two subtrees following edge deletion is correct
+        self.assertTrue(dcmst_construction_algorithms.subtree_builder(9, np.asarray([[0, 1], [1, 2], [2, 3], [2, 8], [3, 4], [4, 5], [5, 6], [6, 7]]),2) == ({8, 1, 2, 0}, {3, 4, 5, 6, 7}))
+
+        answer = np.array([[0, 1, 0, 0, 0, 0, 0, 0, 0],
+                           [1, 0, 1, 0, 0, 0, 0, 0, 0],
+                           [0, 1, 0, 0, 0, 1, 0, 0, 1],
+                           [0, 0, 0, 0, 1, 0, 0, 0, 0],
+                           [0, 0, 0, 1, 0, 1, 0, 0, 0],
+                           [0, 0, 1, 0, 1, 0, 1, 0, 0],
+                           [0, 0, 0, 0, 0, 1, 0, 1, 0],
+                           [0, 0, 0, 0, 0, 0, 1, 0, 0],
+                           [0, 0, 1, 0, 0, 0, 0, 0, 0]])
+
+        # Passing tree such that edge [0, 7] could be replaced with [0, 1] to create a better degree constrained minimum
+        # spanning tree
+        self.assertTrue(np.array_equal(dcmst_construction_algorithms.edge_exchange(np.asarray([[-1, 4, -1, -1, -1, -1, -1, 8, -1],
+                                 [4, -1, 8, -1, -1, -1, -1, 11, -1],
+                                 [-1, 8, -1, 7, -1, 4, -1, -1, 2],
+                                 [-1, -1, 7, -1, 9, 14, -1, -1, -1],
+                                 [-1, -1, -1, 9, -1, 10, -1, -1, -1],
+                                 [-1, -1, 4, 14, 10, -1, 2, -1, -1],
+                                 [-1, -1, -1, -1, -1, 2, -1, 1, 6],
+                                 [8, 11, -1, -1, -1, -1, 1, -1, 7],
+                                 [-1, -1, 2, -1, -1, -1, 6, 7, -1]]), np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]), 9, np.array(
+                 [[0, 0, 0, 0, 0, 0, 0, 1, 0],
+                  [0, 0, 1, 0, 0, 0, 0, 0, 0],
+                  [0, 1, 0, 0, 0, 1, 0, 0, 1],
+                  [0, 0, 0, 0, 1, 0, 0, 0, 0],
+                  [0, 0, 0, 1, 0, 1, 0, 0, 0],
+                  [0, 0, 1, 0, 1, 0, 1, 0, 0],
+                  [0, 0, 0, 0, 0, 1, 0, 1, 0],
+                  [1, 0, 0, 0, 0, 0, 1, 0, 0],
+                  [0, 0, 1, 0, 0, 0, 0, 0, 0]]), np.array([1, 2, 3, 1, 2, 3, 2, 1, 1]))[0], answer))
+
+        # Passing tree such that edge [2, 3] could be replaced with [2, 5] to create a better degree constrained minimum
+        # spanning tree
+        self.assertTrue(np.array_equal(dcmst_construction_algorithms.edge_exchange(np.asarray([[-1, 4, -1, -1, -1, -1, -1, 8, -1],
+                                 [4, -1, 8, -1, -1, -1, -1, 11, -1],
+                                 [-1, 8, -1, 7, -1, 4, -1, -1, 2],
+                                 [-1, -1, 7, -1, 9, 14, -1, -1, -1],
+                                 [-1, -1, -1, 9, -1, 10, -1, -1, -1],
+                                 [-1, -1, 4, 14, 10, -1, 2, -1, -1],
+                                 [-1, -1, -1, -1, -1, 2, -1, 1, 6],
+                                 [8, 11, -1, -1, -1, -1, 1, -1, 7],
+                                 [-1, -1, 2, -1, -1, -1, 6, 7, -1]]), np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]), 9, np.array(
+                 [[0, 1, 0, 0, 0, 0, 0, 0, 0],
+                  [1, 0, 1, 0, 0, 0, 0, 0, 0],
+                  [0, 1, 0, 1, 0, 0, 0, 0, 1],
+                  [0, 0, 1, 0, 1, 0, 0, 0, 0],
+                  [0, 0, 0, 1, 0, 1, 0, 0, 0],
+                  [0, 0, 0, 0, 1, 0, 1, 0, 0],
+                  [0, 0, 0, 0, 0, 1, 0, 1, 0],
+                  [0, 0, 0, 0, 0, 0, 1, 0, 0],
+                  [0, 0, 1, 0, 0, 0, 0, 0, 0]]), np.array([1, 2, 3, 1, 2, 3, 2, 1, 1]))[0], answer))
+
     def test_increase_connectivity(self):
         """
         Checks the ISLs are added correctly such that lower cost edges are added first before

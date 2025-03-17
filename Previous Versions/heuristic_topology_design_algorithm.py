@@ -636,11 +636,11 @@ def increase_connectivity(tree, degree_constraints, current_isl_number, cost_mat
 def write_results_to_file(file_name, topology):
 
     # Create directory to store the topologies for each snapshot
-    if os.path.isdir("./isl_topologies") is False:
+    if os.path.isdir("../isl_topologies") is False:
 
         # Create directory in which to store distance matrices
         try:
-            os.mkdir("./isl_topologies")
+            os.mkdir("../isl_topologies")
         except OSError:
             print("Directory to store distance matrices could not be created.")
 
