@@ -5,65 +5,11 @@ from scipy.sparse.csgraph import dijkstra, connected_components
 from scipy.sparse import csr_array
 import time
 
-# def subtree_builder(total_satellites, tree_edges, pos):
-#     """
-#     Find the nodes in subtree i and subtree j if subtree i and subtree j are created by the deletion of edge in tree at position m in list of edges in tree.
-#     :param total_satellites:
-#     :param tree_edges:
-#     :param pos:
-#     :return:
-#     """
-#
-#     # Edge deleted from tree
-#     edge = tree_edges[pos]
-#
-#     ### CREATE TWO SUBTREES CREATED BY EDGE REMOVAL ###
-#
-#     # Tree without edge (i.e. two subtrees with edge removed)
-#     temp_tree_edges = np.delete(tree_edges, pos, axis=0)
-#
-#     # Identify 2 subtrees created by deleting edge
-#     subtree_i = {edge[0]}
-#     subtree_j = {edge[1]}
-#
-#     current_i = deque([edge[0]])
-#     current_j = deque([edge[1]])
-#
-#     tmp_i = current_i.popleft()
-#     tmp_j = current_j.popleft()
-#
-#     # Find edges that have a node in a subtree
-#
-#     while len(subtree_i) + len(subtree_j) != total_satellites:
-#
-#         potential_new_nodes_for_subtree_j = np.concatenate((temp_tree_edges[temp_tree_edges[:, 0] == tmp_j], temp_tree_edges[temp_tree_edges[:, 1] == tmp_j]), axis=None)
-#
-#         for j in potential_new_nodes_for_subtree_j:
-#             current_j.append(j)
-#             subtree_j.add(j)
-#
-#         potential_new_nodes_for_subtree_i = np.concatenate((temp_tree_edges[temp_tree_edges[:, 0] == tmp_i], temp_tree_edges[temp_tree_edges[:, 1] == tmp_i]), axis=None)
-#         for i in potential_new_nodes_for_subtree_i:
-#             current_i.append(i)
-#             subtree_i.add(i)
-#
-#         if len(current_j) == 0:
-#             subtree_i = set(range(0, total_satellites)) - subtree_j
-#             break
-#         elif len(current_i) == 0:
-#             subtree_j = set(range(0, total_satellites)) - subtree_i
-#             break
-#         else:
-#             tmp_i = current_i.popleft()
-#             tmp_j = current_j.popleft()
-#
-#     return subtree_i, subtree_j
-
-
-def subtree_builder(total_satellites, tree_edges, tree, pos):
+def subtree_builder(tree, deleted_edge):
 
     # Edge deleted from tree
-    edge = tree_edges[pos]
+    # edge = tree_edges[pos]
+    edge = deleted_edge
 
     ### CREATE TWO SUBTREES CREATED BY EDGE REMOVAL ###
 
@@ -71,218 +17,27 @@ def subtree_builder(total_satellites, tree_edges, tree, pos):
     tree[edge[0], edge[1]] = 0
     tree[edge[1], edge[0]] = 0
 
-    # subtree_i = {edge[0]}
-    # subtree_j = {edge[1]}
-
     graph = csr_array(tree)
 
-    # path_exists_i = dijkstra(csgraph=graph, directed=False, indices=edge[0])
-    #
-    # # path_exists_j = dijkstra(csgraph=graph, directed=False, indices=edge[1])
-    #
-    # subtree_i = np.argwhere(path_exists_i < np.inf).flatten()
-    # # subtree_j = np.argwhere(path_exists_j < np.inf).flatten()
-    # subtree_j = np.argwhere(path_exists_i == np.inf).flatten()
-
-    # for sat in range(total_satellites):
-    #     if path_exists_i[sat] < np.inf:
-    #         subtree_i.add(sat)
-    #     elif path_exists_j[sat] < np.inf:
-    #         subtree_j.add(sat)
-    #     else:
-    #         raise ValueError("No path - DCMST does not exist.")
-
-    # for x in range(total_satellites):
-    #     if x not in subtree_i and x not in subtree_j:
-    #         raise ValueError("No path - DCMST does not exist.")
-    #
-    # subtree_i = set(np.argwhere(path_exists < np.inf).flatten())
-    # subtree_j = set(range(0, total_satellites)) - subtree_i
-
-    # print(subtree_i)
-    # print(subtree_j)
-
+    # Find connected components (i.e. 2 subtrees)
     n, labels = connected_components(graph, directed=False, return_labels=True, connection='strong')
 
+    # If more than 2 subtrees, not connected
     if n > 2:
         raise ValueError("No path - DCMST does not exist.")
 
+    # Find subtrees
     subtree_i = np.argwhere(labels > 0).flatten()
     subtree_j = np.argwhere(labels == 0).flatten()
 
+    # Restore tree
     tree[edge[0], edge[1]] = 1
     tree[edge[1], edge[0]] = 1
 
     return subtree_i, subtree_j
 
 
-
-
-
-
-
 # This performs the edge exchange portion of the primal cut algorithm
-# def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
-#
-#     # List edges in the tree
-#     tree_edges = np.argwhere(tree > 0)
-#
-#     # Sort edges and remove duplicates (undirected edges)
-#     tree_edges = np.unique(np.sort(tree_edges), axis=0)
-#
-#     # Evaluate each edge - as DCMST, |E| = |V| - 1
-#     for m in range(total_satellites - 1):
-#
-#         # # Edge in tree
-#         edge = tree_edges[m]
-#
-#         cost_of_edge = cost_matrix[edge[0], edge[1]]
-#         #
-#         # ### CREATE TWO SUBTREES CREATED BY EDGE REMOVAL ###
-#         #
-#         # # Tree without edge (i.e. two subtrees with edge removed)
-#         # temp_tree_edges = np.delete(tree_edges, m, axis=0)
-#         #
-#         # # Identify 2 subtrees created by deleting edge
-#         # subtree_i = {edge[0]}
-#         # subtree_j = {edge[1]}
-#         #
-#         # current_i = deque([edge[0]])
-#         # current_j = deque([edge[1]])
-#         #
-#         # # While 2 subtrees do not contain all vertices
-#         # while len(current_i) != 0 or len(current_j) != 0:
-#         #
-#         #     # If all remaining vertices in subtree j
-#         #     if len(current_i) == 0:
-#         #         subtree_j.update(set(range(total_satellites)) - subtree_i - subtree_j)
-#         #         break
-#         #     # If all remaining vertices in subtree i
-#         #     elif len(current_j) == 0:
-#         #         subtree_j.update(set(range(total_satellites)) - subtree_i - subtree_j)
-#         #         break
-#         #     else:
-#         #
-#         #         # Fetch current_i[0] and current_j[0] from their respective queues
-#         #         current_i_first_val = current_i.popleft()
-#         #         current_j_first_val = current_j.popleft()
-#         #
-#         #         # Select all edges where vertex endpoint of edge is connected to current vertex
-#         #         next_i = np.append(temp_tree_edges[temp_tree_edges[:,0] == current_i_first_val],
-#         #                            temp_tree_edges[temp_tree_edges[:, 1] == current_i_first_val], axis=0)
-#         #
-#         #         next_j = np.append(temp_tree_edges[temp_tree_edges[:, 0] == current_j_first_val],
-#         #                            temp_tree_edges[temp_tree_edges[:, 1] == current_j_first_val], axis=0)
-#         #
-#         #         # Select all points not in subtree i or j
-#         #         next_i_tmp = set(next_i.flatten()) - subtree_i
-#         #         next_i = np.fromiter(next_i_tmp, int, len(next_i_tmp))
-#         #
-#         #         next_j_tmp = set(next_j.flatten()) - subtree_j
-#         #         next_j = np.fromiter(next_j_tmp, int, len(next_j_tmp))
-#         #
-#         #         # Add unexplored vertices to queues and subtrees
-#         #         current_i.extend(next_i)
-#         #         current_j.extend(next_j)
-#         #
-#         #         subtree_i.update(next_i)
-#         #         subtree_j.update(next_j)
-#         #
-#
-#         # Construct subtrees created if edge m is deleted
-#         subtree_i, subtree_j = subtree_builder(total_satellites, tree_edges, m)
-#
-#         # # Convert sets to numpy arrays
-#         subtree_i = np.fromiter(subtree_i, int, len(subtree_i))
-#         subtree_j = np.fromiter(subtree_j, int, len(subtree_j))
-#
-#         ### ANALYSE EDGE COSTS ###
-#
-#         # Look at all edges connecting subtree i to subtree j
-#         potential_better_edges = np.array(np.meshgrid(subtree_i, subtree_j)).T.reshape(-1, 2)
-#
-#         # Sort (smaller node first) and remove duplicates (undirected graph)
-#         potential_better_edges = np.unique(np.sort(potential_better_edges), axis=1)
-#
-#         # Create list of edges with their associated costs - only take costs and edges where costs >= 0
-#
-#         # Select all costs for relevant edges - stack them with corresponding edges
-#         potential_better_edge_costs = cost_matrix[potential_better_edges.T[0], potential_better_edges.T[1]]
-#         tmp = np.vstack((potential_better_edge_costs, potential_better_edges.T[0], potential_better_edges.T[1])).T
-#
-#         # Sort according to cost in increasing order
-#         tmp = tmp[tmp[:, 0].argsort()]
-#
-#         # Remove all costs less than 0
-#         costs_less_than_zero = np.searchsorted(tmp.T[0], 0)
-#         sorted_costs = tmp[costs_less_than_zero:]
-#
-#         # CHANGED THIS
-#         costs_less_than_current_cost = np.searchsorted(sorted_costs.T[0], cost_of_edge, side='right')
-#         # costs_less_than_current_cost = np.searchsorted(sorted_costs.T[0], cost_of_edge, side='left')
-#         sorted_costs = sorted_costs[:costs_less_than_current_cost]
-#
-#         # sorted_costs = np.setxor1d(sorted_costs[:, 0], tree_edges[:])
-#
-#         # print("CURRENT")
-#         # print(tree_edges)
-#         #
-#         # print("POTENTIAL:")
-#         # print(sorted_costs)
-#
-#         # Stores potential new edge
-#         new_edge = np.array([])
-#
-#         # If edge exists with cost smaller than or equal to current edge's cost
-#         if sorted_costs.size > 1:
-#
-#             # If there exists edge with smaller cost than current edge
-#             pos_of_smaller_cost = np.searchsorted(sorted_costs.T[0], cost_of_edge)
-#
-#             if pos_of_smaller_cost != 0:
-#
-#                 # Iterate over all edges with smaller cost than current edge
-#                 for x in sorted_costs[:pos_of_smaller_cost].T[1:].T.astype(int):
-#                     if degree[x[0]] != constraints[x[0]] and degree[x[1]] != constraints[x[1]]:
-#                         new_edge = x
-#                         break
-#
-#             else:
-#                 # If degrees of either vertex are at maximum, see if edge with equal cost that does not have max degree
-#                 # for one or both vertices
-#                 if degree[edge[0]] == constraints[edge[0]] or degree[edge[1]] == constraints[edge[1]]:
-#                     for x in sorted_costs.T[1:].T.astype(int):
-#                         if degree[x[0]] != constraints[x[0]] and degree[x[1]] != constraints[x[1]]:
-#                             new_edge = x
-#                             break
-#
-#             # If new (better) edge has been found, update tree and degree values
-#             if new_edge.size > 0:
-#
-#                 # Update tree
-#                 tree[edge[0], edge[1]] = 0
-#                 tree[edge[1], edge[0]] = 0
-#
-#                 tree[new_edge[0], new_edge[1]] = 1
-#                 tree[new_edge[1], new_edge[0]] = 1
-#
-#                 # Update degree
-#                 degree[edge[0]] -= 1
-#                 degree[edge[1]] -= 1
-#
-#                 degree[new_edge[0]] += 1
-#                 degree[new_edge[1]] += 1
-#
-#                 # Update list of tree edges
-#                 if new_edge[0] < new_edge[1]:
-#                     tree_edges[m][0], tree_edges[m][1] = new_edge[0], new_edge[1]
-#                 else:
-#                     tree_edges[m][1], tree_edges[m][0] = new_edge[0], new_edge[1]
-#
-#     print(tree)
-#
-#     return tree, degree
-
 def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
 
     # List edges in the tree
@@ -299,7 +54,7 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
         cost_of_edge = cost_matrix[edge[0], edge[1]]
 
         # Construct subtrees created if edge m is deleted
-        subtree_i, subtree_j = subtree_builder(total_satellites, tree_edges, tree, m)
+        subtree_i, subtree_j = subtree_builder(tree, tree_edges[m])
 
         # Look at all edges connecting subtree i to subtree j
         potential_better_edges = np.array(np.meshgrid(subtree_i, subtree_j)).T.reshape(-1, 2)
