@@ -11,7 +11,7 @@
 # Randomly select edge from all edges with same cost rather than just selecting first one
 
 # Import Relevant Libraries
-
+import argparse
 from collections import deque
 import data_handling
 from multiprocessing import Pool
@@ -63,210 +63,6 @@ def snapshot_time_stamp(time_stamp):
 
     return ts.tdb(2000, 1, 1, hours, minutes, seconds)
 
-# NEED TO FINISH IMPLEMENTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-# This performs the edge exchange portion of the primal cut algorithm
-def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
-
-    # List edges in the tree
-    tree_edges = np.argwhere(tree > 0)
-
-    # Sort edges and remove duplicates (undirected edges)
-
-    tree_edges = np.unique(np.sort(tree_edges), axis=0)
-
-    # Evaluate each edge
-    for m in range(total_satellites - 1):
-
-        # Edge in tree
-        edge = tree_edges[m]
-
-        cost_of_edge = cost_matrix[edge[0], edge[1]]
-
-        ### CREATE TWO SUBTREES CREATED BY EDGE REMOVAL ###
-
-        # Tree without edge (i.e. two subtrees with edge removed)
-        temp_tree_edges = np.delete(tree_edges, m, axis=0)
-
-        # Identify 2 subtrees created by deleting edge
-        subtree_i = set([edge[0]])
-        subtree_j = set([edge[1]])
-
-        current_i = deque([edge[0]])
-        current_j = deque([edge[1]])
-
-        # While 2 subtrees do not contain all vertices
-        while len(current_i) != 0 or len(current_j) != 0:
-
-            # If all remaining vertices in subtree j
-            if len(current_i) == 0:
-                subtree_j.update(set(range(total_satellites)) - subtree_i - subtree_j)
-                break
-            # If all remaining vertices in subtree i
-            elif len(current_j) == 0:
-                subtree_j.update(set(range(total_satellites)) - subtree_i - subtree_j)
-                break
-            else:
-
-                # Fetch current_i[0] and current_j[0] from their respective queues
-                current_i_first_val = current_i.popleft()
-                current_j_first_val = current_j.popleft()
-
-                # Select all edges where vertex endpoint of edge is connected to current vertex
-                next_i = np.append(temp_tree_edges[temp_tree_edges[:,0] == current_i_first_val],
-                                   temp_tree_edges[temp_tree_edges[:, 1] == current_i_first_val], axis=0)
-
-                next_j = np.append(temp_tree_edges[temp_tree_edges[:, 0] == current_j_first_val],
-                                   temp_tree_edges[temp_tree_edges[:, 1] == current_j_first_val], axis=0)
-
-                # Select all points not in subtree i or j
-                next_i_tmp = set(next_i.flatten()) - subtree_i
-                next_i = np.fromiter(next_i_tmp, int, len(next_i_tmp))
-
-                next_j_tmp = set(next_j.flatten()) - subtree_j
-                next_j = np.fromiter(next_j_tmp, int, len(next_j_tmp))
-
-                # Add unexplored vertices to queues and subtrees
-                current_i.extend(next_i)
-                current_j.extend(next_j)
-
-                subtree_i.update(next_i)
-                subtree_j.update(next_j)
-
-        # Convert sets to numpy arrays
-        subtree_i = np.fromiter(subtree_i, int, len(subtree_i))
-        subtree_j = np.fromiter(subtree_j, int, len(subtree_j))
-
-        ### ANALYSE EDGE COSTS ###
-
-        # Look at all edges connecting subtree i to subtree j
-        # potential_better_edges = np.fromiter(product(subtree_i, subtree_j), dtype=np.dtype((int, 2)))
-        potential_better_edges = np.array(np.meshgrid(subtree_i, subtree_j)).T.reshape(-1, 2)
-
-        # Create list of edges with their associated costs - only take costs and edges where costs >= 0
-
-        # potential_better_edges_costs = np.asarray([[cost_matrix[e[0], e[1]], e[0], e[1]] for e in potential_better_edges if cost_matrix[e[0], e[1]] >= 0])
-
-        # test = np.asarray(
-        #     [[cost_matrix[e[0], e[1]], e[0], e[1]] for e in potential_better_edges])
-
-        # Select all costs for relevant edges - stack them with corresponding edges
-        potential_better_edge_costs = cost_matrix[potential_better_edges.T[0], potential_better_edges.T[1]]
-
-        # CHANGED SO NO TRANSPOSE
-        tmp = np.vstack((potential_better_edge_costs, potential_better_edges.T[0], potential_better_edges.T[1])).T
-        # tmp = np.vstack((potential_better_edge_costs, potential_better_edges.T[0], potential_better_edges.T[1]))
-
-        ### EXPERIMENT STARTS
-        # TRUE
-        # print(np.array_equal(np.argsort(tmp.T[0]), tmp[:, 0].argsort()))
-
-        # FALSE
-        # print(np.array_equal(np.argsort(test, axis=0), np.argsort(tmp.T[0])))
-        #
-        # print(np.argsort(test, axis=0).T[0])
-        # print(tmp[:, 0].argsort())
-
-        # Proof of sorting
-        # test = np.array([[0.1, 2, 3], [0, 5, 4], [-1, 7, 3]])
-        # print(test[test[:, 0].argsort()])
-        # print(test[np.argsort(test, axis=0).T[0]])
-        ### EXPERIMENT ENDS
-
-        # CHANGED SO NO TRANSPOSE
-        # Sort according to cost in increasing order
-        tmp = tmp[tmp[:, 0].argsort()]
-        # tmp = tmp[tmp[0].argsort()]
-
-
-        # Remove all costs less than 0
-        # CHANGED SO NO TRANSPOSE
-        costs_less_than_zero = np.searchsorted(tmp.T[0], 0)
-        # costs_less_than_zero = np.searchsorted(tmp[0], 0)
-
-        # CHANGED SO USES TRANSPOSE
-        sorted_costs = tmp[costs_less_than_zero:]
-        # sorted_costs = (tmp.T[costs_less_than_zero:]).T
-
-        # Sort potential edges costs (in increasing order)
-        # sorted_costs_2 = potential_better_edges_costs[np.argsort(potential_better_edges_costs, axis=0).T[0]]
-
-        ### EXPERIMENT STARTS
-        # print(sorted_costs_2.shape)
-        # print(sorted_costs.shape)
-        #
-        # for k in range(len(sorted_costs)):
-        #     if False in (sorted_costs[k] == sorted_costs_2[k]):
-        #         print("FALSE")
-        #         print(sorted_costs[k])
-        #         print(sorted_costs_2[k])
-        ### EXPERIMENT ENDS
-
-        # Ignore all costs < 0 and take all edges with cost less than OR equal to current cost of edge connecting subtree i to
-        # subtree j
-
-        # costs_less_than_zero, costs_less_than_current_cost = np.searchsorted(sorted_costs.T[0], [-1, cost_of_edge], side='right')
-
-        # WORKING VERSION BELOW
-        costs_less_than_current_cost = np.searchsorted(sorted_costs.T[0], cost_of_edge, side='right')
-        # CHANGED SO NO TRANSPOSE
-        # costs_less_than_current_cost = np.searchsorted(sorted_costs[0], cost_of_edge, side='right')
-
-        # sorted_costs = sorted_costs[costs_less_than_zero:costs_less_than_current_cost]
-        # WORKING VERSION BELOW
-        sorted_costs = sorted_costs[:costs_less_than_current_cost]
-        # CHANGED SO NO TRANSPOSE
-        # sorted_costs = (sorted_costs.T[:costs_less_than_current_cost]).T
-
-        # Stores potential new edge
-        new_edge = np.array([])
-
-        # If edge exists with cost smaller than or equal to current edge's cost
-        if sorted_costs.size > 1:
-            # If there exists edge with smaller cost than current edge
-
-            # CHANGED SO NO TRANSPOSE
-            pos_of_smaller_cost = np.searchsorted(sorted_costs.T[0], cost_of_edge)
-            # pos_of_smaller_cost = np.searchsorted(sorted_costs[0], cost_of_edge)
-
-            if pos_of_smaller_cost != 0:
-                # Iterate over all edges with smaller cost than current edge
-
-                # CHANGED SO NO TRANSPOSE
-                for x in sorted_costs[:pos_of_smaller_cost].T[1:].T.astype(int):
-                # for x in sorted_costs[:pos_of_smaller_cost][1:].astype(int):
-                    if degree[x[0]] != constraints[x[0]] and degree[x[1]] != constraints[x[1]]:
-                        new_edge = x
-                        break
-
-            else:
-                # If degrees of either vertex are at maximum, see if edge with equal cost that does not have max degree
-                # for one or both vertices
-                if degree[edge[0]] == constraints[edge[0]] or degree[edge[1]] == constraints[edge[1]]:
-                    for x in sorted_costs.T[1:].T.astype(int):
-                    # for x in sorted_costs[1:].astype(int):
-                        if degree[x[0]] != constraints[x[0]] and degree[x[1]] != degree[x[1]]:
-                            new_edge = x
-                            break
-
-            # If new (better) edge has been found, update tree and degree values
-            if new_edge.size > 0:
-                # Update tree
-                tree[edge[0], edge[1]] = 0
-                tree[edge[1], edge[0]] = 0
-
-                tree[new_edge[0], new_edge[1]] = 1
-                tree[new_edge[1], new_edge[0]] = 1
-
-                # Update degree
-                degree[edge[0]] -= 1
-                degree[edge[1]] -= 1
-
-                degree[new_edge[0]] += 1
-                degree[new_edge[1]] += 1
-
-    return tree, degree
-
 # Used for testing
 # Data from: https://github.com/AtlantaEmrys2002/hypatia/tree/master/paper/satellite_networks_state
 # main("starlink-constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19, [3, 7])
@@ -276,14 +72,48 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
 start = time.time()
 if __name__ == "__main__":
 
-    # Get inputs
-    if len(sys.argv) == 1:
-        file_name, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree, mean_motion_rev_per_day, snapshot_ids, params, multi_shell = "starlink-constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19, [2, 6, 10, 14], [1, 1, 0.2], False
-    elif len(sys.argv) == 9:
-        file_name, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree, mean_motion_rev_per_day, snapshot_ids, params = sys.argv
-        multi_shell = False
-    else:
-        file_name, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree, mean_motion_rev_per_day, snapshot_ids, params, multi_shell = sys.argv
+    # Parse inputs to module
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--tles", type=str, help="name of input file which contains TLE description of satellite network")
+    parser.add_argument("--constellation", type=str, help="name of satellite constellation for which a topology is built (used to name output files)")
+    parser.add_argument("--m", type=int, help="number of orbits in constellation")
+    parser.add_argument("--n", type=int, help="number of satellites per orbit")
+    parser.add_argument("--i", type=float, help="inclination degree of an orbit within the constellation")
+    parser.add_argument("--rev", type=float, help="mean motion revolutions per day for satellite network")
+    parser.add_argument("--snapshots", type=int, nargs="+", help="ids of the snapshots for which to build a topology (minimum of 0, maximum is number of snapshots taken over the course of one orbital period)")
+    parser.add_argument("--weights", type=float, nargs=3, help="values of weights of cost function (alpha for time visibility, beta for distance, gamma for probability of failure)")
+    parser.add_argument("--multi", type=bool, help="determines if the constellation contains multiple shells")
+    parser.add_argument("--optimise", type=bool, help="determines if cost function weights should be optimised")
+    parser.add_argument("--optimisation_method", type=str, help="if cost function is optimised, determines method with which to find optimal weights (options: 'random', 'evolutionary', 'machine-learning')")
+    parser.add_argument("--topology", type=str, help="determines method with which to construct topology for network (options: 'plus-grid', 'x-grid', 'mdtd', 'novel')")
+    parser.add_argument("--dcmst", type=str, help="if novel topology construction algorithm is used, determines which dcmst construction method is used (options: 'aco', 'ga', 'primal')")
+
+    args = parser.parse_args()
+
+    # Default values - allows for quick testing
+    file_name, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree, mean_motion_rev_per_day, snapshot_ids, params, multi_shell = "starlink-constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19, [
+        2, 6, 10, 14], [1, 1, 0.2], False
+
+    optimise = True
+    optimisation_method = 'random'
+    topology = 'novel'
+    dcmst = 'primal'
+
+    # Assign values (if not default)
+    if len(sys.argv) != 1:
+        file_name = args.tles
+        constellation_name = args.constellation
+        num_orbits = args.m
+        num_sats_per_orbit = args.n
+        inclination_degree = args.i
+        mean_motion_rev_per_day = args.rev
+        snapshot_ids = args.snapshots
+        params = args.weights
+        multi_shell = args.multi
+        optimise = args.optimise
+        optimisation_method = args.optimisation_method
+        topology = args.topology
+        dcmst = args.dcmst
 
     # Calculate the number of satellites in the network
     total_sat = num_sats_per_orbit * num_orbits
@@ -307,7 +137,6 @@ if __name__ == "__main__":
         orbital_period = satnet.orbital_period_calculation(satellite_data, total_sat)
 
     # Find the maximum communication distance between two satellites (may vary as satellite altitudes vary)
-    # max_communication_dist_1 = maximum_communication_distance(file_name, total_sat)
     max_communication_dist = satnet.maximum_communication_distance(file_name, total_sat)
 
     # This is the maximum distance a satellite can establish signal (transmission power) - need to research for Kuiper
@@ -334,9 +163,6 @@ if __name__ == "__main__":
     # The number of snapshots over an orbital period
     num_snapshot = int(orbital_period / snapshot_interval)
 
-    # TEMPORARY CHANGE
-    # num_snapshot = 10
-
     # Generate arguments for functions
     snapshot_arguments = [[file_name, constellation_name, total_sat, orbital_period, num_snapshot, max_communication_dist,
                            satellite_degree_constraints, t, params,
@@ -362,12 +188,10 @@ if __name__ == "__main__":
 
     # Create directory to store the distance matrix for each snapshot in individual file within directory (can't process
     # all at once otherwise)
-    # if os.path.isdir("./distance_matrices") is False:
     if os.path.isdir("./" + constellation_name + "/distance_matrices") is False:
 
         # Create directory in which to store distance matrices
         try:
-            # os.mkdir("./distance_matrices")
             os.makedirs("./" + constellation_name + "/distance_matrices")
         except OSError:
             print("Directory to store distance matrices could not be created.")
@@ -385,7 +209,6 @@ if __name__ == "__main__":
             dist_matrix = cdist(satellites_at_k, satellites_at_k, metric='euclidean')
 
             # Save distance matrix to .npy file
-            # np.save("./distance_matrices/dist_matrix_"+str(file_id) + ".npy", dist_matrix)
             np.save("./" + constellation_name + "/distance_matrices/dist_matrix_" + str(file_id) + ".npy", dist_matrix)
 
             # Increment ID counter
