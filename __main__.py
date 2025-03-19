@@ -27,6 +27,7 @@ from skyfield.api import EarthSatellite, load  # recommended by astropy for calc
 import sys
 import time
 from build import heuristic_topology_design_algorithm_isls
+from satellite_topology_construction_algorithms import plus_grid
 
 # Global Timescale (used for determining how to calculate time with Skyfield functions)
 ts = load.timescale()
@@ -115,14 +116,24 @@ if __name__ == "__main__":
         topology = args.topology
         dcmst = args.dcmst
 
-    # Static Topology Designs
-    if topology=="plus-grid" or topology=="x-grid":
-        # NEEDS IMPLEMENTING
-        print("NEEDS IMPLEMENTING")
+    # Benchmark Static Topology Designs
+    if topology=="plus-grid":
+        # Check directory for resulting topology exists
+        if os.path.isdir("./plus_grid/" + constellation_name.lower()) is False:
+            try:
+                os.makedirs("./plus_grid/" + constellation_name.lower())
+            except OSError:
+                print("Directory to store distance matrices could not be created.")
 
+        # Use Hypatia implementation to create +Grid topology
+        plus_grid.generate_plus_grid_isls("./plus_grid/" + constellation_name.lower() + "/isls.txt", num_orbits, num_sats_per_orbit, isl_shift=0, idx_offset=0)
+    elif topology == "x-grid":
+        print("NEEDS IMPLEMENTING")
+    # Benchmark MDTD Design
     elif topology=="mdtd":
         # NEEDS IMPLEMENTING
         print("NEEDS IMPLEMENTING")
+    # Novel Algorithm
     else:
 
         # Construct topology utilising this author's novel algorithm
@@ -136,7 +147,6 @@ if __name__ == "__main__":
                                       mean_motion_rev_per_day)
 
         # Read test data into appropriate data structure (dictionary)
-        # data = format_tle_data(file_name)
         data = data_handling.format_tle_data(file_name)
 
         # Extract description of satellite positions and unique orbits from data
@@ -162,9 +172,9 @@ if __name__ == "__main__":
         # Initialise degree constraint for each satellite - can be changed based on technical specifications of satellites
         satellite_degree_constraints = [3 for _ in range(len(satellite_data))]
 
-        # Check satellite network has a sufficient number of satellites and orbits
-        if total_sat < 3:
-            raise ValueError("Number of satellites must be greater than 3.")
+        # Check satellite network has a sufficient number of satellites and orbits - inspired by Hypatia code
+        if total_sat < 3 or num_sats_per_orbit < 3:
+            raise ValueError("Number of satellites must be greater than 3 and number of satellites per orbit must be greater than 3.")
 
         # In original Hypatia paper, snapshots of 100ms were utilised - this is continued here (all times are in seconds)
         # snapshot_interval = 0.1
