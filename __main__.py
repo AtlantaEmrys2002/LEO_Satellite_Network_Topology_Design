@@ -115,174 +115,189 @@ if __name__ == "__main__":
         topology = args.topology
         dcmst = args.dcmst
 
-    # Calculate the number of satellites in the network
-    total_sat = num_sats_per_orbit * num_orbits
+    # Static Topology Designs
+    if topology=="plus-grid" or topology=="x-grid":
+        # NEEDS IMPLEMENTING
+        print("NEEDS IMPLEMENTING")
 
-    # Generate test data using network description from https://github.com/snkas/hypatia/blob/master/satgenpy/tests/test
-    # _tles.py
-    data_handling.data_generation(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree,
-                                  mean_motion_rev_per_day)
-
-    # Read test data into appropriate data structure (dictionary)
-    # data = format_tle_data(file_name)
-    data = data_handling.format_tle_data(file_name)
-
-    # Extract description of satellite positions and unique orbits from data
-    satellite_data = data["satellites"]
-
-    # Calculate orbital period of network (or maximum orbital period if satellites orbit at different altitudes)
-    if multi_shell is False:
-        orbital_period = satnet.orbital_period_calculation(satellite_data[0], total_sat)
+    elif topology=="mdtd":
+        # NEEDS IMPLEMENTING
+        print("NEEDS IMPLEMENTING")
     else:
-        orbital_period = satnet.orbital_period_calculation(satellite_data, total_sat)
 
-    # Find the maximum communication distance between two satellites (may vary as satellite altitudes vary)
-    max_communication_dist = satnet.maximum_communication_distance(file_name, total_sat)
+        # Construct topology utilising this author's novel algorithm
 
-    # This is the maximum distance a satellite can establish signal (transmission power) - need to research for Kuiper
-    # and StarLink satellites
-    max_transmission_dist = maximum_transmission_distance(constellation_name)
+        # Calculate the number of satellites in the network
+        total_sat = num_sats_per_orbit * num_orbits
 
-    # Find smaller of these two numbers - the maximum distance before Earth is in the way or the max transmission
-    # distance (due to satellite power constraints)
-    max_communication_dist = min(max_communication_dist, max_transmission_dist)
+        # Generate test data using network description from https://github.com/snkas/hypatia/blob/master/satgenpy/tests/test
+        # _tles.py
+        data_handling.data_generation(file_name, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree,
+                                      mean_motion_rev_per_day)
 
-    # Initialise degree constraint for each satellite - can be changed based on technical specifications of satellites
-    satellite_degree_constraints = [3 for _ in range(len(satellite_data))]
+        # Read test data into appropriate data structure (dictionary)
+        # data = format_tle_data(file_name)
+        data = data_handling.format_tle_data(file_name)
 
-    # Check satellite network has a sufficient number of satellites and orbits
-    if total_sat < 3:
-        raise ValueError("Number of satellites must be greater than 3.")
+        # Extract description of satellite positions and unique orbits from data
+        satellite_data = data["satellites"]
 
-    # In original Hypatia paper, snapshots of 100ms were utilised - this is continued here (all times are in seconds)
-    # snapshot_interval = 0.1
+        # Calculate orbital period of network (or maximum orbital period if satellites orbit at different altitudes)
+        if multi_shell is False:
+            orbital_period = satnet.orbital_period_calculation(satellite_data[0], total_sat)
+        else:
+            orbital_period = satnet.orbital_period_calculation(satellite_data, total_sat)
 
-    # TEMPORARY CHANGE
-    snapshot_interval = 60
+        # Find the maximum communication distance between two satellites (may vary as satellite altitudes vary)
+        max_communication_dist = satnet.maximum_communication_distance(file_name, total_sat)
 
-    # The number of snapshots over an orbital period
-    num_snapshot = int(orbital_period / snapshot_interval)
+        # This is the maximum distance a satellite can establish signal (transmission power) - need to research for Kuiper
+        # and StarLink satellites
+        max_transmission_dist = maximum_transmission_distance(constellation_name)
 
-    # Generate arguments for functions
-    snapshot_arguments = [[file_name, constellation_name, total_sat, orbital_period, num_snapshot, max_communication_dist,
-                           satellite_degree_constraints, t, params,
-                           "./" + constellation_name + "_isls" + str(t) + ".txt"] for t in snapshot_ids]
+        # Find smaller of these two numbers - the maximum distance before Earth is in the way or the max transmission
+        # distance (due to satellite power constraints)
+        max_communication_dist = min(max_communication_dist, max_transmission_dist)
 
-    # Get TLEs-formatted data
-    tles_data = data_handling.read_file(file_name)
+        # Initialise degree constraint for each satellite - can be changed based on technical specifications of satellites
+        satellite_degree_constraints = [3 for _ in range(len(satellite_data))]
 
-    # Convert TLES data to Skyfield EarthSatellite objects - used to convert satellite positions to geocentric
-    # coordinates - all measurements in km
-    earth_satellite_objects = [EarthSatellite(satellite_i[1], satellite_i[2], satellite_i[0], ts) for satellite_i in
-                               tles_data]
+        # Check satellite network has a sufficient number of satellites and orbits
+        if total_sat < 3:
+            raise ValueError("Number of satellites must be greater than 3.")
 
-    ### DISTANCE MATRICES ###
+        # In original Hypatia paper, snapshots of 100ms were utilised - this is continued here (all times are in seconds)
+        # snapshot_interval = 0.1
 
-    # Calculate distance matrices - set time t (using TDB time format) to indicate point in orbital period when snapshot
-    # taken
+        # TEMPORARY CHANGE - every minute
+        snapshot_interval = 60
 
-    # Calculate the time (in TDB format) at which each snapshot is taken
-    snapshot_times = [snapshot_time_stamp(snapshot_interval * k) for k in range(num_snapshot)]
+        # The number of snapshots over an orbital period
+        num_snapshot = int(orbital_period / snapshot_interval)
 
-    # Calculate distance matrices for each snapshot
+        # Generate arguments for functions
+        snapshot_arguments = [[file_name, constellation_name, total_sat, orbital_period, num_snapshot, max_communication_dist,
+                               satellite_degree_constraints, t, params,
+                               "./" + constellation_name + "_isls" + str(t) + ".txt"] for t in snapshot_ids]
 
-    # Create directory to store the distance matrix for each snapshot in individual file within directory (can't process
-    # all at once otherwise)
-    if os.path.isdir("./" + constellation_name + "/distance_matrices") is False:
+        # Get TLEs-formatted data
+        tles_data = data_handling.read_file(file_name)
 
-        # Create directory in which to store distance matrices
-        try:
-            os.makedirs("./" + constellation_name + "/distance_matrices")
-        except OSError:
-            print("Directory to store distance matrices could not be created.")
+        # Convert TLES data to Skyfield EarthSatellite objects - used to convert satellite positions to geocentric
+        # coordinates - all measurements in km
+        earth_satellite_objects = [EarthSatellite(satellite_i[1], satellite_i[2], satellite_i[0], ts) for satellite_i in
+                                   tles_data]
 
-        # Keep track of file ID
-        file_id = 0
+        ### DISTANCE MATRICES ###
 
-        # Calculate the distance matrix (symmetric) for each snapshot of the network. Distance between satellite and
-        # itself = 0km.
-        for k in snapshot_times:
-            # Calculates position of all satellites in the network at snapshot time k
-            satellites_at_k = [i.at(k).position.km for i in earth_satellite_objects]
+        # Calculate distance matrices - set time t (using TDB time format) to indicate point in orbital period when snapshot
+        # taken
 
-            # Calculate distance (Euclidean) between all satellite pairs i and j in the network at snapshot time k
-            dist_matrix = cdist(satellites_at_k, satellites_at_k, metric='euclidean')
+        # Calculate the time (in TDB format) at which each snapshot is taken
+        snapshot_times = [snapshot_time_stamp(snapshot_interval * k) for k in range(num_snapshot)]
 
-            # Save distance matrix to .npy file
-            np.save("./" + constellation_name + "/distance_matrices/dist_matrix_" + str(file_id) + ".npy", dist_matrix)
+        # Calculate distance matrices for each snapshot
 
-            # Increment ID counter
-            file_id += 1
+        # Create directory to store the distance matrix for each snapshot in individual file within directory (can't process
+        # all at once otherwise)
+        if os.path.isdir("./" + constellation_name + "/distance_matrices") is False:
 
-    ### VISIBILITY AND TIME VISIBILITY MATRICES ###
+            # Create directory in which to store distance matrices
+            try:
+                os.makedirs("./" + constellation_name + "/distance_matrices")
+            except OSError:
+                print("Directory to store distance matrices could not be created.")
 
-    # Calculate visibility and time visibility matrices for all snapshots
+            # Keep track of file ID
+            file_id = 0
 
-    # Create directory to store the visibility matrix for each snapshot in individual file within directory (can't
-    # process all at once otherwise) - within a visibility matrix, element [i][j] is set to 0 if satellites are not
-    # visible to one another
-    if os.path.isdir("./" + constellation_name + "/visibility_matrices") is False:
+            # Calculate the distance matrix (symmetric) for each snapshot of the network. Distance between satellite and
+            # itself = 0km.
+            for k in snapshot_times:
+                # Calculates position of all satellites in the network at snapshot time k
+                satellites_at_k = [i.at(k).position.km for i in earth_satellite_objects]
 
-        # Create directory in which to store distance matrices
-        try:
-            os.makedirs("./" + constellation_name + "/visibility_matrices")
-        except OSError:
-            print("Directory to store visibility matrices could not be created.")
+                # Calculate distance (Euclidean) between all satellite pairs i and j in the network at snapshot time k
+                dist_matrix = cdist(satellites_at_k, satellites_at_k, metric='euclidean')
 
-        # Calculate all visibility matrices
-        for k in range(num_snapshot):
-            # Calculate visibility matrix for snapshot and save to .npy file - load distance from corresponding distance
-            # matrix file
-            visibility_matrix = satnet.visibility_function(
-                np.load("./" + constellation_name + "/distance_matrices/dist_matrix_" + str(k) + ".npy"),
-                max_communication_dist)
+                # Save distance matrix to .npy file
+                np.save("./" + constellation_name + "/distance_matrices/dist_matrix_" + str(file_id) + ".npy", dist_matrix)
 
-            np.save("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(k) + ".npy",
-                    visibility_matrix)
+                # Increment ID counter
+                file_id += 1
 
-    ### SUNLIGHT MATRICES ###
+        ### VISIBILITY AND TIME VISIBILITY MATRICES ###
 
-    # Calculate whether satellites are in sunlight (i.e. vulnerable to solar flares) or on the opposite side of the
-    # Earth
+        # Calculate visibility and time visibility matrices for all snapshots
 
-    if os.path.isdir("./" + constellation_name + "/sunlight_matrices") is False:
+        # Create directory to store the visibility matrix for each snapshot in individual file within directory (can't
+        # process all at once otherwise) - within a visibility matrix, element [i][j] is set to 0 if satellites are not
+        # visible to one another
+        if os.path.isdir("./" + constellation_name + "/visibility_matrices") is False:
 
-        # Create directory in which to store distance matrices
-        try:
-            os.makedirs("./" + constellation_name + "/sunlight_matrices")
-        except OSError:
-            print("Directory to store sunlight matrices could not be created.")
+            # Create directory in which to store distance matrices
+            try:
+                os.makedirs("./" + constellation_name + "/visibility_matrices")
+            except OSError:
+                print("Directory to store visibility matrices could not be created.")
 
-        file_id = 0
+            # Calculate all visibility matrices
+            for k in range(num_snapshot):
+                # Calculate visibility matrix for snapshot and save to .npy file - load distance from corresponding distance
+                # matrix file
+                visibility_matrix = satnet.visibility_function(
+                    np.load("./" + constellation_name + "/distance_matrices/dist_matrix_" + str(k) + ".npy"),
+                    max_communication_dist)
 
-        # Calculate all distance matrices
-        for k in snapshot_times:
-            # Calculate whether each satellite is in sunlight or not
-            satellites_in_sun = [i.at(k).is_sunlit(eph) for i in earth_satellite_objects]
+                np.save("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(k) + ".npy",
+                        visibility_matrix)
 
-            # Update matrix such that element sunlight_matrix[i][j] is set to 1 if i or j is in sunlight and save to
-            # file
-            np.save("./" + constellation_name + "/sunlight_matrices/sunlight_matrix_" + str(file_id) + ".npy",
-                    satnet.sunlight_function(satellites_in_sun,
-                                      total_sat))
+        ### SUNLIGHT MATRICES ###
 
-            file_id += 1
+        # Calculate whether satellites are in sunlight (i.e. vulnerable to solar flares) or on the opposite side of the
+        # Earth
 
-    # Run topology generation algorithm for each specified snapshot
+        if os.path.isdir("./" + constellation_name + "/sunlight_matrices") is False:
 
-    pool = Pool(processes=os.cpu_count())
+            # Create directory in which to store distance matrices
+            try:
+                os.makedirs("./" + constellation_name + "/sunlight_matrices")
+            except OSError:
+                print("Directory to store sunlight matrices could not be created.")
 
-    pool.map(heuristic_topology_design_algorithm_isls, snapshot_arguments)
+            file_id = 0
 
-    pool.terminate()
+            # Calculate all distance matrices
+            for k in snapshot_times:
+                # Calculate whether each satellite is in sunlight or not
+                satellites_in_sun = [i.at(k).is_sunlit(eph) for i in earth_satellite_objects]
+
+                # Update matrix such that element sunlight_matrix[i][j] is set to 1 if i or j is in sunlight and save to
+                # file
+                np.save("./" + constellation_name + "/sunlight_matrices/sunlight_matrix_" + str(file_id) + ".npy",
+                        satnet.sunlight_function(satellites_in_sun,
+                                          total_sat))
+
+                file_id += 1
+
+        # Run topology generation algorithm for each specified snapshot - utilise multiprocessing to make program faster
+        # (dependent on the number of cores of computer run program on)
+
+        pool = Pool(processes=os.cpu_count())
+
+        pool.map(heuristic_topology_design_algorithm_isls, snapshot_arguments)
+
+        pool.terminate()
 
 print(time.time() - start)
 
 
 # References
+# Argparse Terminology - https://stackoverflow.com/questions/19124304/what-does-metavar-and-action-mean-in-argparse-in-python
 # Argsort Error - https://stackoverflow.com/questions/53923914/weird-wrong-outpout-of-np-argsort
 # Asserting Numpy Equality - https://stackoverflow.com/questions/3302949/best-way-to-assert-for-numpy-array-equality
 # Building Project Documentation - https://medium.com/@pratikdomadiya123/build-project-documentation-quickly-with-the-sphinx-python-2a9732b66594
+# Check Number of Arguments - https://stackoverflow.com/questions/10698468/how-to-check-if-any-arguments-have-been-passed-to-argparse
 # Combinations of Arrays - https://stackoverflow.com/questions/1208118/using-numpy-to-build-an-array-of-all-combinations-of-two-arrays
 # Combinations with Numpy - https://stackoverflow.com/questions/1208118/using-numpy-to-build-an-array-of-all-combinations-of-two-arrays
 # Common Elements of Numpy Array - https://stackoverflow.com/questions/44265572/find-common-elements-in-2d-numpy-arrays
@@ -330,6 +345,8 @@ print(time.time() - start)
 # Orbital Distance - https://space.stackexchange.com/questions/27872/how-to-calculate-the-orbital-distance-between-2-satellites-given-the-tles
 # Or Order - https://stackoverflow.com/questions/55503078/why-does-the-order-of-statements-in-an-or-condition-matter
 # OS Library Commands - https://stackoverflow.com/questions/8933237/how-do-i-check-if-a-directory-exists-in-python
+# Parsing Lists - https://stackoverflow.com/questions/15753701/how-can-i-pass-a-list-as-a-command-line-argument-with-argparse
+# Parsing Integer Lists - https://stackoverflow.com/questions/15459997/passing-integer-lists-to-python
 # Prim's Algorithm - https://en.wikipedia.org/wiki/Prim%27s_algorithm
 # Pyephem Code - https://github.com/brandon-rhodes/pyephem
 # Pyephem Documentation - https://rhodesmill.org/pyephem/quick
