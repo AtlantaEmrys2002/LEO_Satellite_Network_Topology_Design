@@ -73,6 +73,8 @@ def snapshot_time_stamp(time_stamp):
 start = time.time()
 if __name__ == "__main__":
 
+    ### INPUTS ###
+
     # Parse inputs to module
     parser = argparse.ArgumentParser()
     parser.add_argument("--tles", type=str, help="name of input file which contains TLE description of satellite network")
@@ -115,6 +117,15 @@ if __name__ == "__main__":
         optimisation_method = args.optimisation_method
         topology = args.topology
         dcmst = args.dcmst
+
+    # If optimising or analysing any topologies, need to construct a directory to store results
+    # Check directory for resulting topology exists
+    if os.path.isdir("./Results/" + topology + "/" + constellation_name.lower()) is False:
+        try:
+            os.makedirs("./Results/" + topology + "/" + constellation_name.lower())
+        except OSError:
+            print("Directory to store distance matrices could not be created.")
+
 
     # Benchmark Static Topology Designs
     if topology=="plus-grid":

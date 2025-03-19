@@ -171,7 +171,6 @@ def experiment(num_param_sets, num_snapshots, num_snapshots_to_sample, num_satel
 
             print(time.time() - start)
 
-
             print('ji')
 
     # Write Results to CSV Format - this code was adapted from documentation - https://docs.python.org/3/library/csv.html#csv.DictWriter
