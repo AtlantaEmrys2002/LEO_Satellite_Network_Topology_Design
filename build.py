@@ -1,11 +1,9 @@
 # Import Relevant Libraries
-
 import data_handling
 import dcmst_construction_algorithms as topology_build
 import numpy as np
 import random
 import satellite_network_attribute_functions as satnet
-import time
 
 # Returns heuristic approximation of degree constrained minimum spanning tree of network, using primal-cut branch
 # algorithm (see paper for references)
@@ -16,13 +14,11 @@ def dcmst(cost_matrix, constraints, total_satellites):
     tree, degree = topology_build.modified_prims_algorithm(cost_matrix, constraints, total_satellites, random.randint(0, total_satellites))
 
     # Run second stage where edges are swapped if better connection found
-
     tree, degree = topology_build.edge_exchange(cost_matrix, constraints, total_satellites, tree, degree)
 
     return tree, degree
 
 # Builds ISL topology for a single snapshot
-# def heuristic_topology_design_algorithm_isls(input_file_name, constellation_name, total_satellites, orbit_period, max_comm_dist, degree_constraints, snapshot_id, params, output_filename_isls):
 def heuristic_topology_design_algorithm_isls(arguments):
 
     input_file_name, constellation_name, total_satellites, orbit_period, num_snapshot, max_comm_dist, degree_constraints, snapshot_id, params, output_filename_isls, method = arguments
@@ -42,7 +38,6 @@ def heuristic_topology_design_algorithm_isls(arguments):
 
     # Calculate cost matrix. Calculating for current snapshot, so visibility matrix chosen is at pos
     # 0 in array (same for distance matrix
-
     cost_matrix = satnet.cost_function(np.load("./"+constellation_name+"/visibility_matrices/visibility_matrix_"+str(snapshot_id)+".npy"), time_visibility_matrix,
                                 np.load("./"+constellation_name+"/distance_matrices/dist_matrix_"+str(snapshot_id)+".npy"),
                                 np.load("./"+constellation_name+"/sunlight_matrices/sunlight_matrix_"+str(snapshot_id)+".npy"), alpha, beta, gamma,

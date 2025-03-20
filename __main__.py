@@ -3,7 +3,6 @@
 # Kuiper?)
 # Find maximum transmission dist for Starlink, Kuiper and telesat - 27000 paper sets at 5014 km - also mentioned in code
 # Improve visibility by looking at NSGA-III paper and the antenna direction - will need a way to get antenna direction
-# CHECK CORRECTNESS OF ALGORITHM
 # INCLUDE OTHER HYPERPARAMETERS - BANDWIDTH
 # EXPERIMENT WITH INCREASE CONNECTIVITY FUNC - IN FREE OPTICAL SPACE NETWORKS PAPER (BROADBAND NOT SATELLITE), THEY
 # CONNECT LARGEST COST EDGES - REDUCES GRAPH DIAMETER AT EXPENSE OF ENERGY EFFICIENCY

@@ -1,5 +1,4 @@
 # Libraries
-from collections import deque
 import numpy as np
 from scipy.sparse.csgraph import connected_components
 from scipy.sparse import csr_array
@@ -97,7 +96,7 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
                     new_edge = k[1:]
                     break
 
-        # If no new edge found, check if can find edge with incident nodes of a smaller degree
+        # If no new edge found, check if an edge with incident nodes of a smaller degree can be found
         if (new_edge.size == 0) and ((degree[edge[0]] == constraints[edge[0]]) or (degree[edge[1]] == constraints[edge[1]])) and (sorted_costs_equal_to_current.size != 0):
             for k in sorted_costs_equal_to_current:
                 k = k.astype(int)
@@ -130,7 +129,7 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
 
         print(m)
 
-    return tree
+    return tree, degree
 
 
 
@@ -165,7 +164,7 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
 # tree to vertices already within the tree. Function returns tree and degree of each vertex in the tree.
 def modified_prims_algorithm(cost_matrix, constraints, total_satellites:int, initial_node:int):
     """
-    # Function constructs initial DCMST by greedily adding the shortest edges that connect vertices not currently within the tree to vertices already within the tree. However, degree constraints for each node are obeyed. I.e. this is the modified version of Prim's Minimum Spanning Tree Algorithm presented in the original paper on DCMSTs (see report for full reference). Function returns tree and degree of each vertex in the tree.
+    # Function constructs initial DCMST by greedily adding the shortest edges that connect vertices not currently within the tree to vertices already within the tree. However, degree constraints for each node are obeyed. I.e. this is the modified version of Prim's Minimum Spanning Tree Algorithm presented in the original paper on DCMST (see report for full reference). Function returns tree and degree of each vertex in the tree.
 
     :param cost_matrix:
     :param constraints:

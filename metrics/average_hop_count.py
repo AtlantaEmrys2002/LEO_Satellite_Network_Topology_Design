@@ -16,14 +16,19 @@ def hop_count(topology_matrix, distance_matrix, num_satellites):
 
     # Calculate path from source to destination using Dijkstra's Shortest Path Algorithm
     graph = nx.from_numpy_array(distance_matrix)
-    result = nx.shortest_path(graph)
+
+    print("HI")
+
+    # result = nx.shortest_path(graph)
+    path = dict(nx.all_pairs_shortest_path(graph))
 
     average_hop_count = 0
 
     # Calculate hop counts between all pairs of satellites
     for i in range(num_satellites):
         for j in range(i+1, num_satellites):
-            average_hop_count += (len(result[i][j]) - 1)
+            # average_hop_count += (len(result[i][j]) - 1)
+            average_hop_count += (len(path[i][j]) - 1)
 
     # Calculate average
     average_hop_count /= ((pow(num_satellites, 2) - num_satellites) / 2)
