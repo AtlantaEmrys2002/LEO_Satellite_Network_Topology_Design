@@ -13,7 +13,6 @@ def dcmst(cost_matrix, constraints, total_satellites):
 
     # Construct initial DCMST (Degree-Constrained Spanning Tree) using modified version of Prim's algorithm (modified so
     # number of edges incident to any given vertex cannot be greater than constraint (maximum degree) of given vertex)
-    # tree, degree = prims_algorithm(cost_matrix, constraints, total_satellites)
     tree, degree = topology_build.modified_prims_algorithm(cost_matrix, constraints, total_satellites, random.randint(0, total_satellites))
 
     # Run second stage where edges are swapped if better connection found
@@ -26,7 +25,7 @@ def dcmst(cost_matrix, constraints, total_satellites):
 # def heuristic_topology_design_algorithm_isls(input_file_name, constellation_name, total_satellites, orbit_period, max_comm_dist, degree_constraints, snapshot_id, params, output_filename_isls):
 def heuristic_topology_design_algorithm_isls(arguments):
 
-    input_file_name, constellation_name, total_satellites, orbit_period, num_snapshot, max_comm_dist, degree_constraints, snapshot_id, params, output_filename_isls = arguments
+    input_file_name, constellation_name, total_satellites, orbit_period, num_snapshot, max_comm_dist, degree_constraints, snapshot_id, params, output_filename_isls, method = arguments
 
     # ### TIME VISIBILITY MATRIX ###
 
@@ -69,6 +68,6 @@ def heuristic_topology_design_algorithm_isls(arguments):
     ### SAVE TOPOLOGY ###
 
     # Convert final topology for given snapshot to correct format and save algorithm results to file.
-    data_handling.write_topology_to_file(output_filename_isls, isls)
+    data_handling.write_topology_to_file(output_filename_isls, isls, method)
 
     return

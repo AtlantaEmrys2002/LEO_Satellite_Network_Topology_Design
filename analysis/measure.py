@@ -56,6 +56,7 @@ def measure_dynamic(constellation_name, topology_file_location, num_satellites, 
     # Initialise values
     max_pd, mean_pd, av_hop_count, link_churn = 0, 0, 0, 0
 
+    # For each topology over the course of one orbital period
     for k in range(num_snapshots):
 
         # Read in current topology

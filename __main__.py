@@ -11,8 +11,9 @@
 # Randomly select edge from all edges with same cost rather than just selecting first one
 
 # Import Relevant Libraries
+from analysis import measure
 import argparse
-from collections import deque
+import csv
 import data_handling
 from multiprocessing import Pool
 import numpy as np
@@ -27,7 +28,7 @@ from skyfield.api import EarthSatellite, load  # recommended by astropy for calc
 import sys
 import time
 from build import heuristic_topology_design_algorithm_isls
-from satellite_topology_construction_algorithms import plus_grid
+from satellite_topology_construction_algorithms import plus_grid, minimum_delay_topology_design_algorithm
 
 # Global Timescale (used for determining how to calculate time with Skyfield functions)
 ts = load.timescale()
@@ -86,7 +87,7 @@ if __name__ == "__main__":
     parser.add_argument("--snapshots", type=int, nargs="+", help="ids of the snapshots for which to build a topology (minimum of 0, maximum is number of snapshots taken over the course of one orbital period)")
     parser.add_argument("--weights", type=float, nargs=3, help="values of weights of cost function (alpha for time visibility, beta for distance, gamma for probability of failure)")
     parser.add_argument("--multi", type=bool, help="determines if the constellation contains multiple shells")
-    parser.add_argument("--optimise", type=bool, help="determines if cost function weights should be optimised")
+    parser.add_argument("--optimise", type=bool, help="determines if cost function weights should be optimised and/or metrics returned")
     parser.add_argument("--optimisation_method", type=str, help="if cost function is optimised, determines method with which to find optimal weights (options: 'random', 'evolutionary', 'machine-learning')")
     parser.add_argument("--topology", type=str, help="determines method with which to construct topology for network (options: 'plus-grid', 'x-grid', 'mdtd', 'novel')")
     parser.add_argument("--dcmst", type=str, help="if novel topology construction algorithm is used, determines which dcmst construction method is used (options: 'aco', 'ga', 'primal')")
@@ -118,6 +119,9 @@ if __name__ == "__main__":
         topology = args.topology
         dcmst = args.dcmst
 
+    # Calculate the number of satellites in the network
+    total_sat = num_sats_per_orbit * num_orbits
+
     # If optimising or analysing any topologies, need to construct a directory to store results
     # Check directory for resulting topology exists
     if os.path.isdir("./Results/" + topology + "/" + constellation_name.lower()) is False:
@@ -127,6 +131,7 @@ if __name__ == "__main__":
             print("Directory to store distance matrices could not be created.")
 
 
+    ### STATIC ALGORITHMS
     # Benchmark Static Topology Designs
     if topology=="plus-grid":
         # Check directory for resulting topology exists
@@ -138,19 +143,26 @@ if __name__ == "__main__":
 
         # Use Hypatia implementation to create +Grid topology
         plus_grid.generate_plus_grid_isls("./plus_grid/" + constellation_name.lower() + "/isls.txt", num_orbits, num_sats_per_orbit, isl_shift=0, idx_offset=0)
+
+        # Return metrics if optimise is true
+        if optimise is True:
+
+            # Calculate metrics for topology
+            max_pd, mean_pd, av_hop_count, link_churn = measure.measure_static(constellation_name, "./plus_grid/" + constellation_name.lower() + "/isls.txt", total_sat)
+
+            # Write results to CSV Format - this code was adapted from documentation - https://docs.python.org/3/library/csv.html#csv.DictWriter
+            with open('./Results/' + topology + "/" + constellation_name.lower() + '/results.csv', 'w', newline='') as csvfile:
+                fieldnames = ['max_latency', 'mean_latency', 'average_hop_count', 'link_churn']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerow(dict(max_latency=max_pd, mean_latency=mean_pd, average_hop_count=av_hop_count, link_churn=link_churn))
+
     elif topology == "x-grid":
         print("NEEDS IMPLEMENTING")
-    # Benchmark MDTD Design
-    elif topology=="mdtd":
-        # NEEDS IMPLEMENTING
-        print("NEEDS IMPLEMENTING")
-    # Novel Algorithm
+
+    ### DYNAMIC ALGORITHMS
     else:
-
         # Construct topology utilising this author's novel algorithm
-
-        # Calculate the number of satellites in the network
-        total_sat = num_sats_per_orbit * num_orbits
 
         # Generate test data using network description from https://github.com/snkas/hypatia/blob/master/satgenpy/tests/test
         # _tles.py
@@ -199,7 +211,7 @@ if __name__ == "__main__":
         # Generate arguments for functions
         snapshot_arguments = [[file_name, constellation_name, total_sat, orbital_period, num_snapshot, max_communication_dist,
                                satellite_degree_constraints, t, params,
-                               "./" + constellation_name + "_isls" + str(t) + ".txt"] for t in snapshot_ids]
+                               "./" + constellation_name + "_isls" + str(t) + ".txt", topology] for t in snapshot_ids]
 
         # Get TLEs-formatted data
         tles_data = data_handling.read_file(file_name)
@@ -247,68 +259,80 @@ if __name__ == "__main__":
                 # Increment ID counter
                 file_id += 1
 
-        ### VISIBILITY AND TIME VISIBILITY MATRICES ###
+        ### GENERATES TOPOLOGY USING BENCHMARK MDTD ALGORITHM
+        # Benchmark MDTD Design
+        if topology == "mdtd":
+            # Temporary
+            constant = 3
+            minimum_delay_topology_design_algorithm(constellation_name, num_snapshot, total_sat, satellite_degree_constraints, constant, topology)
 
-        # Calculate visibility and time visibility matrices for all snapshots
+        ### NOVEL TOPOLOGY DESIGN ALGORITHM (BUILT FOR THIS PROJECT)
+        else:
 
-        # Create directory to store the visibility matrix for each snapshot in individual file within directory (can't
-        # process all at once otherwise) - within a visibility matrix, element [i][j] is set to 0 if satellites are not
-        # visible to one another
-        if os.path.isdir("./" + constellation_name + "/visibility_matrices") is False:
 
-            # Create directory in which to store distance matrices
-            try:
-                os.makedirs("./" + constellation_name + "/visibility_matrices")
-            except OSError:
-                print("Directory to store visibility matrices could not be created.")
+            ### VISIBILITY AND TIME VISIBILITY MATRICES ###
 
-            # Calculate all visibility matrices
-            for k in range(num_snapshot):
-                # Calculate visibility matrix for snapshot and save to .npy file - load distance from corresponding distance
-                # matrix file
-                visibility_matrix = satnet.visibility_function(
-                    np.load("./" + constellation_name + "/distance_matrices/dist_matrix_" + str(k) + ".npy"),
-                    max_communication_dist)
+            # Calculate visibility and time visibility matrices for all snapshots
 
-                np.save("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(k) + ".npy",
-                        visibility_matrix)
+            # Create directory to store the visibility matrix for each snapshot in individual file within directory (can't
+            # process all at once otherwise) - within a visibility matrix, element [i][j] is set to 0 if satellites are not
+            # visible to one another
+            if os.path.isdir("./" + constellation_name + "/visibility_matrices") is False:
 
-        ### SUNLIGHT MATRICES ###
+                # Create directory in which to store distance matrices
+                try:
+                    os.makedirs("./" + constellation_name + "/visibility_matrices")
+                except OSError:
+                    print("Directory to store visibility matrices could not be created.")
 
-        # Calculate whether satellites are in sunlight (i.e. vulnerable to solar flares) or on the opposite side of the
-        # Earth
+                # Calculate all visibility matrices
+                for k in range(num_snapshot):
+                    # Calculate visibility matrix for snapshot and save to .npy file - load distance from corresponding distance
+                    # matrix file
+                    visibility_matrix = satnet.visibility_function(
+                        np.load("./" + constellation_name + "/distance_matrices/dist_matrix_" + str(k) + ".npy"),
+                        max_communication_dist)
 
-        if os.path.isdir("./" + constellation_name + "/sunlight_matrices") is False:
+                    np.save("./" + constellation_name + "/visibility_matrices/visibility_matrix_" + str(k) + ".npy",
+                            visibility_matrix)
 
-            # Create directory in which to store distance matrices
-            try:
-                os.makedirs("./" + constellation_name + "/sunlight_matrices")
-            except OSError:
-                print("Directory to store sunlight matrices could not be created.")
+            ### SUNLIGHT MATRICES ###
 
-            file_id = 0
+            # Calculate whether satellites are in sunlight (i.e. vulnerable to solar flares) or on the opposite side of the
+            # Earth
 
-            # Calculate all distance matrices
-            for k in snapshot_times:
-                # Calculate whether each satellite is in sunlight or not
-                satellites_in_sun = [i.at(k).is_sunlit(eph) for i in earth_satellite_objects]
+            if os.path.isdir("./" + constellation_name + "/sunlight_matrices") is False:
 
-                # Update matrix such that element sunlight_matrix[i][j] is set to 1 if i or j is in sunlight and save to
-                # file
-                np.save("./" + constellation_name + "/sunlight_matrices/sunlight_matrix_" + str(file_id) + ".npy",
-                        satnet.sunlight_function(satellites_in_sun,
-                                          total_sat))
+                # Create directory in which to store distance matrices
+                try:
+                    os.makedirs("./" + constellation_name + "/sunlight_matrices")
+                except OSError:
+                    print("Directory to store sunlight matrices could not be created.")
 
-                file_id += 1
+                file_id = 0
 
-        # Run topology generation algorithm for each specified snapshot - utilise multiprocessing to make program faster
-        # (dependent on the number of cores of computer run program on)
+                # Calculate all distance matrices
+                for k in snapshot_times:
+                    # Calculate whether each satellite is in sunlight or not
+                    satellites_in_sun = [i.at(k).is_sunlit(eph) for i in earth_satellite_objects]
 
-        pool = Pool(processes=os.cpu_count())
+                    # Update matrix such that element sunlight_matrix[i][j] is set to 1 if i or j is in sunlight and save to
+                    # file
+                    np.save("./" + constellation_name + "/sunlight_matrices/sunlight_matrix_" + str(file_id) + ".npy",
+                            satnet.sunlight_function(satellites_in_sun,
+                                              total_sat))
 
-        pool.map(heuristic_topology_design_algorithm_isls, snapshot_arguments)
+                    file_id += 1
 
-        pool.terminate()
+            # Run topology generation algorithm for each specified snapshot - utilise multiprocessing to make program faster
+            # (dependent on the number of cores of computer run program on)
+
+            pool = Pool(processes=os.cpu_count())
+
+            pool.map(heuristic_topology_design_algorithm_isls, snapshot_arguments)
+
+            pool.terminate()
+
 
 print(time.time() - start)
 

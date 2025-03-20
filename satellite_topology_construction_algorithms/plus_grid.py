@@ -20,10 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-
 def generate_plus_grid_isls(output_filename_isls, n_orbits, n_sats_per_orbit, isl_shift, idx_offset=0):
     """
-    Generate plus grid ISL file.
+    Generate plus grid ISL file. This code (from Hypatia) generates a +Grid topology for a given satellite network (it assumes that each satellite has 4 ISL terminals).
 
     :param output_filename_isls     Output filename
     :param n_orbits:                Number of orbits
