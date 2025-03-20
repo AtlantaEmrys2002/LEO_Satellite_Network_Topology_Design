@@ -24,8 +24,8 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
         distance_matrix = np.load("./" + constellation_name + "/distance_matrices/dist_matrix_" + str(k) + ".npy")
 
         # Calculate the shortest path between all satellite pairs in the network
-        graph = nx.from_numpy_array(distance_matrix)
-        result = nx.shortest_path(graph)
+        graph = nx.from_numpy_array(distance_matrix, create_using=nx.MultiGraph)
+        result = dict(nx.all_pairs_shortest_path(graph))
 
         # Find union of all shortest paths in network
         for i in range(num_satellites):
@@ -33,6 +33,7 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
 
                 # Look at all edges on path between satellites i and j and add to new topology
                 path = result[i][j]
+
                 for p in range(1, len(path)):
                     new_topology[path[p], path[p-1]] = 1
                     new_topology[path[p - 1], path[p]] = 1
@@ -43,31 +44,33 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
         # Attempt to delete edges to prevent violation of degree constraint
         for v in range(num_satellites):
             if degree[v] > constraints[v]:
+
                 # Find all links where v is endpoint
-                connected_satellites = np.argwhere(new_topology[v] > 0)
+                connected_satellites = np.argwhere(new_topology[v] > 0).flatten()
 
                 # Find associated costs
                 links = np.array([[distance_matrix[v, u], v, u] for u in connected_satellites])
 
-                # Sort according to distance (cost)
-                links = links[links[:, 0].argsort()]
+                # Sort according to distance (cost) in decreasing order - CHECK
+                links = np.flip(links[links[:, 0].argsort()], 0)
 
                 # In decreasing order, check if deleting component leads to disconnected graph
                 for l in links:
-                    new_topology[l[1], l[2]] = 0
-                    new_topology[l[2], l[1]] = 0
+
+                    new_topology[int(l[1]), int(l[2])] = 0
+                    new_topology[int(l[2]), int(l[1])] = 0
 
                     # Convert to format
                     deleted_edge_graph = nx.from_numpy_array(new_topology)
 
                     # If causes disconnection, add edge back in
                     if nx.is_connected(deleted_edge_graph) is False:
-                        new_topology[l[1], l[2]] = 1
-                        new_topology[l[2], l[1]] = 1
+                        new_topology[int(l[1]), int(l[2])] = 1
+                        new_topology[int(l[2]), int(l[1])] = 1
                     else:
-                        # Decrease degree
-                        degree[l[1]] -= 1
-                        degree[l[0]] -= 1
+                        # Decrease degree of relevant satellite vertices
+                        degree[int(l[1])] -= 1
+                        degree[int(l[2])] -= 1
 
         # Increase connectivity of topology (adding in edges such that degree constraints not violated)
         new_topology = topology_build.increase_connectivity(new_topology, constraints, degree, distance_matrix, num_satellites)
@@ -88,6 +91,8 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
                 former_topology = new_topology
                 previous_propagation_delay = current_prop_delay
                 data_handling.write_topology_to_file(output_filename, new_topology, method)
+            else:
+                data_handling.write_topology_to_file(output_filename, former_topology, method)
 
         print("HI")
 
