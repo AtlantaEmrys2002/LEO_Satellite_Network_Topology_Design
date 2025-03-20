@@ -2,9 +2,11 @@
 import numpy as np
 import metrics
 
+
 def read_isl_file(isl_file_name, num_satellites):
     """
-    Reads description of topology from file for analysis according to multiple metrics. Often used by cost function optimisation code.
+    Reads description of topology from file for analysis according to multiple metrics. Often used by cost function
+    optimisation code.
     :param isl_file_name:
     :param num_satellites:
     :return:
@@ -18,9 +20,11 @@ def read_isl_file(isl_file_name, num_satellites):
 
     return topology_matrix
 
+
 def measure_static(constellation_name, topology_file_name, num_satellites):
     """
-    Calculates the maximum propagation delay, mean propagation delay, and average hop count (as well as returning link churn for completeness) for static satellite network topology.
+    Calculates the maximum propagation delay, mean propagation delay, and average hop count (as well as returning link
+    churn for completeness) for static satellite network topology.
     :param constellation_name:
     :param topology_file_name:
     :param num_satellites:
@@ -46,7 +50,8 @@ def measure_static(constellation_name, topology_file_name, num_satellites):
 
 def measure_dynamic(constellation_name, topology_file_location, num_satellites, num_snapshots):
     """
-    Calculates the maximum propagation delay, mean propagation delay, average hop count, and link churn for dynamic satellite network topology.
+    Calculates the maximum propagation delay, mean propagation delay, average hop count, and link churn for dynamic
+    satellite network topology.
     :param constellation_name:
     :param topology_file_location:
     :param num_satellites:
@@ -60,7 +65,8 @@ def measure_dynamic(constellation_name, topology_file_location, num_satellites, 
     for k in range(num_snapshots):
 
         # Read in current topology
-        topology = read_isl_file(topology_file_location + constellation_name + "_isls_" + str(k) + ".txt", num_satellites)
+        topology = read_isl_file(topology_file_location + constellation_name + "_isls_" + str(k) + ".txt",
+                                 num_satellites)
 
         # Read in distance matrix for current snapshot
         distance = np.load("./" + constellation_name + "/distance_matrices/dist_matrix_" + str(k) + ".npy")
@@ -75,6 +81,7 @@ def measure_dynamic(constellation_name, topology_file_location, num_satellites, 
     link_churn = metrics.link_churn(topology_file_location, constellation_name, num_snapshots, num_satellites)
 
     if max_pd == 0 or mean_pd == 0 or av_hop_count == 0:
-        raise ValueError("Check metric calculations - it is not possible for satellites in two different positions to have a propagation delay value equal to 0. Similarly, hop count is always >= 1.")
+        raise ValueError("Check metric calculations - it is not possible for satellites in two different positions to "
+                         "have a propagation delay value equal to 0. Similarly, hop count is always >= 1.")
 
     return max_pd, mean_pd, av_hop_count, link_churn

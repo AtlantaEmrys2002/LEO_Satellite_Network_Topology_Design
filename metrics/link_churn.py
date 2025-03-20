@@ -1,8 +1,11 @@
 # Libraries
 import numpy as np
+
+
 def link_churn(location, constellation_name, snapshot_num, num_satellites):
     """
-    Calculates link churn for satellite network over one orbital period (as determined by number of snapshots of network taken).
+    Calculates link churn for satellite network over one orbital period (as determined by number of snapshots of network
+     taken).
     :param location:
     :param constellation_name:
     :param snapshot_num:
@@ -55,29 +58,5 @@ def link_churn(location, constellation_name, snapshot_num, num_satellites):
         # Create topology matrix for current
         current = np.zeros((num_satellites, num_satellites))
         current[current_isls[0], current_isls[1]] = 1
-
-    return total
-
-
-
-
-
-
-
-
-
-
-    # Takes all snapshots of topology and finds the total number of link changes over the course of 1 orbit - need all snapshots!
-
-    # Convert to numpy arrays
-    snapshots = [np.array(x) for x in snapshots]
-
-    # Initialise total link changes to 0
-    total = 0
-
-    # CHECK IT WORKS WITH 0 and 1 (INSTEAD OF T AND F)
-    for x in range(len(snapshots)):
-        if x != len(snapshots) - 1:
-            total += np.sum(np.logical_xor(snapshots[x], snapshots[x + 1]))
 
     return total

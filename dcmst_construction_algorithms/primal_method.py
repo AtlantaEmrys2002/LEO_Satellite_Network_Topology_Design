@@ -3,6 +3,7 @@ import numpy as np
 from scipy.sparse.csgraph import connected_components
 from scipy.sparse import csr_array
 
+
 def subtree_builder(tree, deleted_edge):
     """
     Finds the two subtrees created by deleting a given edge from a given degree constrained minimum spanning tree.
@@ -13,7 +14,7 @@ def subtree_builder(tree, deleted_edge):
     # Edge deleted from tree
     edge = deleted_edge
 
-    ### CREATE TWO SUBTREES CREATED BY EDGE REMOVAL ###
+    # CREATE TWO SUBTREES CREATED BY EDGE REMOVAL #
 
     # Tree without edge (i.e. two subtrees with edge removed)
     tree[edge[0], edge[1]] = 0
@@ -66,7 +67,8 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
 
         # Select all edges with a cost greater than zero
         potential_better_edge_costs = cost_matrix[potential_better_edges.T[0], potential_better_edges.T[1]]
-        potential_better_edges = np.vstack((potential_better_edge_costs, potential_better_edges.T[0], potential_better_edges.T[1])).T
+        potential_better_edges = np.vstack((potential_better_edge_costs, potential_better_edges.T[0],
+                                            potential_better_edges.T[1])).T
 
         # Sort according to cost in increasing order
         potential_better_edges = potential_better_edges[potential_better_edges[:, 0].argsort()]
@@ -97,7 +99,9 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
                     break
 
         # If no new edge found, check if an edge with incident nodes of a smaller degree can be found
-        if (new_edge.size == 0) and ((degree[edge[0]] == constraints[edge[0]]) or (degree[edge[1]] == constraints[edge[1]])) and (sorted_costs_equal_to_current.size != 0):
+        if ((new_edge.size == 0) and ((degree[edge[0]] == constraints[edge[0]]) or
+                                      (degree[edge[1]] == constraints[edge[1]])) and
+                (sorted_costs_equal_to_current.size != 0)):
             for k in sorted_costs_equal_to_current:
                 k = k.astype(int)
                 if (degree[k[1]] < constraints[k[1]]) and (degree[k[2]] < constraints[k[2]]):
@@ -132,14 +136,6 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
     return tree, degree
 
 
-
-
-
-
-
-
-
-
 # print(edge_exchange(np.asarray([[-1, 4, -1, -1, -1, -1, -1, 8, -1],
 #                                  [4, -1, 8, -1, -1, -1, -1, 11, -1],
 #                                  [-1, 8, -1, 7, -1, 4, -1, -1, 2],
@@ -148,7 +144,8 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
 #                                  [-1, -1, 4, 14, 10, -1, 2, -1, -1],
 #                                  [-1, -1, -1, -1, -1, 2, -1, 1, 6],
 #                                  [8, 11, -1, -1, -1, -1, 1, -1, 7],
-#                                  [-1, -1, 2, -1, -1, -1, 6, 7, -1]]), np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]), 9, np.array(
+#                                  [-1, -1, 2, -1, -1, -1, 6, 7, -1]]), np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]), 9,
+#                                  np.array(
 #                  [[0, 1, 0, 0, 0, 0, 0, 0, 0],
 #                   [1, 0, 1, 0, 0, 0, 0, 0, 0],
 #                   [0, 1, 0, 1, 0, 0, 0, 0, 1],
@@ -162,9 +159,12 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
 
 # Function constructs initial DCMST by greedily adding the shortest edges that connect vertices not currently within the
 # tree to vertices already within the tree. Function returns tree and degree of each vertex in the tree.
-def modified_prims_algorithm(cost_matrix, constraints, total_satellites:int, initial_node:int):
+def modified_prims_algorithm(cost_matrix, constraints, total_satellites: int, initial_node: int):
     """
-    # Function constructs initial DCMST by greedily adding the shortest edges that connect vertices not currently within the tree to vertices already within the tree. However, degree constraints for each node are obeyed. I.e. this is the modified version of Prim's Minimum Spanning Tree Algorithm presented in the original paper on DCMST (see report for full reference). Function returns tree and degree of each vertex in the tree.
+    # Function constructs initial DCMST by greedily adding the shortest edges that connect vertices not currently
+    within the tree to vertices already within the tree. However, degree constraints for each node are obeyed. I.e.
+    this is the modified version of Prim's Minimum Spanning Tree Algorithm presented in the original paper on DCMST (
+    see report for full reference). Function returns tree and degree of each vertex in the tree.
 
     :param cost_matrix:
     :param constraints:
@@ -175,7 +175,8 @@ def modified_prims_algorithm(cost_matrix, constraints, total_satellites:int, ini
     # Initialise list of edges
     tree = np.zeros((total_satellites, total_satellites))
 
-    # All the vertices within the tree - select random initial vertex. Set quicker to search. Initial node chosen randomly.
+    # All the vertices within the tree - select random initial vertex. Set quicker to search. Initial node chosen
+    # randomly.
     tree_vertices = {initial_node}
 
     # Stores the current degree of all satellites
@@ -183,7 +184,8 @@ def modified_prims_algorithm(cost_matrix, constraints, total_satellites:int, ini
 
     # Create array of edges and their associated costs - take j in range (k+1, total_satellites) as the matrix is
     # symmetric and reduces search space
-    sorted_costs = np.asarray([[cost_matrix[k, j], k, j] for k in range(total_satellites) for j in range(k+1, total_satellites)])
+    sorted_costs = np.asarray([[cost_matrix[k, j], k, j] for k in range(total_satellites) for j in
+                               range(k+1, total_satellites)])
 
     # Sort the costs in increasing order according to cost
     sorted_costs = sorted_costs[sorted_costs[:, 0].argsort()]
@@ -212,8 +214,9 @@ def modified_prims_algorithm(cost_matrix, constraints, total_satellites:int, ini
             first = sorted_costs[current_pos, 0]
             second = sorted_costs[current_pos, 1]
 
-            if (((first in tree_vertices) and (second in tree_vertices)) or ((first not in tree_vertices) and (second
-                    not in tree_vertices))) or ((degree[second] == constraints[second]) or (degree[first] == constraints[first])):
+            if ((((first in tree_vertices) and (second in tree_vertices)) or
+                 ((first not in tree_vertices) and (second not in tree_vertices))) or
+                    ((degree[second] == constraints[second]) or (degree[first] == constraints[first]))):
                 current_pos += 1
                 # If no way to construct DCMST, no way to construct topology
                 if current_pos == potential_edges_num:

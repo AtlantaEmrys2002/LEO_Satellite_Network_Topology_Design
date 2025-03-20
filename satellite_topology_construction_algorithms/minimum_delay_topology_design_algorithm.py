@@ -5,7 +5,9 @@ from metrics import propagation_delay
 import numpy as np
 import networkx as nx
 
-def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, num_satellites, constraints, constant, method):
+
+def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, num_satellites, constraints, constant,
+                                            method):
 
     # Stores previous snapshot's topology and average propagation delay
     former_topology = 0
@@ -25,6 +27,19 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
 
         # Calculate the shortest path between all satellite pairs in the network
         graph = nx.from_numpy_array(distance_matrix, create_using=nx.MultiGraph)
+
+        # for i in range(num_satellites):
+        #     for j in range(i+1, num_satellites):
+        #         # Check if there is a path through the network between satellites i and j in topology
+        #         graph = nx.from_numpy_array(new_topology, create_using=nx.MultiGraph)
+        #         if nx.has_path(graph, i, j) is False:
+        #             dist_graph = nx.from_numpy_array(distance_matrix, create_using=nx.MultiGraph)
+        #             path = nx.shortest_path(dist_graph, source=i, target=j)
+        #             for p in range(1, len(path)):
+        #                 new_topology[path[p], path[p - 1]] = 1
+        #                 new_topology[path[p - 1], path[p]] = 1
+        #                 print('hi')
+
         result = dict(nx.all_pairs_shortest_path(graph))
 
         # Find union of all shortest paths in network
@@ -55,25 +70,26 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
                 links = np.flip(links[links[:, 0].argsort()], 0)
 
                 # In decreasing order, check if deleting component leads to disconnected graph
-                for l in links:
+                for link in links:
 
-                    new_topology[int(l[1]), int(l[2])] = 0
-                    new_topology[int(l[2]), int(l[1])] = 0
+                    new_topology[int(link[1]), int(link[2])] = 0
+                    new_topology[int(link[2]), int(link[1])] = 0
 
                     # Convert to format
                     deleted_edge_graph = nx.from_numpy_array(new_topology)
 
                     # If causes disconnection, add edge back in
                     if nx.is_connected(deleted_edge_graph) is False:
-                        new_topology[int(l[1]), int(l[2])] = 1
-                        new_topology[int(l[2]), int(l[1])] = 1
+                        new_topology[int(link[1]), int(link[2])] = 1
+                        new_topology[int(link[2]), int(link[1])] = 1
                     else:
                         # Decrease degree of relevant satellite vertices
-                        degree[int(l[1])] -= 1
-                        degree[int(l[2])] -= 1
+                        degree[int(link[1])] -= 1
+                        degree[int(link[2])] -= 1
 
         # Increase connectivity of topology (adding in edges such that degree constraints not violated)
-        new_topology = topology_build.increase_connectivity(new_topology, constraints, degree, distance_matrix, num_satellites)
+        new_topology = topology_build.increase_connectivity(new_topology, constraints, degree, distance_matrix,
+                                                            num_satellites)
 
         # If first snapshot, this is the new topology
         if k == 0:
@@ -86,19 +102,12 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
 
         else:
             _, current_prop_delay = propagation_delay(new_topology, distance_matrix, num_satellites)
-            # Assuming that if links are switched, changes are done concurrently, so there is no need to take into account link switch time (it will be constant no matter the number of link switches). If no link switches required, topology is same and will remain the same
+            # Assuming that if links are switched, changes are done concurrently, so there is no need to take into
+            # account link switch time (it will be constant no matter the number of link switches). If no link switches
+            # required, topology is same and will remain the same
             if current_prop_delay < constant * previous_propagation_delay:
                 former_topology = new_topology
                 previous_propagation_delay = current_prop_delay
                 data_handling.write_topology_to_file(output_filename, new_topology, method)
             else:
                 data_handling.write_topology_to_file(output_filename, former_topology, method)
-
-        print("HI")
-
-
-
-
-
-
-
