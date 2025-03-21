@@ -1,10 +1,12 @@
 # Libraries
 import numpy as np
 
+
 # Adds edges (i.e. ISLs) to topology greedily (in order of increasing cost)
-def increase_connectivity(tree, degree_constraints, current_isl_number, cost_matrix, total_satellites:int):
+def increase_connectivity(tree, degree_constraints, current_isl_number, cost_matrix, total_satellites: int):
     """
-    Gradually and greedily adds ISLs to graph to increase the connectivity between satellites until no more ISLs can be established without breaking constraints.
+    Gradually and greedily adds ISLs to graph to increase the connectivity between satellites until no more ISLs can be
+    established without breaking constraints.
 
     :param tree:
     :param degree_constraints:
@@ -48,7 +50,8 @@ def increase_connectivity(tree, degree_constraints, current_isl_number, cost_mat
                     current_potential_a, current_potential_b = potential_edges[pos]
 
                     # If both satellites don't have maximum degree (maximum number of ISLs established)
-                    if current_isl_number[current_potential_a] < degree_constraints[current_potential_a] and current_isl_number[current_potential_b] < degree_constraints[current_potential_b]:
+                    if (current_isl_number[current_potential_a] < degree_constraints[current_potential_a] and
+                            current_isl_number[current_potential_b] < degree_constraints[current_potential_b]):
 
                         # Add edge (ISL)
                         tree[current_potential_a, current_potential_b] = 1

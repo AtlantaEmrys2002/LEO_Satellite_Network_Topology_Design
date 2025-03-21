@@ -29,10 +29,7 @@ def data_generation(file_name: str, constellation_name: str, num_orbits: int, nu
     # Check file does not already exist
     if os.path.isfile("./" + file_name) is False:
         # Generate TLE coordinates of satellites
-        # hypatia_data.generate_tles_from_scratch_with_sgp(file_name, constellation_name, num_orbits, num_sats_per_orbit,
-        #                                                  phase_diff, inclination_degree, eccentricity,
-        #                                                  arg_of_perigee_degree, mean_motion_rev_per_day)
-        generate_tles_from_scratch_with_sgp(file_name, constellation_name, num_orbits, num_sats_per_orbit,
-                                                         phase_diff, inclination_degree, eccentricity,
-                                                         arg_of_perigee_degree, mean_motion_rev_per_day)
+        generate_tles_from_scratch_with_sgp(file_name, constellation_name, num_orbits, num_sats_per_orbit, phase_diff,
+                                            inclination_degree, eccentricity, arg_of_perigee_degree,
+                                            mean_motion_rev_per_day)
     return
