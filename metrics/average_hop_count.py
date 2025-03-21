@@ -2,9 +2,11 @@
 import numpy as np
 import networkx as nx
 
+
 def hop_count(topology_matrix, distance_matrix, num_satellites):
     """
-    Calculate the average hop count for a network topology based on calculations of hop count between all satellite pairs in the network.
+    Calculate the average hop count for a network topology based on calculations of hop count between all satellite
+    pairs in the network.
     :param topology_matrix:
     :param distance_matrix:
     :param num_satellites:

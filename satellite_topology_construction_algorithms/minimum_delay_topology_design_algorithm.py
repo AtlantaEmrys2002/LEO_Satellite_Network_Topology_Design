@@ -4,6 +4,14 @@ import dcmst_construction_algorithms as topology_build
 from metrics import propagation_delay
 import numpy as np
 import networkx as nx
+# import nx_parallel as nxp
+# import os
+from scipy.sparse import csr_array
+from scipy.sparse.csgraph import dijkstra, reconstruct_path
+import time
+
+# nx.config.backends.parallel.active = True
+# nx.config.backends.parallel.n_jobs = os.cpu_count()
 
 
 def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, num_satellites, constraints, constant,
@@ -26,7 +34,8 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
         distance_matrix = np.load("./" + constellation_name + "/distance_matrices/dist_matrix_" + str(k) + ".npy")
 
         # Calculate the shortest path between all satellite pairs in the network
-        graph = nx.from_numpy_array(distance_matrix, create_using=nx.MultiGraph)
+        # graph = nx.from_numpy_array(distance_matrix, create_using=nx.MultiGraph)
+        graph = csr_array(distance_matrix)
 
         # for i in range(num_satellites):
         #     for j in range(i+1, num_satellites):
@@ -40,7 +49,18 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
         #                 new_topology[path[p - 1], path[p]] = 1
         #                 print('hi')
 
-        result = dict(nx.all_pairs_shortest_path(graph))
+        # result = dict(nxp.all_pairs_shortest_path(graph))
+
+        # start = time.time()
+        # result = dict(nxp.all_pairs_dijkstra_path(graph))
+        #
+        # print(time.time() - start)
+
+        _, result = dijkstra(graph, directed=False, return_predecessors=True)
+
+        result = reconstruct_path(csgraph=graph, predecessors=result, directed=False).todense()
+
+        print('hi')
 
         # Find union of all shortest paths in network
         for i in range(num_satellites):

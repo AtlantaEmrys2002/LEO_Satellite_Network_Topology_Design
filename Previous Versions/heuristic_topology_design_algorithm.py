@@ -13,7 +13,6 @@
 # Import Relevant Libraries
 from astropy.time import Time
 from astropy import units as u
-import certifi
 from collections import deque
 import ephem
 import generate_tles_from_scratch as hypatia_data
