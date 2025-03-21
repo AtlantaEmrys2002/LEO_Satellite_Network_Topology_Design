@@ -1,5 +1,6 @@
 # Libraries
-import read_tles as hypatia_read_data
+# import read_tles as hypatia_read_data
+from .read_tles import read_tles
 
 
 def format_tle_data(file_name: str):
@@ -11,4 +12,5 @@ def format_tle_data(file_name: str):
     :param file_name:
     :return:
     """
-    return hypatia_read_data.read_tles(file_name)
+    # return hypatia_read_data.read_tles(file_name)
+    return read_tles(file_name)
