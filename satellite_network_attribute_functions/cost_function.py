@@ -15,6 +15,7 @@ def cost_function(visibility, time_visibility, distance, sunlight, alpha:float, 
     :param total_satellites:
     :return:
     """
+
     # Where satellites are not visible to one another, set the cost as infinity (represented by -1), otherwise 0
     cost_matrix = np.where(visibility == 1, np.zeros((total_satellites, total_satellites)), -1)
 
