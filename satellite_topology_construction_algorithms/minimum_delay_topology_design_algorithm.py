@@ -1,6 +1,7 @@
 # Libraries
 import data_handling
 import dcmst_construction_algorithms as topology_build
+import itertools
 from metrics import propagation_delay
 import numpy as np
 import networkx as nx
@@ -14,6 +15,7 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
                                             method):
 
     # Stores previous snapshot's topology and average propagation delay
+    # N.B. Cannot parallelise this function, as relies on results of previous topology calculations
     former_topology = 0
     previous_propagation_delay = 0
 
@@ -55,21 +57,50 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
         #
         # print(time.time() - start)
 
+        # print(np.fromiter((itertools.pairwise(np.array([5, 6, 7, 8, 9, ]))), dtype=np.dtype((int, 2))))
+
         _, result = dijkstra(graph, directed=False, return_predecessors=True)
 
-        result = np.array([reconstruct_path(csgraph=graph, predecessors=result[k], directed=False).todense() for k in
-                           range(num_satellites)], dtype=np.int32)
+        # For each node, finds tree of shortest paths that connects node to every other node in graph (ignore paths that
+        # cannot be found (at the moment - this problem with MDTD is discussed in the final paper)
+        result = np.array([reconstruct_path(csgraph=graph, predecessors=result[t], directed=False).todense() > 0 for t
+                           in range(num_satellites)], dtype=np.int32)
+
+        print("stage 1")
+
+        tmp = result[0]
+
+        # Element-wise add all arrays
+        for v in range(1, len(result)):
+            tmp += result[v]
+
+        # Find where edges exist in sum across topology
+        new_topology = (tmp > 0).astype(np.int32)
+
+        print(len(np.argwhere(new_topology == 0)))
 
         # Find union of all shortest paths in network
-        for i in range(num_satellites):
-            for j in range(i+1, num_satellites):
-
+        for sat_i in range(num_satellites):
+            for sat_j in range(sat_i+1, num_satellites):
                 # Look at all edges on path between satellites i and j and add to new topology
-                path = result[i][j]
+                path_edges = np.fromiter(itertools.pairwise(result[sat_i, sat_j]), dtype=np.dtype((int, 2))).T
+                new_topology[path_edges[0], path_edges[1]] = 1
+                new_topology[path_edges[1], path_edges[0]] = 1
 
-                for p in range(1, len(path)):
-                    new_topology[path[p], path[p-1]] = 1
-                    new_topology[path[p - 1], path[p]] = 1
+        # # Find union of all shortest paths in network
+        # for i in range(num_satellites):
+        #     for j in range(i+1, num_satellites):
+        #
+        #         # Look at all edges on path between satellites i and j and add to new topology
+        #         path = result[i, j]
+        #
+        #         print(path)
+        #
+        #         for p in range(1, len(path)):
+        #             new_topology[path[p], path[p-1]] = 1
+        #             new_topology[path[p - 1], path[p]] = 1
+
+        print("stage 2")
 
         # Calculate degree of all vertices
         degree = [np.sum(new_topology[k]) for k in range(num_satellites)]

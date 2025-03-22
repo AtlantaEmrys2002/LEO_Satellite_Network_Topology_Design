@@ -1,9 +1,12 @@
 # Libraries
 import numpy as np
 
+
 def sunlight_function(satellites_in_sun, total_satellites):
     """
-    Calculates whether each satellite is within sunlight or not at given time (i.e. naive approximation of how vulnerable to solar flares). All edges that incident to at least one node (satellite) that is in sunlight is assigned 1 to indicate satellite is vulnerable to solar flares. This approximation may be improved in future work.
+    Calculates whether each satellite is within sunlight or not at given time (i.e. naive approximation of how
+    vulnerable to solar flares). All edges that incident to at least one node (satellite) that is in sunlight is
+    assigned 1 to indicate satellite is vulnerable to solar flares. This approximation may be improved in future work.
 
     :param satellites_in_sun:
     :param total_satellites:
