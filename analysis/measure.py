@@ -65,8 +65,7 @@ def measure_dynamic(constellation_name, topology_file_location, num_satellites, 
     for k in range(num_snapshots):
 
         # Read in current topology
-        topology = read_isl_file(topology_file_location + constellation_name + "_isls_" + str(k) + ".txt",
-                                 num_satellites)
+        topology = read_isl_file(topology_file_location + "/isls_" + str(k) + ".txt", num_satellites)
 
         # Read in distance matrix for current snapshot
         distance = np.load("./" + constellation_name + "/distance_matrices/dist_matrix_" + str(k) + ".npy")

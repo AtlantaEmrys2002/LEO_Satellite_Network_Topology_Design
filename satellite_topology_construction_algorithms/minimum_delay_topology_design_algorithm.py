@@ -3,7 +3,6 @@ import data_handling
 import dcmst_construction_algorithms as topology_build
 from metrics import propagation_delay
 import numpy as np
-import networkx as nx
 from scipy.sparse import csr_array
 from scipy.sparse.csgraph import dijkstra, reconstruct_path, depth_first_order
 import time
@@ -80,18 +79,21 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
                 # In decreasing order, check if deleting component leads to disconnected graph
                 for link in links:
 
-                    new_topology[link[1], link[2]] = 0
-                    new_topology[link[2], link[1]] = 0
+                    a = link[1]
+                    b = link[2]
+
+                    new_topology[a, b] = 0
+                    new_topology[b, a] = 0
 
                     # See if graph still connected and if it causes disconnection, add edge back in
-                    if len(depth_first_order(csr_array(new_topology), i_start=link[1], directed=False,
+                    if len(depth_first_order(csr_array(new_topology), i_start=a, directed=False,
                                              return_predecessors=False)) != num_satellites:
-                        new_topology[link[1], link[2]] = 1
-                        new_topology[link[2], link[1]] = 1
+                        new_topology[a, b] = 1
+                        new_topology[b, a] = 1
                     else:
                         # Decrease degree of relevant satellite vertices
-                        degree[link[1]] -= 1
-                        degree[link[2]] -= 1
+                        degree[a] -= 1
+                        degree[b] -= 1
 
             print(time.time() - start_v)
 
