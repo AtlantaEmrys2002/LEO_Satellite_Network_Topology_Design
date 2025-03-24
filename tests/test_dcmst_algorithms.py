@@ -156,7 +156,7 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
                          [1, 0, 1, 0, 0, 1, 0, 0, 0],
                          [0, 1, 0, 0, 0, 0, 1, 0, 0]])
 
-        prufer_encoding = dcmst_construction_algorithms.prufer_encode_2(tree, 9)
+        prufer_encoding = dcmst_construction_algorithms.prufer_encode(tree)
 
         self.assertTrue(np.array_equal(prufer_encoding, np.array([8, 7, 0, 6, 7, 0, 6])))
 
