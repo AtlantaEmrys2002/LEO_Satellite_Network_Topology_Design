@@ -277,6 +277,16 @@ def genetic_algorithm(cost_matrix, constraints, num_sat: int, population_size=30
 # Comparison of Algorithms for the Degree Constrained Minimum Spanning Tree Paper (see report for full reference)
 # Counting Occurrences in numpy - https://stackoverflow.com/questions/28663856/how-do-i-count-the-occurrence-of-a-
 # certain-item-in-an-ndarray
+# Crossover in Evolutionary Algorithms - https://en.wikipedia.org/wiki/Crossover_(evolutionary_algorithm)
+# Depth Error in numpy - https://stackoverflow.com/questions/15923081/what-does-valueerror-object-too-deep-for-desired-
+# array-mean-and-how-to-fix-it
 # First occurrences - https://stackoverflow.com/questions/432112/is-there-a-numpy-function-to-return-the-first-index-of-
 # something-in-an-array
+# Generating Random Pairs - https://stackoverflow.com/questions/30890434/how-to-generate-random-pairs-of-numbers-in-
+# python-including-pairs-with-one-entr
+# Genetic Algorithms - https://en.wikipedia.org/wiki/Genetic_algorithm
 # Prufer Sequence - https://en.wikipedia.org/wiki/Pr%C3%BCfer_sequence
+# Raising Warnings - https://stackoverflow.com/questions/3891804/raise-warning-in-python-without-interrupting-program
+# Selecting Rows - https://stackoverflow.com/questions/23359886/selecting-rows-in-numpy-ndarray-based-on-the-value-of-
+# two-columns
+# Sets and Numpy - https://stackoverflow.com/questions/33196102/how-to-turn-numpy-array-to-set-efficiently
