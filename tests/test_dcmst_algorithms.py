@@ -141,6 +141,44 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
             dcmst_construction_algorithms.increase_connectivity(current_topology, np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]),
                                                                 current_degree, test_costs, 9), answer))
 
+    def test_prufer_encoding(self):
+
+        # Example tree taken from original paper on comparison of DCMST construction algorithms (see report for full
+        # citation)
+
+        tree = np.array([[0, 0, 0, 1, 0, 0, 1, 1, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 1],
+                         [0, 0, 0, 0, 0, 0, 0, 1, 0],
+                         [1, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 1, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 1, 0],
+                         [1, 0, 0, 0, 1, 0, 0, 0, 1],
+                         [1, 0, 1, 0, 0, 1, 0, 0, 0],
+                         [0, 1, 0, 0, 0, 0, 1, 0, 0]])
+
+        prufer_encoding = dcmst_construction_algorithms.prufer_encode_2(tree, 9)
+
+        self.assertTrue(np.array_equal(prufer_encoding, np.array([8, 7, 0, 6, 7, 0, 6])))
+
+    def test_prufer_decoding(self):
+
+        # Example tree taken from original paper on comparison of DCMST construction algorithms (see report for full
+        # citation)
+
+        tree = np.array([[0, 0, 0, 1, 0, 0, 1, 1, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 0, 1],
+                         [0, 0, 0, 0, 0, 0, 0, 1, 0],
+                         [1, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 1, 0, 0],
+                         [0, 0, 0, 0, 0, 0, 0, 1, 0],
+                         [1, 0, 0, 0, 1, 0, 0, 0, 1],
+                         [1, 0, 1, 0, 0, 1, 0, 0, 0],
+                         [0, 1, 0, 0, 0, 0, 1, 0, 0]])
+
+        prufer_decoding, _ = dcmst_construction_algorithms.prufer_decode(np.array([8, 7, 0, 6, 7, 0, 6]))
+
+        self.assertTrue(np.array_equal(prufer_decoding, tree))
+
 
 if __name__ == '__main__':
     unittest.main()
