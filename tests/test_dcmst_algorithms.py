@@ -111,7 +111,7 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
 
     def test_increase_connectivity(self):
         """
-        Checks the ISLs are added correctly such that lower cost edges are added first before
+        Checks the ISLs are added correctly such that lower cost edges are added first before higher cost edges.
         """
         # Test Cost Matrix
         test_costs = np.asarray([[-1, 4, -1, -1, -1, -1, -1, 8, -1],
@@ -208,6 +208,20 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
 
         self.assertTrue(np.array_equal(dcmst_construction_algorithms.prufer_encode(
             dcmst_construction_algorithms.prufer_decode(prufer_encoding)[0]), prufer_encoding))
+
+    def test_degree_checker(self):
+        """
+        Tests whether function that ensures tree encoded as Prufer number correctly determines if degree constraints
+        have been violated when DCMST constructed.
+        """
+        # Prufer Number of Tree
+        prufer_encoding = np.array([1, 3, 5, 2, 1, 0, 4], dtype=np.int32)
+
+        self.assertTrue(dcmst_construction_algorithms.check_degree(prufer_encoding, np.array([3 for _ in range(9)]),
+                                                                   9))
+
+        self.assertFalse(dcmst_construction_algorithms.check_degree(prufer_encoding, np.array([2 for _ in range(9)]),
+                                                                    9))
 
 
 if __name__ == '__main__':
