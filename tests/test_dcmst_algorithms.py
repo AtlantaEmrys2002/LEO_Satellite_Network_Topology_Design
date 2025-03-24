@@ -142,7 +142,9 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
                                                                 current_degree, test_costs, 9), answer))
 
     def test_prufer_encoding(self):
-
+        """
+        Tests whether trees are correctly encoded by Prufer encoding function used by the GA that constructs DCMSTs.
+        """
         # Example tree taken from original paper on comparison of DCMST construction algorithms (see report for full
         # citation)
 
@@ -161,7 +163,10 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
         self.assertTrue(np.array_equal(prufer_encoding, np.array([8, 7, 0, 6, 7, 0, 6])))
 
     def test_prufer_decoding(self):
-
+        """
+        Tests whether trees are correctly decoded from Prufer decoding function to adjacency matrix format used by the
+        GA that constructs DCMSTs.
+        """
         # Example tree taken from original paper on comparison of DCMST construction algorithms (see report for full
         # citation)
 
@@ -178,6 +183,31 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
         prufer_decoding, _ = dcmst_construction_algorithms.prufer_decode(np.array([8, 7, 0, 6, 7, 0, 6]))
 
         self.assertTrue(np.array_equal(prufer_decoding, tree))
+
+    def test_prufer_encoding_and_decoding(self):
+        """
+        Tests whether Prufer encoding/decoding functions used by GA that constructs DCMSTs interact properly.
+        """
+
+        # Prufer Number of Tree
+        prufer_encoding = np.array([1, 3, 5, 2, 1, 0, 4], dtype=np.int32)
+
+        # Tree as Adjacency Matrix
+        tree = np.array([[0, 1, 0, 0, 1, 0, 0, 0, 0],
+                         [1, 0, 1, 0, 0, 0, 1, 0, 0],
+                         [0, 1, 0, 0, 0, 1, 0, 0, 0],
+                         [0, 0, 0, 0, 0, 1, 0, 1, 0],
+                         [1, 0, 0, 0, 0, 0, 0, 0, 1],
+                         [0, 0, 1, 1, 0, 0, 0, 0, 0],
+                         [0, 1, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 1, 0, 0, 0, 0, 0],
+                         [0, 0, 0, 0, 1, 0, 0, 0, 0]])
+
+        self.assertTrue(np.array_equal(dcmst_construction_algorithms.prufer_decode(
+            dcmst_construction_algorithms.prufer_encode(tree))[0], tree))
+
+        self.assertTrue(np.array_equal(dcmst_construction_algorithms.prufer_encode(
+            dcmst_construction_algorithms.prufer_decode(prufer_encoding)[0]), prufer_encoding))
 
 
 if __name__ == '__main__':

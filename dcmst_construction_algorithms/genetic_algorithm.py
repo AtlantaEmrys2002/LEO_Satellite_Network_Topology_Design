@@ -66,7 +66,7 @@ def prufer_decode(prufer_number):
     tree[v, u] = 1
 
     # Return tree in adjacency matrix format and degree of each node
-    return tree.astype(np.int32), np.sum(tree, axis=1) == 0
+    return tree.astype(np.int32), np.sum(tree, axis=1).astype(np.int32)
 
 
 # References
