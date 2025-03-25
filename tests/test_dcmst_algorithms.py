@@ -199,7 +199,10 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
                                                                     9))
 
     def test_genetic_algorithm(self):
-
+        """
+        Checks that the DCMST returned by the genetic algorithm is a valid solution (no degree constraints violated, the
+        tree is connected, and there exists a path between all vertex or satellite pairs).
+        """
         cost_matrix = np.array([[0, 2.24, 2.24, 3.61, 6.71, 3.0, 5.39, 8.0, 9.43],
                                 [2.24, 0, 2.0, 2.0, 4.47, 2.83, 4.0, 7.28, 7.62],
                                 [2.24, 2.0, 0, 4.0, 5.66, 4.47, 6.0, 9.22, 9.49],
@@ -216,7 +219,7 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
 
         tree, degree = dcmst_construction_algorithms.genetic_algorithm(cost_matrix, constraints, num_sat, population_size=7)
 
-        # Check degree of resulting tree
+        # Check degree of each vertex in resulting tree
         self.assertTrue(False not in (degree <= constraints).tolist())
 
         # Finds the number of connected components in returned tree (should be 1)
