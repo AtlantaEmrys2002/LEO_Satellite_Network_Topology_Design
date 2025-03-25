@@ -2,6 +2,8 @@
 import dcmst_construction_algorithms
 import numpy as np
 import unittest
+from scipy.sparse.csgraph import connected_components
+from scipy.sparse import csr_array
 
 
 class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.TestCase):
@@ -195,6 +197,36 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
 
         self.assertFalse(dcmst_construction_algorithms.check_degree(prufer_encoding, np.array([2 for _ in range(9)]),
                                                                     9))
+
+    def test_genetic_algorithm(self):
+
+        cost_matrix = np.array([[0, 2.24, 2.24, 3.61, 6.71, 3.0, 5.39, 8.0, 9.43],
+                                [2.24, 0, 2.0, 2.0, 4.47, 2.83, 4.0, 7.28, 7.62],
+                                [2.24, 2.0, 0, 4.0, 5.66, 4.47, 6.0, 9.22, 9.49],
+                                [3.61, 2.0, 4.0, 0, 4.0, 2.0, 2.0, 5.39, 5.83],
+                                [6.71, 4.47, 5.66, 4.0, 0, 6.0, 4.47, 7.81, 5.1],
+                                [3.0, 2.83, 4.47, 2.0, 6.0, 0, 2.83, 5.0, 7.07],
+                                [5.39, 4.0, 6.0, 2.0, 4.47, 2.83, 0, 3.61, 4.24],
+                                [8.0, 7.28, 9.22, 5.39, 7.81, 0, 3.61, 0, 5.0],
+                                [9.43, 7.62, 9.49, 5.83, 5.1, 7.07, 0, 5.0, 0], ])
+
+        constraints = np.array([3, 3, 3, 3, 3, 3, 3, 3, 3])
+
+        num_sat = 9
+
+        tree, degree = dcmst_construction_algorithms.genetic_algorithm(cost_matrix, constraints, num_sat, population_size=7)
+
+        # Check degree of resulting tree
+        self.assertTrue(False not in (degree <= constraints).tolist())
+
+        # Finds the number of connected components in returned tree (should be 1)
+        n, _ = connected_components(tree, directed=False, connection='strong')
+
+        # Check tree is connected
+        self.assertTrue(n == 1)
+
+        # Check all vertices are within tree
+        self.assertTrue(False not in (np.sum(tree, axis=0) > 0).tolist())
 
     # GENERAL FUNCTIONS #
 

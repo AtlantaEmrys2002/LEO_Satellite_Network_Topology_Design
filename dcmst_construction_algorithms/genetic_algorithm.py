@@ -1,4 +1,5 @@
 # Libraries
+import copy
 import numpy as np
 from .primal_method import modified_prims_algorithm
 import warnings
@@ -116,6 +117,27 @@ def fitness(chromosome, cost_matrix):
     return total_cost
 
 
+def random_trees(num_sat, constraints, pop_size):
+    """
+    Randomly generates a set number (indicated by population size) of valid degree-constrained spanning trees of
+    satellite network.
+    :param num_sat:
+    :param constraints:
+    :param pop_size:
+    :return:
+    """
+    random_chromosomes = []
+
+    while len(np.unique(np.array(random_chromosomes), axis=0)) < pop_size:
+        # Randomly select chromosome genes from uniform distribution - discard any trees that violate degree constraints
+        candidate = np.random.randint(0, num_sat, num_sat - 2)
+
+        if check_degree(candidate, constraints, num_sat) is True:
+            random_chromosomes.append(candidate)
+
+    return random_chromosomes
+
+
 def genetic_algorithm(cost_matrix, constraints, num_sat: int, population_size=30):
     """
     Returns a degree-constrained minimum spanning tree of the network built using a genetic algorithm presented in
@@ -140,13 +162,8 @@ def genetic_algorithm(cost_matrix, constraints, num_sat: int, population_size=30
     # algorithm presented in the original paper (which random initialises DCMSTs). Randomly select initial nodes.
     # Encode DCMSTs in Prufer number representation.
 
-    initial_nodes = np.random.choice(num_sat, size=population_size, replace=False).tolist()
-
-    chromosomes = np.array([prufer_encode(modified_prims_algorithm(cost_matrix, constraints, num_sat, initial_nodes[k]))
-                            for k in range(population_size)])
-
-    # Select all unique chromosomes
-    chromosomes = np.unique(chromosomes, axis=0)
+    # Randomly generate valid and unique degree-constrained trees as initial population
+    chromosomes = np.array(random_trees(num_sat, constraints, population_size))
 
     # Calculate fitness of each chromosome
     fitness_values = [fitness(chromosome, cost_matrix) for chromosome in chromosomes]
@@ -157,7 +174,7 @@ def genetic_algorithm(cost_matrix, constraints, num_sat: int, population_size=30
     # Successful evolution count - provides user with understanding of "how much" evolution has taken place
     unsuccessful_evol_count = 0
 
-    previous_chromosomes = chromosomes
+    previous_chromosomes = copy.deepcopy(chromosomes)
 
     while iteration_count < termination_condition:
 
@@ -166,7 +183,8 @@ def genetic_algorithm(cost_matrix, constraints, num_sat: int, population_size=30
         # Use a standard single point method to create a new population of children
 
         # Randomly select sets of parents
-        parents = np.random.choice(len(chromosomes) // 2, (2, 1), replace=False)
+        parents = np.random.choice(len(chromosomes), (len(chromosomes)//2, 1, 2), replace=False)
+        parents = np.array([parents[k][0] for k in range(len(parents))])
 
         for parent_pair in parents:
 
@@ -231,15 +249,16 @@ def genetic_algorithm(cost_matrix, constraints, num_sat: int, population_size=30
         if iteration_count % 10 == 0:
 
             # Select random points at which to cross over each chromosome with best solution
-            crossover_points = np.random.randint(0, num_sat - 2, len(chromosomes) - 1)
+            crossover_points = np.random.randint(0, num_sat - 2, len(chromosomes))
 
             # Randomly select order of crossover (with the best solution) for each chromosome
-            coin_flips = np.random.rand(len(chromosomes) - 1)
+            coin_flips = np.random.rand(len(chromosomes))
 
             # Select best current solution
             pos = np.argmin(np.asarray(fitness_values))
 
             for chromosome in range(len(chromosomes)):
+
                 # Don't cross over best solution with best solution
                 if chromosome == pos:
                     continue
@@ -247,23 +266,39 @@ def genetic_algorithm(cost_matrix, constraints, num_sat: int, population_size=30
                     crossover_point = crossover_points[chromosome]
                     # Cross over
                     if coin_flips[pos] > 0.5:
-                        chromosomes[chromosome] = np.concatenate((chromosomes[chromosome][crossover_point:],
+
+                        potential_new_chromosome = np.concatenate((chromosomes[chromosome][crossover_point:],
                                                                   chromosomes[pos][:crossover_point]))
-                        # Calculate new fitness
-                        fitness_values[chromosome] = fitness(chromosomes[chromosome], cost_matrix)
+
+                        if check_degree(potential_new_chromosome, constraints, num_sat) is True:
+                            chromosomes[chromosome] = potential_new_chromosome
+
+                            # Calculate new fitness
+                            fitness_values[chromosome] = fitness(chromosomes[chromosome], cost_matrix)
                     else:
-                        chromosomes[chromosome] = np.concatenate((chromosomes[pos][crossover_point:],
+
+                        potential_new_chromosome = np.concatenate((chromosomes[pos][crossover_point:],
                                                                   chromosomes[chromosome][:crossover_point]))
-                        # Calculate new fitness
-                        fitness_values[chromosome] = fitness(chromosomes[chromosome], cost_matrix)
+
+                        if check_degree(potential_new_chromosome, constraints, num_sat) is True:
+                            chromosomes[chromosome] = potential_new_chromosome
+
+                            # Calculate new fitness
+                            fitness_values[chromosome] = fitness(chromosomes[chromosome], cost_matrix)
 
         iteration_count += 1
 
-        if np.equal(previous_chromosomes, chromosomes):
+        if np.array_equal(previous_chromosomes, chromosomes):
             unsuccessful_evol_count += 1
-            warnings.warn("Unsuccessful evolution (no new solutions found). Percentage of unsuccessful evolutions of "
-                          "total number of evolutions: " + str(100 * (unsuccessful_evol_count/termination_condition)) +
-                          str("%."))
+            previous_chromosomes = copy.deepcopy(chromosomes)
+
+    percentage_unsuccessful_iterations = 100 * (unsuccessful_evol_count / termination_condition)
+
+    message = ("Percentage of unsuccessful evolutions of total number of evolutions: " +
+               str(percentage_unsuccessful_iterations) + "%.")
+
+    if percentage_unsuccessful_iterations > 0:
+        warnings.warn(message)
 
     # Find the best solution and return corresponding DCMST with degree of each node
     pos = np.argmin(np.asarray(fitness_values))
