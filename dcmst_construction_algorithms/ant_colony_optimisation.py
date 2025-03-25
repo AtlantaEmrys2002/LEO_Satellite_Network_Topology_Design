@@ -1,5 +1,6 @@
 # Libraries
 from collections import deque
+import copy
 import networkx as nx
 import numpy as np
 import random
@@ -55,6 +56,8 @@ def initialise_ants_and_edges(cost_matrix, num_sat):
 
     graph_edges = np.argwhere(cost_matrix > 0)
 
+    graph_edges = np.unique(np.sort(graph_edges), axis=0)
+
     edges = [Edge(max_cost, min_cost, cost_matrix[u[0], u[1]], u[0], u[1]) for u in graph_edges]
 
     # Calculate min and max pheromone each edge can have
@@ -75,9 +78,9 @@ def construct_spanning_tree(edges, constraints, nCandidates, num_sat):
 
     # Select top nCandidates edges from E
     if len(edges) > nCandidates:
-        candidate_edges = edges[:nCandidates]
+        candidate_edges = copy.deepcopy(edges[:nCandidates])
     else:
-        candidate_edges = edges
+        candidate_edges = copy.deepcopy(edges)
 
     # Sort edges according to increasing edge cost
     candidate_edges.sort(key=lambda x: x.edge_cost)
@@ -120,9 +123,9 @@ def construct_spanning_tree(edges, constraints, nCandidates, num_sat):
                 if highest > len(edges) and lowest > len(edges):
                     raise ValueError("DCMST cannot be constructed, as not enough edges.")
                 elif highest > len(edges):
-                    candidate_edges = edges[lowest:]
+                    candidate_edges = copy.deepcopy(edges[lowest:])
                 else:
-                    candidate_edges = edges[lowest:highest]
+                    candidate_edges = copy.deepcopy(edges[lowest:highest])
                 # Sort C in order of increasing edge cost
                 candidate_edges.sort(key=lambda x: x.edge_cost)
 
@@ -136,31 +139,31 @@ def move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm):
             for e in edges:
                 e.update_pheromone(eta, minPhm, maxPhm)
 
-    for a in ants:
-        nAttempts = 0
-        moved = False
-        while moved is False and nAttempts < 5:
+        for a in ants:
+            nAttempts = 0
+            moved = False
+            while moved is False and nAttempts < 5:
 
-            v_1 = a.location
+                v_1 = a.location
 
-            # Select random edge from edges incident to v_1 with probability proportional to pheromone on edge
-            potential_edges = [[edges[edge], edge] for edge in range(len(edges)) if edges[edge].u == v_1 or
-                               edges[edge].v == v_1]
+                # Select random edge from edges incident to v_1 with probability proportional to pheromone on edge
+                potential_edges = [[edges[edge], edge] for edge in range(len(edges)) if edges[edge].u == v_1 or
+                                   edges[edge].v == v_1]
 
-            random_edge = random.choices([e[1] for e in potential_edges], [e[0].phm for e in potential_edges])[0]
+                random_edge = random.choices([e[1] for e in potential_edges], [e[0].phm for e in potential_edges])[0]
 
-            if edges[random_edge].u == v_1:
-                v_2 = edges[random_edge].v
-            else:
-                v_2 = edges[random_edge].u
+                if edges[random_edge].u == v_1:
+                    v_2 = edges[random_edge].v
+                else:
+                    v_2 = edges[random_edge].u
 
-            if v_2 not in a.tabu_list:
-                a.tabu_list.append(v_2)
-                a.location = v_2
-                edges[random_edge].nVisited += 1
-                moved = True
-            else:
-                nAttempts += 1
+                if v_2 not in a.tabu_list:
+                    a.tabu_list.append(v_2)
+                    a.location = v_2
+                    edges[random_edge].nVisited += 1
+                    moved = True
+                else:
+                    nAttempts += 1
 
     return ants, edges
 
@@ -232,17 +235,25 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
             best_fitness = current_solution_fitness
             i_best = i
 
+        # ENHANCE #
+
         # Enhance edges (lay pheromones) - update pheromones of all edges in the best solution found so far
         for edge in best_spanning_tree:
             # Find edge in main set of edges and update accordingly
-            loc = edges.index(edge)
-            edges[loc].enhance(gamma)
+            for e in range(len(edges)):
+                if edges[e].u == edge.u and edges[e].v == edge.v:
+                    edges[e].enhance(gamma)
+                    break
+
+        # RESTART AND RESET #
 
         if i - max(i_best, i_restart) > R:
             i_restart = i
             for edge in best_spanning_tree:
-                loc = edges.index(edge)
-                edges[loc].restart()
+                for e in range(len(edges)):
+                    if edges[e].u == edge.u and edges[e].v == edge.v:
+                        edges[e].restart()
+                        break
 
         i += 1
 
