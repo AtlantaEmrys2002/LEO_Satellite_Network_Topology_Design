@@ -172,14 +172,21 @@ def solution_fitness(tree):
 
 # Adapted from T. N. Bui, X. Deng, and C. M. Zrncic, “An Improved Ant-Based Algorithm for the Degree-Constrained Minimum
 # Spanning Tree Problem,” IEEE Trans. On Evol. Computation, vol. 16, no. 2, pp. 266-278, Apr. 2012.,
-# doi: 10.1109/TEVC.2011.2125971.
-def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int, max_iterations_without_improvement: int,
-               max_steps: int, candidate_set_cardinality: int, eta, gamma, eta_change, gamma_change, update_period, R):
+# doi: 10.1109/TEVC.2011.2125971. Default values for function recommended by this original paper.
+def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 10000,
+               max_iterations_without_improvement: int = 2500, max_steps: int = 75, eta: float = 0.5,
+               gamma: float = 1.5, eta_change: float = 0.95, gamma_change: float = 1.05, R: int = 100):
 
     # Initialise counters
     i = 1
     i_best = 0
     i_restart = 0
+
+    # Initialise candidate set cardinality (value recommended by original paper)
+    candidate_set_cardinality = 5 * num_sat
+
+    # Initialise update period (value recommended by original paper)
+    update_period = max_steps / 3
 
     # Initialise |V| ants and edges with corresponding pheromone levels
     ants, edges, maxPhm, minPhm = initialise_ants_and_edges(cost_matrix, num_sat)
@@ -231,4 +238,4 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int, max_
         gamma *= gamma_change
         eta *= eta_change
 
-    return best_spanning_tree
+    return best_spanning_tree, np.sum(best_spanning_tree, axis=1).astype(np.int32)
