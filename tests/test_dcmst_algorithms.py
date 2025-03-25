@@ -6,12 +6,14 @@ import unittest
 
 class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.TestCase):
 
+    # PRIMAL ALGORITHM TESTS #
+
     def test_modified_prims(self):
         """
         Checks the modified version of Prim's Algorithm (that forms the basis of the Primal DCMST construction
         algorithm) returns a correct DCMST. This example cost matrix confirms that a correct DCMST is constructed (node
-         2 would have a degree > 3 if this were a MST construction algorithm, so this example ensures all constraints
-         are satisfied).
+        2 would have a degree > 3 if this were a MST construction algorithm, so this example ensures all constraints
+        are satisfied).
         """
         # Test Cost Matrix
         test_costs = np.asarray([[-1, 4, -1, -1, -1, -1, -1, 8, -1],
@@ -39,107 +41,78 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
             dcmst_construction_algorithms.modified_prims_algorithm(test_costs, np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]), 9,
                                                                    0)[0], answer))
 
+    def test_subtree_builder(self):
+        """
+        Tests whether function that determines whether exactly two subtrees are created when an edge is deleted from
+        the proposed tree, as well as the vertices in each subtree, is correct.
+        """
+
+        # Example tree
+        tree = np.array([[0, 1, 0, 0, 0, 0, 0, 0, 0],
+                         [1, 0, 1, 0, 0, 0, 0, 0, 0],
+                         [0, 1, 0, 1, 0, 0, 0, 0, 1],
+                         [0, 0, 1, 0, 1, 0, 0, 0, 0],
+                         [0, 0, 0, 1, 0, 1, 0, 0, 0],
+                         [0, 0, 0, 0, 1, 0, 1, 0, 0],
+                         [0, 0, 0, 0, 0, 1, 0, 1, 0],
+                         [0, 0, 0, 0, 0, 0, 1, 0, 0],
+                         [0, 0, 1, 0, 0, 0, 0, 0, 0]])
+
+        # Find two subtrees i and j - error would be raised if more than two subtrees were created by edge deletion.
+        i, j = dcmst_construction_algorithms.subtree_builder(tree, np.array([2, 3]))
+
+        # Check two subtrees are in correct format and contain the correct vertices
+        self.assertTrue((np.array_equal(np.sort(j), np.array([0, 1, 2, 8])) and
+                         np.array_equal(np.sort(i), np.array([3, 4, 5, 6, 7]))) or
+                        np.array_equal(np.sort(i), np.array([0, 1, 2, 8])) and
+                        np.array_equal(np.sort(j), np.array([3, 4, 5, 6, 7])))
+
     def test_edge_exchange(self):
-        # Tests whether function that constructs two subtrees following edge deletion is correct
-        # self.assertTrue(dcmst_construction_algorithms.subtree_builder(9, np.asarray(
-        #     [[0, 1], [1, 2], [2, 3], [2, 8], [3, 4], [4, 5], [5, 6], [6, 7]]), 2) == ({8, 1, 2, 0}, {3, 4, 5, 6, 7}))
+        """
+        Tests whether edges are correctly exchanged (in primal method) to improve total sum cost of DCMST. Example tree
+        taken from original DCMST paper by Narula and Ho (see report for full citation).
+        """
 
-        self.assertTrue(dcmst_construction_algorithms.subtree_builder(9, np.asarray(
-            [[0, 1], [1, 2], [2, 3], [2, 8], [3, 4], [4, 5], [5, 6], [6, 7]])) == ({8, 1, 2, 0}, {3, 4, 5, 6, 7}))
+        cost_matrix = np.array([[0, 2.24, 2.24, 3.61, 6.71, 3.0, 5.39, 8.0, 9.43],
+                                [2.24, 0, 2.0, 2.0, 4.47, 2.83, 4.0, 7.28, 7.62],
+                                [2.24, 2.0, 0, 4.0, 5.66, 4.47, 6.0, 9.22, 9.49],
+                                [3.61, 2.0, 4.0, 0, 4.0, 2.0, 2.0, 5.39, 5.83],
+                                [6.71, 4.47, 5.66, 4.0, 0, 6.0, 4.47, 7.81, 5.1],
+                                [3.0, 2.83, 4.47, 2.0, 6.0, 0, 2.83, 5.0, 7.07],
+                                [5.39, 4.0, 6.0, 2.0, 4.47, 2.83, 0, 3.61, 4.24],
+                                [8.0, 7.28, 9.22, 5.39, 7.81, 0, 3.61, 0, 5.0],
+                                [9.43, 7.62, 9.49, 5.83, 5.1, 7.07, 0, 5.0, 0],])
 
-        answer = np.array([[0, 1, 0, 0, 0, 0, 0, 0, 0],
-                           [1, 0, 1, 0, 0, 0, 0, 0, 0],
-                           [0, 1, 0, 0, 0, 1, 0, 0, 1],
-                           [0, 0, 0, 0, 1, 0, 0, 0, 0],
-                           [0, 0, 0, 1, 0, 1, 0, 0, 0],
-                           [0, 0, 1, 0, 1, 0, 1, 0, 0],
-                           [0, 0, 0, 0, 0, 1, 0, 1, 0],
+        constraints = np.array([3, 3, 3, 3, 3, 3, 3, 3, 3])
+
+        current_topology = np.array([[0, 1, 0, 0, 0, 0, 0, 0, 0],
+                                     [1, 0, 1, 1, 0, 0, 0, 0, 0],
+                                     [0, 1, 0, 0, 0, 0, 0, 0, 0],
+                                     [0, 1, 0, 0, 0, 1, 1, 0, 0],
+                                     [0, 0, 0, 0, 0, 0, 0, 0, 1],
+                                     [0, 0, 0, 1, 0, 0, 0, 0, 0],
+                                     [0, 0, 0, 1, 0, 0, 0, 1, 1],
+                                     [0, 0, 0, 0, 0, 0, 1, 0, 0],
+                                     [0, 0, 0, 0, 1, 0, 1, 0, 0],])
+
+        current_degree = np.array([1, 3, 1, 3, 1, 1, 3, 1, 2])
+
+        answer = np.array([[0, 0, 1, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 1, 1, 1, 0, 0, 0, 0],
+                           [1, 1, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 1, 0, 0, 0, 1, 1, 0, 0],
+                           [0, 1, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 1, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 1, 0, 0, 0, 1, 1],
                            [0, 0, 0, 0, 0, 0, 1, 0, 0],
-                           [0, 0, 1, 0, 0, 0, 0, 0, 0]])
+                           [0, 0, 0, 0, 0, 0, 1, 0, 0],])
 
-        # Passing tree such that edge [0, 7] could be replaced with [0, 1] to create a better degree constrained minimum
-        # spanning tree
-        self.assertTrue(
-            np.array_equal(dcmst_construction_algorithms.edge_exchange(np.asarray([[-1, 4, -1, -1, -1, -1, -1, 8, -1],
-                                                                                   [4, -1, 8, -1, -1, -1, -1, 11, -1],
-                                                                                   [-1, 8, -1, 7, -1, 4, -1, -1, 2],
-                                                                                   [-1, -1, 7, -1, 9, 14, -1, -1, -1],
-                                                                                   [-1, -1, -1, 9, -1, 10, -1, -1, -1],
-                                                                                   [-1, -1, 4, 14, 10, -1, 2, -1, -1],
-                                                                                   [-1, -1, -1, -1, -1, 2, -1, 1, 6],
-                                                                                   [8, 11, -1, -1, -1, -1, 1, -1, 7],
-                                                                                   [-1, -1, 2, -1, -1, -1, 6, 7, -1]]),
-                                                                       np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]), 9,
-                                                                       np.array(
-                                                                           [[0, 0, 0, 0, 0, 0, 0, 1, 0],
-                                                                            [0, 0, 1, 0, 0, 0, 0, 0, 0],
-                                                                            [0, 1, 0, 0, 0, 1, 0, 0, 1],
-                                                                            [0, 0, 0, 0, 1, 0, 0, 0, 0],
-                                                                            [0, 0, 0, 1, 0, 1, 0, 0, 0],
-                                                                            [0, 0, 1, 0, 1, 0, 1, 0, 0],
-                                                                            [0, 0, 0, 0, 0, 1, 0, 1, 0],
-                                                                            [1, 0, 0, 0, 0, 0, 1, 0, 0],
-                                                                            [0, 0, 1, 0, 0, 0, 0, 0, 0]]),
-                                                                       np.array([1, 2, 3, 1, 2, 3, 2, 1, 1]))[0],
-                           answer))
+        function_result = dcmst_construction_algorithms.edge_exchange(cost_matrix, constraints, 9,
+                                                                      current_topology, current_degree)[0]
 
-        # Passing tree such that edge [2, 3] could be replaced with [2, 5] to create a better degree constrained minimum
-        # spanning tree
-        self.assertTrue(
-            np.array_equal(dcmst_construction_algorithms.edge_exchange(np.asarray([[-1, 4, -1, -1, -1, -1, -1, 8, -1],
-                                                                                   [4, -1, 8, -1, -1, -1, -1, 11, -1],
-                                                                                   [-1, 8, -1, 7, -1, 4, -1, -1, 2],
-                                                                                   [-1, -1, 7, -1, 9, 14, -1, -1, -1],
-                                                                                   [-1, -1, -1, 9, -1, 10, -1, -1, -1],
-                                                                                   [-1, -1, 4, 14, 10, -1, 2, -1, -1],
-                                                                                   [-1, -1, -1, -1, -1, 2, -1, 1, 6],
-                                                                                   [8, 11, -1, -1, -1, -1, 1, -1, 7],
-                                                                                   [-1, -1, 2, -1, -1, -1, 6, 7, -1]]),
-                                                                       np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]), 9,
-                                                                       np.array(
-                                                                           [[0, 1, 0, 0, 0, 0, 0, 0, 0],
-                                                                            [1, 0, 1, 0, 0, 0, 0, 0, 0],
-                                                                            [0, 1, 0, 1, 0, 0, 0, 0, 1],
-                                                                            [0, 0, 1, 0, 1, 0, 0, 0, 0],
-                                                                            [0, 0, 0, 1, 0, 1, 0, 0, 0],
-                                                                            [0, 0, 0, 0, 1, 0, 1, 0, 0],
-                                                                            [0, 0, 0, 0, 0, 1, 0, 1, 0],
-                                                                            [0, 0, 0, 0, 0, 0, 1, 0, 0],
-                                                                            [0, 0, 1, 0, 0, 0, 0, 0, 0]]),
-                                                                       np.array([1, 2, 3, 1, 2, 3, 2, 1, 1]))[0],
-                           answer))
+        self.assertTrue(np.array_equal(function_result, answer))
 
-    def test_increase_connectivity(self):
-        """
-        Checks the ISLs are added correctly such that lower cost edges are added first before higher cost edges.
-        """
-        # Test Cost Matrix
-        test_costs = np.asarray([[-1, 4, -1, -1, -1, -1, -1, 8, -1],
-                                 [4, -1, 8, -1, -1, -1, -1, 11, -1],
-                                 [-1, 8, -1, 7, -1, 4, -1, -1, 2],
-                                 [-1, -1, 7, -1, 9, 14, -1, -1, -1],
-                                 [-1, -1, -1, 9, -1, 10, -1, -1, -1],
-                                 [-1, -1, 4, 14, 10, -1, 2, -1, -1],
-                                 [-1, -1, -1, -1, -1, 2, -1, 1, 6],
-                                 [8, 11, -1, -1, -1, -1, 1, -1, 7],
-                                 [-1, -1, 2, -1, -1, -1, 6, 7, -1]])
-
-        current_topology, current_degree = dcmst_construction_algorithms.modified_prims_algorithm(test_costs, np.array(
-            [3, 3, 3, 3, 3, 3, 3, 3, 3]), 9, 0)
-
-        answer = np.array([[0, 1, 0, 0, 0, 0, 0, 1, 0],
-                           [1, 0, 1, 0, 0, 0, 0, 1, 0],
-                           [0, 1, 0, 0, 0, 1, 0, 0, 1],
-                           [0, 0, 0, 0, 1, 0, 0, 0, 0],
-                           [0, 0, 0, 1, 0, 1, 0, 0, 0],
-                           [0, 0, 1, 0, 1, 0, 1, 0, 0],
-                           [0, 0, 0, 0, 0, 1, 0, 1, 1],
-                           [1, 1, 0, 0, 0, 0, 1, 0, 0],
-                           [0, 0, 1, 0, 0, 0, 1, 0, 0]])
-
-        self.assertTrue(np.array_equal(
-            dcmst_construction_algorithms.increase_connectivity(current_topology, np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]),
-                                                                current_degree, test_costs, 9), answer))
+    # GENETIC ALGORITHM TESTS #
 
     def test_prufer_encoding(self):
         """
@@ -222,6 +195,44 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
 
         self.assertFalse(dcmst_construction_algorithms.check_degree(prufer_encoding, np.array([2 for _ in range(9)]),
                                                                     9))
+
+    # GENERAL FUNCTIONS #
+
+    def test_increase_connectivity(self):
+        """
+        Checks the ISLs are added correctly such that lower cost edges are added first before higher cost edges.
+        """
+        # Test Cost Matrix
+        test_costs = np.asarray([[-1, 4, -1, -1, -1, -1, -1, 8, -1],
+                                 [4, -1, 8, -1, -1, -1, -1, 11, -1],
+                                 [-1, 8, -1, 7, -1, 4, -1, -1, 2],
+                                 [-1, -1, 7, -1, 9, 14, -1, -1, -1],
+                                 [-1, -1, -1, 9, -1, 10, -1, -1, -1],
+                                 [-1, -1, 4, 14, 10, -1, 2, -1, -1],
+                                 [-1, -1, -1, -1, -1, 2, -1, 1, 6],
+                                 [8, 11, -1, -1, -1, -1, 1, -1, 7],
+                                 [-1, -1, 2, -1, -1, -1, 6, 7, -1]])
+
+        current_topology, current_degree = dcmst_construction_algorithms.modified_prims_algorithm(test_costs,
+                                                                                                  np.array(
+                                                                                                      [3, 3, 3, 3,
+                                                                                                       3, 3, 3, 3,
+                                                                                                       3]), 9, 0)
+
+        answer = np.array([[0, 1, 0, 0, 0, 0, 0, 1, 0],
+                           [1, 0, 1, 0, 0, 0, 0, 1, 0],
+                           [0, 1, 0, 0, 0, 1, 0, 0, 1],
+                           [0, 0, 0, 0, 1, 0, 0, 0, 0],
+                           [0, 0, 0, 1, 0, 1, 0, 0, 0],
+                           [0, 0, 1, 0, 1, 0, 1, 0, 0],
+                           [0, 0, 0, 0, 0, 1, 0, 1, 1],
+                           [1, 1, 0, 0, 0, 0, 1, 0, 0],
+                           [0, 0, 1, 0, 0, 0, 1, 0, 0]])
+
+        self.assertTrue(np.array_equal(
+            dcmst_construction_algorithms.increase_connectivity(current_topology,
+                                                                np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]),
+                                                                current_degree, test_costs, 9), answer))
 
 
 if __name__ == '__main__':

@@ -30,7 +30,7 @@ def subtree_builder(tree, deleted_edge):
         raise ValueError("No path - DCMST does not exist.")
 
     # Find subtrees
-    subtree_i = np.argwhere(labels > 0).flatten()
+    subtree_i = np.argwhere(np.asarray(labels) > 0).flatten()
     subtree_j = np.argwhere(labels == 0).flatten()
 
     # Restore tree
@@ -130,8 +130,6 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
                 tree_edges[m][0], tree_edges[m][1] = new_edge[0], new_edge[1]
             else:
                 tree_edges[m][1], tree_edges[m][0] = new_edge[0], new_edge[1]
-
-        print(m)
 
     return tree, degree
 

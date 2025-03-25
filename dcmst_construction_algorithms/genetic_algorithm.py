@@ -1,6 +1,6 @@
 # Libraries
 import numpy as np
-from primal_method import modified_prims_algorithm
+from .primal_method import modified_prims_algorithm
 import warnings
 
 
