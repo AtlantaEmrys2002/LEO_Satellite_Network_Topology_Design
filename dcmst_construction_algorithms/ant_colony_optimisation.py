@@ -13,7 +13,7 @@ class Ant:
     def reset(self, num_sat):
         coin_flip = random.random()
         if coin_flip < 0.5:
-            self.location = random.randint(0, num_sat)
+            self.location = random.randint(0, num_sat - 1)
         self.tabu_list.clear()
 
 
@@ -87,16 +87,26 @@ def construct_spanning_tree(edges, constraints, nCandidates, num_sat):
     level_of_candidates = 1
 
     while len(T_n) < num_sat - 1:
+
         candidate = candidate_edges.pop(0)
         # Check if degree constraint violated by adding edge to tree
         if degrees[candidate.u] < constraints[candidate.u] and degrees[candidate.v] < constraints[candidate.v]:
             G.add_edge(candidate.u, candidate.v)
             # Check if cycle created (i.e. no longer a tree if edge added)
-            try:
-                nx.find_cycle(G)
-                T_n.append(candidate)
-            except nx.exception.NetworkXNoCycle:
+            # try:
+            #     nx.find_cycle(G)
+            #     G.remove_edge(candidate.u, candidate.v)
+            # except nx.exception.NetworkXNoCycle:
+            #     T_n.append(candidate)
+            #     degrees[candidate.u] += 1
+            #     degrees[candidate.v] += 1
+
+            if len(list(nx.simple_cycles(G))) != 0:
                 G.remove_edge(candidate.u, candidate.v)
+            else:
+                T_n.append(candidate)
+                degrees[candidate.u] += 1
+                degrees[candidate.v] += 1
 
         if len(candidate_edges) == 0:
             # Select next candidates
@@ -107,7 +117,9 @@ def construct_spanning_tree(edges, constraints, nCandidates, num_sat):
                 lowest = level_of_candidates * nCandidates
                 level_of_candidates += 1
                 highest = level_of_candidates * nCandidates
-                if highest > len(edges):
+                if highest > len(edges) and lowest > len(edges):
+                    raise ValueError("DCMST cannot be constructed, as not enough edges.")
+                elif highest > len(edges):
                     candidate_edges = edges[lowest:]
                 else:
                     candidate_edges = edges[lowest:highest]
@@ -124,16 +136,19 @@ def move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm):
             for e in edges:
                 e.update_pheromone(eta, minPhm, maxPhm)
 
-    number_of_edges = len(edges)
-
     for a in ants:
         nAttempts = 0
         moved = False
         while moved is False and nAttempts < 5:
+
             v_1 = a.location
+
             # Select random edge from edges incident to v_1 with probability proportional to pheromone on edge
-            potential_edges = [edge for edge in edges if edge.u == v_1 or edge.v == v_1]
-            random_edge = random.choices(range(number_of_edges), [e.phm for e in potential_edges])
+            potential_edges = [[edges[edge], edge] for edge in range(len(edges)) if edges[edge].u == v_1 or
+                               edges[edge].v == v_1]
+
+            random_edge = random.choices([e[1] for e in potential_edges], [e[0].phm for e in potential_edges])[0]
+
             if edges[random_edge].u == v_1:
                 v_2 = edges[random_edge].v
             else:
@@ -200,7 +215,7 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
     while i < max_iterations and (i - i_best) < max_iterations_without_improvement:
 
         # Ants explore
-        ants = move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm)
+        ants, edges = move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm)
 
         T = construct_spanning_tree(edges, constraints, candidate_set_cardinality, num_sat)
 
@@ -232,10 +247,20 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
         i += 1
 
         for a in ants:
-            a.reset()
+            a.reset(num_sat)
 
         # Update gamma and eta
         gamma *= gamma_change
         eta *= eta_change
 
-    return best_spanning_tree, np.sum(best_spanning_tree, axis=1).astype(np.int32)
+    edges = [[e.u, e.v] for e in best_spanning_tree]
+
+    best_spanning_tree_adjacency = np.zeros((num_sat, num_sat))
+
+    for edge in edges:
+        best_spanning_tree_adjacency[edge[0], edge[1]] = 1
+        best_spanning_tree_adjacency[edge[1], edge[0]] = 1
+
+    print(best_spanning_tree_adjacency)
+
+    return best_spanning_tree_adjacency, np.sum(best_spanning_tree_adjacency, axis=1).astype(np.int32)
