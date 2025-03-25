@@ -8,10 +8,18 @@ import random
 
 class Ant:
     def __init__(self, location):
+        """
+        Used to initialise a member of the Ant class in the ACO DCMST construction algorithm.
+        :param location:
+        """
         self.location = location
         self.tabu_list = deque([])
 
     def reset(self, num_sat):
+        """
+        Used by ACO DCMST construction algorithm to "reset" an ant for the next iteration of the algorithm.
+        :param num_sat:
+        """
         coin_flip = random.random()
         if coin_flip < 0.5:
             self.location = random.randint(0, num_sat - 1)
@@ -20,6 +28,14 @@ class Ant:
 
 class Edge:
     def __init__(self, max_cost, min_cost, edge_cost, u, v):
+        """
+        Used to initialise a member of the Edge class in the ACO DCMST construction algorithm.
+        :param max_cost:
+        :param min_cost:
+        :param edge_cost:
+        :param u:
+        :param v:
+        """
         self.u = u
         self.v = v
         self.edge_cost = edge_cost
@@ -28,6 +44,12 @@ class Edge:
         self.nVisited = 0
 
     def update_pheromone(self, eta, minPhm, maxPhm):
+        """
+        Used by Edge class in ACO DCMST construction algorithm to update pheromones of the edge.
+        :param eta:
+        :param minPhm:
+        :param maxPhm:
+        """
         self.phm = (1 - eta) * self.phm + self.nVisited * self.initPhm
         self.nVisited = 0
         if self.phm > maxPhm:
@@ -36,14 +58,28 @@ class Edge:
             self.phm = minPhm + self.initPhm
 
     def enhance(self, gamma):
+        """
+        Used by ACO DCMST construction algorithm to update pheromones of edges found in the best DCMST found (so far) by
+        the algorithm.
+        :param gamma:
+        """
         self.phm = self.phm * gamma
 
     def restart(self):
+        """
+        Used by ACO DCMST construction algorithm to escape local optimum.
+        """
         self.phm = self.phm * random.uniform(0.1, 0.3)
 
 
 def initialise_ants_and_edges(cost_matrix, num_sat):
-
+    """
+    Initialises ants and edges (they are associated with other values, such as pheromones) for ACO DCMST construction
+    algorithm.
+    :param cost_matrix:
+    :param num_sat:
+    :return:
+    """
     # CREATE ANTS #
 
     # Initialise an ant at each vertex (cardinality will always be the number of satellites in the network)
@@ -68,9 +104,17 @@ def initialise_ants_and_edges(cost_matrix, num_sat):
 
 
 def construct_spanning_tree(edges, constraints, nCandidates, num_sat):
-
+    """
+    Modified version of Kruskal's algorithm used to construct a DCMST - used in the ACO algorithm to create a DCMST
+    based on pheromones laid by ants and edge costs.
+    :param edges:
+    :param constraints:
+    :param nCandidates:
+    :param num_sat:
+    :return:
+    """
+    # Initialise spanning tree and degrees of each vertex
     T_n = []
-
     degrees = np.array([0 for _ in range(num_sat)])
 
     # Sort edges in decreasing order according to pheromone level
@@ -94,16 +138,10 @@ def construct_spanning_tree(edges, constraints, nCandidates, num_sat):
         candidate = candidate_edges.pop(0)
         # Check if degree constraint violated by adding edge to tree
         if degrees[candidate.u] < constraints[candidate.u] and degrees[candidate.v] < constraints[candidate.v]:
-            G.add_edge(candidate.u, candidate.v)
-            # Check if cycle created (i.e. no longer a tree if edge added)
-            # try:
-            #     nx.find_cycle(G)
-            #     G.remove_edge(candidate.u, candidate.v)
-            # except nx.exception.NetworkXNoCycle:
-            #     T_n.append(candidate)
-            #     degrees[candidate.u] += 1
-            #     degrees[candidate.v] += 1
 
+            G.add_edge(candidate.u, candidate.v)
+
+            # Check if cycle created (i.e. no longer a tree if edge added)
             if len(list(nx.simple_cycles(G))) != 0:
                 G.remove_edge(candidate.u, candidate.v)
             else:
@@ -112,7 +150,7 @@ def construct_spanning_tree(edges, constraints, nCandidates, num_sat):
                 degrees[candidate.v] += 1
 
         if len(candidate_edges) == 0:
-            # Select next candidates
+            # Select next best candidates (if more edges are needed)
             if len(edges) <= nCandidates:
                 raise ValueError("DCMST cannot be constructed, as not enough edges.")
             else:
@@ -134,14 +172,20 @@ def construct_spanning_tree(edges, constraints, nCandidates, num_sat):
 
 def move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm):
 
+    # The ants explore for a given number of steps
     for s in range(max_steps):
+        # Update pheromones of edges after a given number of steps - helps reduce execution time.
         if s % update_period == 0:
             for e in edges:
                 e.update_pheromone(eta, minPhm, maxPhm)
 
+        # Move each ant
         for a in ants:
+
             nAttempts = 0
             moved = False
+
+            # Move between five vertices or until ant cannot move (which over occurs first).
             while moved is False and nAttempts < 5:
 
                 v_1 = a.location
@@ -150,13 +194,17 @@ def move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm):
                 potential_edges = [[edges[edge], edge] for edge in range(len(edges)) if edges[edge].u == v_1 or
                                    edges[edge].v == v_1]
 
+                # Select an edge adjacent to the vertex at which ant is located randomly (but proportional to the
+                # pheromone on that edge)
                 random_edge = random.choices([e[1] for e in potential_edges], [e[0].phm for e in potential_edges])[0]
 
+                # Find neighbouring vertex
                 if edges[random_edge].u == v_1:
                     v_2 = edges[random_edge].v
                 else:
                     v_2 = edges[random_edge].u
 
+                # If ant has not visited that vertex recently, move ant to that vertex
                 if v_2 not in a.tabu_list:
                     a.tabu_list.append(v_2)
                     a.location = v_2
@@ -184,17 +232,35 @@ def move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm):
 
 
 def solution_fitness(tree):
-
+    """
+    Calculates the sum of all edge costs within a given DCMST - used by the ACO DCMST construction algorithm.
+    :param tree:
+    :return:
+    """
     return sum([edge.edge_cost for edge in tree])
 
 
-# Adapted from T. N. Bui, X. Deng, and C. M. Zrncic, “An Improved Ant-Based Algorithm for the Degree-Constrained Minimum
-# Spanning Tree Problem,” IEEE Trans. On Evol. Computation, vol. 16, no. 2, pp. 266-278, Apr. 2012.,
-# doi: 10.1109/TEVC.2011.2125971. Default values for function recommended by this original paper.
 def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 10000,
                max_iterations_without_improvement: int = 2500, max_steps: int = 75, eta: float = 0.5,
                gamma: float = 1.5, eta_change: float = 0.95, gamma_change: float = 1.05, R: int = 100):
-
+    """
+    Algorithm that constructs a DCMST using an ant-based algorithm. Adapted from T. N. Bui, X. Deng, and C. M. Zrncic,
+     “An Improved Ant-Based Algorithm for the Degree-Constrained Minimum Spanning Tree Problem,” IEEE Trans. On Evol.
+     Computation, vol. 16, no. 2, pp. 266-278, Apr. 2012., doi: 10.1109/TEVC.2011.2125971. Default values for function
+     recommended by this original paper.
+    :param cost_matrix:
+    :param constraints:
+    :param num_sat:
+    :param max_iterations:
+    :param max_iterations_without_improvement:
+    :param max_steps:
+    :param eta:
+    :param gamma:
+    :param eta_change:
+    :param gamma_change:
+    :param R:
+    :return:
+    """
     # Initialise counters
     i = 1
     i_best = 0
@@ -215,21 +281,27 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
     # Calculate fitness of spanning tree
     best_fitness = solution_fitness(best_spanning_tree)
 
+    # Continues iteratively improving DCMST until either the maximum number of iterations exceeded or no improvements
+    # have been made in a set number of iterations
     while i < max_iterations and (i - i_best) < max_iterations_without_improvement:
 
-        # Ants explore
+        # ANT EXPLORATION #
+
         ants, edges = move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm)
 
+        # Construct new spanning tree based on exploration
         T = construct_spanning_tree(edges, constraints, candidate_set_cardinality, num_sat)
 
-        # Local optimisation - REMOVED AS SIGNIFICANTLY INCREASES RUN TIME (NEED TO IMPLEMENT STILL)
+        # REMOVED AS SIGNIFICANTLY INCREASES RUN TIME - IMPLEMENT!
+
+        # LOCAL OPTIMISATION #
         # T = two_edge_replacement(T)
-        #
         # T = one_edge_replacement()
 
         # Compare the fitness of current best solution to new one
         current_solution_fitness = solution_fitness(T)
 
+        # Update spanning tree if better DCMST has been found
         if current_solution_fitness < best_fitness:
             best_spanning_tree = T
             best_fitness = current_solution_fitness
@@ -245,8 +317,9 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
                     edges[e].enhance(gamma)
                     break
 
-        # RESTART AND RESET #
+        # RESTART #
 
+        # This prevents algorithm getting stuck in local optimum - restart algorithm (i.e. adjust edge pheromones)
         if i - max(i_best, i_restart) > R:
             i_restart = i
             for edge in best_spanning_tree:
@@ -257,6 +330,9 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
 
         i += 1
 
+        # RESET ANTS #
+
+        # In next iteration, reset ants - approximately half (coin toss) of all ants remain in their current locations
         for a in ants:
             a.reset(num_sat)
 
@@ -271,7 +347,5 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
     for edge in edges:
         best_spanning_tree_adjacency[edge[0], edge[1]] = 1
         best_spanning_tree_adjacency[edge[1], edge[0]] = 1
-
-    print(best_spanning_tree_adjacency)
 
     return best_spanning_tree_adjacency, np.sum(best_spanning_tree_adjacency, axis=1).astype(np.int32)
