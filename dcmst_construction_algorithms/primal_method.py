@@ -240,5 +240,9 @@ def modified_prims_algorithm(cost_matrix, constraints, total_satellites: int, in
 
 # References
 # Connected Components - https://www.geeksforgeeks.org/connected-components-in-an-undirected-graph/
+# Connected Components in Large Graphs - https://stackoverflow.com/questions/11016256/connected-components-in-a-graph-
+# with-100-million-nodes
 # csgraph - https://www.geeksforgeeks.org/scipy-csgraph-compressed-sparse-graph/
 # Prim's Algorithm - https://en.wikipedia.org/wiki/Prim%27s_algorithm
+# Comparison of Networkx Functions - https://stackoverflow.com/questions/56726562/is-all-pairs-dijkstra-faster-than-
+# multiple-dijkstra-path

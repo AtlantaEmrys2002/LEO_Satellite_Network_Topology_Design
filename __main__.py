@@ -364,6 +364,8 @@ print(time.time() - start)
 # References
 # Argparse Terminology - https://stackoverflow.com/questions/19124304/what-does-metavar-and-action-mean-in-argparse-in-
 # python
+# Argsort Descending Order - https://stackoverflow.com/questions/16486252/is-it-possible-to-use-argsort-in-descending-
+# order
 # Argsort Error - https://stackoverflow.com/questions/53923914/weird-wrong-outpout-of-np-argsort
 # Asserting Numpy Equality - https://stackoverflow.com/questions/3302949/best-way-to-assert-for-numpy-array-equality
 # Building Project Documentation - https://medium.com/@pratikdomadiya123/build-project-documentation-quickly-with-the-
@@ -406,6 +408,8 @@ print(time.time() - start)
 # Loop Speed-Up - https://medium.com/@nirmalya.ghosh/13-ways-to-speedup-python-loops-e3ee56cd6b73
 # Main Function Call - https://stackoverflow.com/questions/42012140/if-name-main-function-call
 # __main__ Use - https://stackoverflow.com/questions/4042905/what-is-main-py
+# Module Imports - https://stackoverflow.com/questions/20075884/python-import-module-from-another-directory-at-the-same-
+# level-in-project-hierar
 # Multiple Indices - https://stackoverflow.com/questions/14162026/how-to-get-the-values-from-a-numpy-array-using-
 # multiple-indices
 # Multiprocessing Errors - https://www.reddit.com/r/learnpython/comments/yo8pab/why_does_multiprocessing_not_work_
@@ -477,6 +481,8 @@ print(time.time() - start)
 # Type Hinting with Numpy - https://stackoverflow.com/questions/70714087/how-to-typehint-numpy-array-of-floats-and-or-
 # integers
 # Typing - https://stackoverflow.com/questions/14113187/how-do-you-set-a-conditional-in-python-based-on-datatypes
+# Typing and Int Assignment - https://stackoverflow.com/questions/21390612/typeerror-int-object-does-not-support-item-
+# assignment
 # Unique Values from List - https://stackoverflow.com/questions/12897374/get-unique-values-from-a-list-in-python
 # World Geodetic System - https://en.wikipedia.org/wiki/World_Geodetic_System#Definition
 # Writing Packages - https://stackoverflow.com/questions/15746675/how-to-write-a-python-module-package

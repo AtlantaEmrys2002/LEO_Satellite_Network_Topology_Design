@@ -349,3 +349,12 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
         best_spanning_tree_adjacency[edge[1], edge[0]] = 1
 
     return best_spanning_tree_adjacency, np.sum(best_spanning_tree_adjacency, axis=1).astype(np.int32)
+
+# References
+# Array of Objects - https://stackoverflow.com/questions/4877624/numpy-array-of-objects
+# Cycle Detection - https://en.wikipedia.org/wiki/Cycle_(graph_theory)
+# Deep Copies - https://stackoverflow.com/questions/37593013/deep-copy-of-a-np-array-of-np-array
+# Searching Numpy Arrays - https://stackoverflow.com/questions/3030480/how-do-i-select-elements-of-an-array-given-
+# condition
+# Sorting Objects - https://stackoverflow.com/questions/403421/how-do-i-sort-a-list-of-objects-based-on-an-attribute-of-
+# the-objects
