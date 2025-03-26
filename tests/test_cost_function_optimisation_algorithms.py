@@ -1,9 +1,15 @@
 import unittest
 
 
-class MyTestCase(unittest.TestCase):
-    def test_something(self):
-        self.assertEqual(True, False)  # add assertion here
+class TestCostOptimisationFunctions(unittest.TestCase):
+    def test_random_search(self):
+        pass
+
+    def test_evolutionary_search(self):
+        pass
+
+    def test_machine_learning_search(self):
+        pass
 
 
 if __name__ == '__main__':
