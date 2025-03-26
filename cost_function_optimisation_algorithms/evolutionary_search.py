@@ -1,6 +1,5 @@
 # Libraries
 import build
-# import copy
 import csv
 import os
 from analysis.measure import measure_dynamic
@@ -23,20 +22,24 @@ def in_0_1(parameter_set):
 def evolutionary_search(input_file_name: str, constellation_name: str, num_snapshots: int, num_sat: int,
                         degree_constraints: list[int], dcmst_method: str, output_file_name: str, orbit_period=0,
                         max_comm_dist=0):
-
+    """
+    Runs an evolutionary search optimisation function (based on evolutionary strategy) to find near-optimal values for
+    alpha, beta, and gamma weights (can easily be adapted to include more weights), generates the topologies for
+    randomly generated weight sets and saves the metrics, along with the best topologies.
+    :param input_file_name:
+    :param constellation_name:
+    :param num_snapshots:
+    :param num_sat:
+    :param degree_constraints:
+    :param dcmst_method:
+    :param output_file_name:
+    :param orbit_period:
+    :param max_comm_dist:
+    """
     # N.B. lambda / mu should have no remainder
 
     # Temporary to store results before they are written to files
     results = []
-
-    # Best solutions - stores the best solutions found in terms of propagation delay (index 0), average hop count (1),
-    # and link churn (2)
-    # best_solutions = []
-
-    # Fitness of the best solutions found
-    # best_mean_delay = -1
-    # best_av_hop_count = -1
-    # best_link_churn = -1
 
     # Results location
     location = "./Results/novel/" + constellation_name.lower() + "/" + dcmst_method + "/" + "evolutionary_optimisation/"
@@ -82,19 +85,6 @@ def evolutionary_search(input_file_name: str, constellation_name: str, num_snaps
         # Calculate the fitness (metrics) of initial population
         _, mean_delay, hop_count, link_churn = measure_dynamic(constellation_name, location + "isls", num_sat,
                                                                num_snapshots)
-
-        # # If topology is the best topology found for one of these metrics, save as best topology
-        # if best_mean_delay > mean_delay or best_mean_delay == -1:
-        #     best_mean_delay = mean_delay
-        #     best_solutions[0] = copy.deepcopy(candidates[c])
-        #
-        # if best_av_hop_count > hop_count or best_av_hop_count == -1:
-        #     best_av_hop_count = hop_count
-        #     best_solutions[1] = copy.deepcopy(candidates[c])
-        #
-        # if best_link_churn > link_churn or best_link_churn == -1:
-        #     best_link_churn = link_churn
-        #     best_solutions[2] = copy.deepcopy(candidates[c])
 
         # Assign calculated fitness to population individuals
         fitness[c, 0] = mean_delay
@@ -181,25 +171,6 @@ def evolutionary_search(input_file_name: str, constellation_name: str, num_snaps
             results.append([candidates[c][0], candidates[c][1], candidates[c][2], child_fitness[c][0],
                             child_fitness[c][1], child_fitness[c][2]])
 
-        # for c in range(pop_size):
-        #
-        #     mean_delay, hop_count, link_churn = child_fitness[c]
-        #
-        #     # NEEDS ARGUMENTS
-
-            # If topology is the best topology found for one of these metrics, save as best topology
-            # if best_mean_delay > mean_delay or best_mean_delay == -1:
-            #     best_mean_delay = mean_delay
-            #     best_solutions[0] = copy.deepcopy(candidates[c])
-            #
-            # if best_av_hop_count > hop_count or best_av_hop_count == -1:
-            #     best_av_hop_count = hop_count
-            #     best_solutions[1] = copy.deepcopy(candidates[c])
-            #
-            # if best_link_churn > link_churn or best_link_churn == -1:
-            #     best_link_churn = link_churn
-            #     best_solutions[2] = copy.deepcopy(candidates[c])
-
         # Prepare for next iteration
         candidates = children
         fitness = child_fitness
@@ -219,3 +190,5 @@ def evolutionary_search(input_file_name: str, constellation_name: str, num_snaps
 
 # References:
 # Evolutionary Search - https://en.wikipedia.org/wiki/Evolutionary_algorithm#Monte-Carlo_methods
+# Evolutionary Strategy - https://machinelearningmastery.com/evolution-strategies-from-scratch-in-python/
+# Evolutionary Strategy - https://en.wikipedia.org/wiki/Evolution_strategy
