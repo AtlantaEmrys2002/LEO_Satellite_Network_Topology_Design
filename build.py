@@ -24,8 +24,11 @@ def dcmst(cost_matrix, constraints, total_satellites):
 # Builds ISL topology for a single snapshot
 def heuristic_topology_design_algorithm_isls(arguments):
 
-    (input_file_name, constellation_name, total_satellites, orbit_period, num_snapshot, max_comm_dist,
-     degree_constraints, snapshot_id, params, output_filename_isls, method) = arguments
+    # (input_file_name, constellation_name, total_satellites, orbit_period, num_snapshot, max_comm_dist,
+    #  degree_constraints, snapshot_id, params, output_filename_isls, method) = arguments
+
+    (input_file_name, constellation_name, total_satellites, num_snapshot, degree_constraints, snapshot_id, params,
+     output_filename_isls, method) = arguments
 
     # ### TIME VISIBILITY MATRIX ###
 

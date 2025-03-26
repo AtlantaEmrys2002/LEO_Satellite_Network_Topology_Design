@@ -145,10 +145,14 @@ def evolutionary_search(input_file_name: str, constellation_name: str, num_snaps
             # BUILD TOPOLOGY WITH CHILD VALUES #
 
             # Generate arguments for topology build
+            # snapshot_arguments = [
+            #     (input_file_name, constellation_name, num_sat, orbit_period, num_snapshots, max_comm_dist,
+            #      degree_constraints, snapshot_id, child[0], child[1], child[2],
+            #      output_file_name, dcmst_method) for snapshot_id in range(num_snapshots)]
+
             snapshot_arguments = [
-                (input_file_name, constellation_name, num_sat, orbit_period, num_snapshots, max_comm_dist,
-                 degree_constraints, snapshot_id, child[0], child[1], child[2],
-                 output_file_name, dcmst_method) for snapshot_id in range(num_snapshots)]
+                (input_file_name, constellation_name, num_sat, num_snapshots, degree_constraints, snapshot_id, child[0],
+                 child[1], child[2], output_file_name, dcmst_method) for snapshot_id in range(num_snapshots)]
 
             # Build topologies with given candidate values for alpha, beta, and gamma
 

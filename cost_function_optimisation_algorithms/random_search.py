@@ -48,6 +48,7 @@ def random_search(file_name: str, constellation_name: str, num_snapshots: int, n
                 print("Directory to store results of random search optimisation could not be created.")
 
         # Generate arguments for functions - results file path will already exist
+
         snapshot_arguments = [[file_name, constellation_name, num_sat, num_snapshots, degree_constraints, s,
                                parameter_sets[t], results_location + str(t) + "/isls_" + str(s) + ".txt", dcmst_method]
                               for s in range(num_snapshots)]

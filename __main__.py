@@ -233,9 +233,10 @@ if __name__ == "__main__":
         num_snapshot = int(orbital_period / snapshot_interval)
 
         # Generate arguments for functions
-        snapshot_arguments = [[file_name, constellation_name, total_sat, orbital_period, num_snapshot,
-                               max_communication_dist, satellite_degree_constraints, t, params, "./" +
-                               constellation_name + "_isls" + str(t) + ".txt", topology] for t in snapshot_ids]
+
+        snapshot_arguments = [[file_name, constellation_name, total_sat, num_snapshot, satellite_degree_constraints, t,
+                               params, "./" + constellation_name + "_isls" + str(t) + ".txt", topology] for t in
+                              snapshot_ids]
 
         # Get TLEs-formatted data
         tles_data = data_handling.read_file(file_name)
