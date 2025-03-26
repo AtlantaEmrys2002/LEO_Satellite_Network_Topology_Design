@@ -2,27 +2,26 @@
 import numpy as np
 
 
-def link_churn(location, constellation_name, snapshot_num, num_satellites):
+def link_churn(location, snapshot_num, num_satellites):
     """
     Calculates link churn for satellite network over one orbital period (as determined by number of snapshots of network
      taken).
     :param location:
-    :param constellation_name:
     :param snapshot_num:
     :param num_satellites:
     :return:
     """
-    # Load relevant topology matrices
+    # LOAD INITIAL TOPOLOGY MATRICES #
 
     # Read in topology built for given snapshot
-    previous_isls = np.loadtxt(constellation_name + "_isls_0.txt").astype(int).T
+    previous_isls = np.loadtxt(location + "/isls_0.txt").astype(int).T
 
     # Create topology matrix for previous
     previous = np.zeros((num_satellites, num_satellites))
     previous[previous_isls[0], previous_isls[1]] = 1
 
     # Read in topology built for given snapshot
-    current_isls = np.loadtxt(constellation_name + "_isls_1.txt").astype(int).T
+    current_isls = np.loadtxt(location + "/isls_1.txt").astype(int).T
 
     # Create topology matrix for current
     current = np.zeros((num_satellites, num_satellites))
@@ -33,6 +32,8 @@ def link_churn(location, constellation_name, snapshot_num, num_satellites):
 
     # Keeps track of total number of link changes over the course of one orbital period
     total = 0
+
+    # CALCULATE NUMBER OF LINK CHANGES BETWEEN EACH PAIRWISE SNAPSHOTS #
 
     # For each snapshot, find the changed links (i.e. ISLs that have connected between previous snapshot and current
     # snapshot
@@ -53,7 +54,7 @@ def link_churn(location, constellation_name, snapshot_num, num_satellites):
         previous = current
 
         # Read in topology built for given snapshot
-        current_isls = np.loadtxt(location + constellation_name + "_isls_" + str(current_id) + ".txt").astype(int).T
+        current_isls = np.loadtxt(location + "/isls_" + str(current_id) + ".txt").astype(int).T
 
         # Create topology matrix for current
         current = np.zeros((num_satellites, num_satellites))
