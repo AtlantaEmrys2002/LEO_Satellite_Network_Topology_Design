@@ -2,7 +2,7 @@
 from astropy.constants import c
 import numpy as np
 from scipy.sparse import csr_array
-from scipy.sparse.csgraph import floyd_warshall
+from scipy.sparse.csgraph import dijkstra
 
 
 def propagation_delay(topology_matrix, distance_matrix, num_satellites):
@@ -20,12 +20,18 @@ def propagation_delay(topology_matrix, distance_matrix, num_satellites):
 
     # Calculate path from source to destination using Dijkstra's Shortest Path Algorithm
     graph = csr_array(distance_matrix)
-    dist = floyd_warshall(csgraph=graph, directed=False)
+    dist = np.array(dijkstra(csgraph=graph, directed=False))
 
     # Check if any path between nodes where satellite a cannot reach satellite b
     if len(dist[dist == -9999.]) != 0:
         raise ValueError("Cannot calculate propagation delay - a path does not exist between 2 satellites in the "
                          "network.")
+
+    # Undirected graph - only consider unique paths between satellites (i.e. do not consider path from 2 to 1 if 1 to 2
+    # has already been considered)
+    for i in range(num_satellites):
+        for j in range(i):
+            dist[i, j] = 0
 
     # Calculate latencies using velocity = distance/time formula
     dist /= c.to('km/s').value

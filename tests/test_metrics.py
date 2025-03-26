@@ -1,5 +1,6 @@
 # Libraries
-from metrics import hop_count, link_churn
+from astropy.constants import c
+from metrics import hop_count, link_churn, propagation_delay
 import numpy as np
 import os
 import unittest
@@ -94,14 +95,44 @@ class TestMetricFunctions(unittest.TestCase):
         # Calculate link churn for topologies stored in test data
         result = link_churn("./test_data/isl_topologies/test_constellation", 4, 5)
 
-        self.assertTrue(result == actual_link_churn)
+        self.assertEqual(result, actual_link_churn)
 
     def test_propagation_delay(self):
         """
         Ensures the function that measures propagation delay for a given satellite network with a given ISL topology
         is correct.
         """
-        pass
+        example_topology = np.array([[0, 1, 0, 0, 0, 0, 0, 0, 0],
+                                     [1, 0, 1, 0, 0, 0, 0, 0, 0],
+                                     [0, 1, 0, 0, 0, 1, 0, 0, 1],
+                                     [0, 0, 0, 0, 1, 0, 0, 0, 0],
+                                     [0, 0, 0, 1, 0, 1, 0, 0, 0],
+                                     [0, 0, 1, 0, 1, 0, 1, 0, 0],
+                                     [0, 0, 0, 0, 0, 1, 0, 1, 0],
+                                     [0, 0, 0, 0, 0, 0, 1, 0, 0],
+                                     [0, 0, 1, 0, 0, 0, 0, 0, 0]])
+
+        example_dist_matrix = np.array([[0, 4.0, 0, 0, 0, 0, 0, 8.0, 0],
+                                        [4.0, 0, 8.0, 0, 0, 0, 0, 11.0, 0],
+                                        [0, 8.0, 0, 7.0, 0, 4.0, 0, 0, 2.0],
+                                        [0, 0, 7.0, 0, 9.0, 14.0, 0, 0, 0],
+                                        [0, 0, 0, 9.0, 0, 10.0, 0, 0, 0],
+                                        [0, 0, 4.0, 14.0, 10.0, 0, 2.0, 0, 0],
+                                        [0, 0, 0, 0, 0, 2.0, 0, 1.0, 6.0],
+                                        [8.0, 11.0, 0, 0, 0, 0, 1.0, 0, 7.0],
+                                        [0, 0, 2.0, 0, 0, 0, 6.0, 7.0, 0], ])
+
+        max_result, mean_result = propagation_delay(example_topology, example_dist_matrix, 9)
+
+        mean_actual_answer = (488 / c.to('km/s').value) / 36
+
+        max_actual_answer = 35 / c.to('km/s').value
+
+        # Check max propagation delay returned is correct
+        self.assertEqual(max_actual_answer, max_result)
+
+        # Check mean propagation delay returned is correct
+        self.assertEqual(mean_actual_answer, mean_result)
 
 
 if __name__ == '__main__':

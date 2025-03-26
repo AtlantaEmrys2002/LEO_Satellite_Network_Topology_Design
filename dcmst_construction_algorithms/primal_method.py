@@ -134,27 +134,6 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
     return tree, degree
 
 
-# print(edge_exchange(np.asarray([[-1, 4, -1, -1, -1, -1, -1, 8, -1],
-#                                  [4, -1, 8, -1, -1, -1, -1, 11, -1],
-#                                  [-1, 8, -1, 7, -1, 4, -1, -1, 2],
-#                                  [-1, -1, 7, -1, 9, 14, -1, -1, -1],
-#                                  [-1, -1, -1, 9, -1, 10, -1, -1, -1],
-#                                  [-1, -1, 4, 14, 10, -1, 2, -1, -1],
-#                                  [-1, -1, -1, -1, -1, 2, -1, 1, 6],
-#                                  [8, 11, -1, -1, -1, -1, 1, -1, 7],
-#                                  [-1, -1, 2, -1, -1, -1, 6, 7, -1]]), np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]), 9,
-#                                  np.array(
-#                  [[0, 1, 0, 0, 0, 0, 0, 0, 0],
-#                   [1, 0, 1, 0, 0, 0, 0, 0, 0],
-#                   [0, 1, 0, 1, 0, 0, 0, 0, 1],
-#                   [0, 0, 1, 0, 1, 0, 0, 0, 0],
-#                   [0, 0, 0, 1, 0, 1, 0, 0, 0],
-#                   [0, 0, 0, 0, 1, 0, 1, 0, 0],
-#                   [0, 0, 0, 0, 0, 1, 0, 1, 0],
-#                   [0, 0, 0, 0, 0, 0, 1, 0, 0],
-#                   [0, 0, 1, 0, 0, 0, 0, 0, 0]]), np.array([1, 2, 3, 1, 2, 3, 2, 1, 1])))
-
-
 # Function constructs initial DCMST by greedily adding the shortest edges that connect vertices not currently within the
 # tree to vertices already within the tree. Function returns tree and degree of each vertex in the tree.
 def modified_prims_algorithm(cost_matrix, constraints, total_satellites: int, initial_node: int):
@@ -243,6 +222,7 @@ def modified_prims_algorithm(cost_matrix, constraints, total_satellites: int, in
 # Connected Components in Large Graphs - https://stackoverflow.com/questions/11016256/connected-components-in-a-graph-
 # with-100-million-nodes
 # csgraph - https://www.geeksforgeeks.org/scipy-csgraph-compressed-sparse-graph/
+# Edge Removal - https://www.geeksforgeeks.org/check-removing-given-edge-disconnects-given-graph/
 # Prim's Algorithm - https://en.wikipedia.org/wiki/Prim%27s_algorithm
 # Comparison of Networkx Functions - https://stackoverflow.com/questions/56726562/is-all-pairs-dijkstra-faster-than-
 # multiple-dijkstra-path
