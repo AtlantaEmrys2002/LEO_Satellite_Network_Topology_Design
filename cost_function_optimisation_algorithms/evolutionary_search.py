@@ -21,11 +21,12 @@ def in_0_1(parameter_set):
 
 def evolutionary_search(input_file_name: str, constellation_name: str, num_snapshots: int, num_sat: int,
                         degree_constraints: list[int], dcmst_method: str, output_file_name: str, orbit_period=0,
-                        max_comm_dist=0):
+                        max_comm_dist=0, num_iterations: int = 1000, mu: int = 2, pop_size: int = 10,
+                        step_size: float = 0.05):
     """
     Runs an evolutionary search optimisation function (based on evolutionary strategy) to find near-optimal values for
     alpha, beta, and gamma weights (can easily be adapted to include more weights), generates the topologies for
-    randomly generated weight sets and saves the metrics, along with the best topologies.
+    a given network using an evolutionary strategy algorithm and saves the metrics, along with the best topologies.
     :param input_file_name:
     :param constellation_name:
     :param num_snapshots:
@@ -35,7 +36,12 @@ def evolutionary_search(input_file_name: str, constellation_name: str, num_snaps
     :param output_file_name:
     :param orbit_period:
     :param max_comm_dist:
+    :param num_iterations:
+    :param mu:
+    :param pop_size:
+    :param step_size:
     """
+
     # N.B. lambda / mu should have no remainder
 
     # Temporary to store results before they are written to files
@@ -54,11 +60,7 @@ def evolutionary_search(input_file_name: str, constellation_name: str, num_snaps
 
     # EVOLUTIONARY PARAMETER OPTIMISATION SEARCH #
 
-    num_iterations = 10
     current_iteration = 0
-    mu = 10
-    pop_size = 20
-    step_size = 0.05
 
     # Initialise population with random values for alpha, beta, and gamma
     candidates = np.random.rand(pop_size, 3)
@@ -134,8 +136,6 @@ def evolutionary_search(input_file_name: str, constellation_name: str, num_snaps
                         break
 
         # EVALUATE CHILDREN #
-
-        # NEEDS ARGUMENTS
 
         # Calculate fitness from topology of each child
         child_fitness = []
