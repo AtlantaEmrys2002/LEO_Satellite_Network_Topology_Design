@@ -12,7 +12,7 @@ Inter-Satellite Link Topologies for Satellite Megaconstellations* at Durham Univ
 
 ### Python Dependencies
 
-Dependencies for this package include the Python libraries: `astropy`, `certifi`, `ephem`, `networkx`, `numpy`, `nx-parallel`, `pytest`, `scipy`, `sgp4`, and `skyfield`. 
+Dependencies for this package include the Python libraries: `astropy`, `certifi`, `ephem`, `networkx`, `numpy`, `nx-parallel`, `pytest`, `scipy`, `sgp4`, `skyfield`, and `sphinx`. 
 
 To install all dependencies automatically, run ```bash install_dependencies.sh```if you wish to install on a macOS system or ```bash install_dependencies_linux.sh``` if you wish to install on a Linux-based system.
 
