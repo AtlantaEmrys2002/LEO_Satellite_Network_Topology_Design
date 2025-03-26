@@ -7,10 +7,12 @@ ts = load.timescale()
 
 earth_radius = 6378.135
 
+
 # Calculates a satellite's altitude above Earth given TLES coordinates of satellite
 def satellite_height_above_earth(name, s, t):
     """
-    Calculates the height (in km) of a satellite above the Earth's surface, assuming the satellite has an approximately circular orbit (eccentricity close to 0).
+    Calculates the height (in km) of a satellite above the Earth's surface, assuming the satellite has an approximately
+    circular orbit (eccentricity close to 0).
 
     :param name:
     :param s:
@@ -29,9 +31,11 @@ def satellite_height_above_earth(name, s, t):
 
     return height_above_earth
 
-def maximum_communication_distance(data_file:str, num_sat:int):
+
+def maximum_communication_distance(data_file: str, num_sat: int):
     """
-    Calculates the maximum possible communication distance between two satellites orbiting at the lowest possible orbit permitted in the satellite constellation.
+    Calculates the maximum possible communication distance between two satellites orbiting at the lowest possible orbit
+    permitted in the satellite constellation.
 
     :param data_file:
     :param num_sat:
@@ -45,7 +49,7 @@ def maximum_communication_distance(data_file:str, num_sat:int):
     # orbital altitude - this will provide the "smallest" maximum communication distance, as closer to Earth.
     lowest_satellite_altitude = min([satellite_height_above_earth(lines[line_index], lines[line_index + 1],
                                                                   lines[line_index + 2]) for line_index in
-                                                                  range(1, num_sat, 3)])
+                                     range(1, num_sat, 3)])
 
     # Return the maximum communication distance between two satellites orbiting at the lowest satellite altitude in the
     # network

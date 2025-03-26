@@ -1,9 +1,12 @@
 # Libraries
 import numpy as np
 
-def cost_function(visibility, time_visibility, distance, sunlight, alpha:float, beta:float, gamma:float, total_satellites:int):
+
+def cost_function(visibility, time_visibility, distance, sunlight, alpha: float, beta: float, gamma: float,
+                  total_satellites: int):
     """
-    Calculates the cost matrix (the weight of each edge in an undirected graph representing a satellite network where edges are potential ISLs and nodes are satellites).
+    Calculates the cost matrix (the weight of each edge in an undirected graph representing a satellite network where
+    edges are potential ISLs and nodes are satellites).
 
     :param visibility:
     :param time_visibility:
@@ -38,9 +41,11 @@ def cost_function(visibility, time_visibility, distance, sunlight, alpha:float, 
     # Calculate costs/weights according to cost function (included in paper) - added  1 to time_visibility to ensure no
     # divide by 0 error. Gamma is probability of satellite failure due to solar flares - 0 if in Earth's shadow,
     # otherwise gamma (gamma could be found via deep learning image classification of pictures of sun)
-    cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1 / (time_visibility + 1))) + (beta * distance) + (gamma * sunlight))
+    cost_matrix = np.where(visibility == 0, cost_matrix, (alpha * (1 / (time_visibility + 1))) + (beta * distance) +
+                           (gamma * sunlight))
 
     return cost_matrix
 
 # References
-# Adding 1 to Numpy Array - https://www.reddit.com/r/learnpython/comments/12hsf8k/trying_to_add_1_to_the_element_at_a_certain_index/
+# Adding 1 to Numpy Array - https://www.reddit.com/r/learnpython/comments/12hsf8k/trying_to_add_1_to_the_element_at_a_
+# certain_index/

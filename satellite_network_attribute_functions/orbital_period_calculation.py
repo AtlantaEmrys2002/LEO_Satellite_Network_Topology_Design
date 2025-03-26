@@ -1,9 +1,12 @@
 # Libraries
 import ephem
 
-def orbital_period_calculation(satellite_description, num_sat:int):
+
+def orbital_period_calculation(satellite_description, num_sat: int):
     """
-    Calculates (using mean motion) the orbital period of a satellite. Mean motion has units in revolutions per day. Uses astropy assumption that 1 day == 86400 seconds. Returns the maximum orbital period of any satellite in the network (i.e. the orbital period of the satellite orbited at the greatest altitude above the Earth).
+    Calculates (using mean motion) the orbital period of a satellite. Mean motion has units in revolutions per day. Uses
+     astropy assumption that 1 day == 86400 seconds. Returns the maximum orbital period of any satellite in the network
+     (i.e. the orbital period of the satellite orbited at the greatest altitude above the Earth).
 
     :param satellite_description:
     :param num_sat:

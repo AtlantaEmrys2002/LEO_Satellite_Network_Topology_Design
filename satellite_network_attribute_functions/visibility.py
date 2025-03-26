@@ -1,9 +1,11 @@
 # Libraries
 import numpy as np
 
+
 def visibility_function(distance_matrix, max_dist) -> np.ndarray:
     """
-    For each pair of satellites within the network, calculates whether two satellites are visible to one another based on current positions.
+    For each pair of satellites within the network, calculates whether two satellites are visible to one another based
+    on current positions.
 
     :param distance_matrix:
     :param max_dist:
