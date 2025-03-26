@@ -1,6 +1,6 @@
 # Low Earth Orbit Satellite Network Topology Design
 
-This Python package was created by Millicent Riordan for their final third-year project *Designing High-Performance
+This Python package was created by Millicent Riordan for their third-year project *Designing High-Performance
 Inter-Satellite Link Topologies for Satellite Megaconstellations* at Durham University. 
 
 ## Set-Up
@@ -14,7 +14,7 @@ Inter-Satellite Link Topologies for Satellite Megaconstellations* at Durham Univ
 
 Dependencies for this package include the Python libraries: `astropy`, `certifi`, `ephem`, `networkx`, `numpy`, `nx-parallel`, `pytest`, `scipy`, `sgp4`, and `skyfield`. 
 
-To install all dependencies automatically, please run `bash install_dependencies.sh` if you wish to install on a macOS system or `bash install_dependencies_linux.sh` if you wish to install on a Linux-based system.
+To install all dependencies automatically, run ```bash install_dependencies.sh```if you wish to install on a macOS system or ```bash install_dependencies_linux.sh``` if you wish to install on a Linux-based system.
 
 ## Modules and Functionality
 
@@ -31,4 +31,12 @@ NEEDS DESCRIPTIONS INCLUDED
 - `satellite_topology_construction_algorithms`
 - `tests`
 
-## Tutorial
+## Tutorial and Documentation
+
+Documentation of each function within this Python package can be found [here](). 
+
+## Recreating Report
+
+To recreate the results in the project's final report, please run ```bash report.sh```. Please note that this scripts 
+takes significant execution time. However, a large proportion of this code is automatically parallelised -  if you have 
+access to a significant number of CPU cores, this code will run significantly faster.
