@@ -3,14 +3,13 @@
 # Kuiper?)
 # Find maximum transmission dist for Starlink, Kuiper and telesat - 27000 paper sets at 5014 km - also mentioned in code
 # Improve visibility by looking at NSGA-III paper and the antenna direction - will need a way to get antenna direction
-# INCLUDE OTHER HYPERPARAMETERS - BANDWIDTH
 # EXPERIMENT WITH INCREASE CONNECTIVITY FUNC - IN FREE OPTICAL SPACE NETWORKS PAPER (BROADBAND NOT SATELLITE), THEY
 # CONNECT LARGEST COST EDGES - REDUCES GRAPH DIAMETER AT EXPENSE OF ENERGY EFFICIENCY
 # ADDED 1 to TIME VISIBILITY MATRIX IN COST FUNCTION - IS THIS JUST TEMPORARY FIX OR IS IT CORRECT - NEED TO CHECK!!!!
 # Randomly select edge from all edges with same cost rather than just selecting first one
 
 # Import Relevant Libraries
-from analysis import measure, optimise
+from analysis import measure, cost_function_optimise
 import argparse
 import data_handling
 from multiprocessing import Pool
@@ -20,10 +19,7 @@ import random
 import satellite_network_attribute_functions as satnet
 from scipy.spatial.distance import cdist  # imported due to https://vaghefi.medium.com/fast-distance-calculation-in-
 # python-bb2bc9810ea5
-from skyfield.api import EarthSatellite, load  # recommended by astropy for calculating information about
-# satellites described by TLE (convert to TEME), timescale is only defined once
-# (https://rhodesmill.org/skyfield/api-time.html#skyfield.timelib.Time)
-import sys
+from skyfield.api import EarthSatellite, load  # recommended by astropy documentation
 import time
 # from build import heuristic_topology_design_algorithm_isls
 from satellite_topology_construction_algorithms import (heuristic_topology_design_algorithm_isls, plus_grid,
@@ -33,51 +29,58 @@ from satellite_topology_construction_algorithms import (heuristic_topology_desig
 ts = load.timescale()
 
 # Sun's Ephemeris - used to calculate whether satellite is in sunlight or not
-# if os.path.isfile('./de421.bsp') is False:
 eph = load('./de421.bsp')
 
 # Seed Random so results can be reproduced
 random.seed(42)
-
 
 start = time.time()
 if __name__ == "__main__":
 
     # PARSE INPUTS #
 
+    print("Parsing Inputs...", end='\r', flush=True)
+
     # Parse inputs to module
     parser = argparse.ArgumentParser()
     parser.add_argument("--tles", type=str, help="name of input file which contains TLE description of "
-                                                 "satellite network")
+                                                 "satellite network", required=True)
     parser.add_argument("--constellation", type=str, help="name of satellite constellation for which a "
-                                                          "topology is built (used to name output files)")
-    parser.add_argument("--m", type=int, help="number of orbits in constellation")
-    parser.add_argument("--n", type=int, help="number of satellites per orbit")
-    parser.add_argument("--i", type=float, help="inclination degree of an orbit within the constellation")
-    parser.add_argument("--rev", type=float, help="mean motion revolutions per day for satellite network")
+                                                          "topology is built (used to name output files)",
+                        required=True)
+    parser.add_argument("--m", type=int, help="number of orbits in constellation", required=True)
+    parser.add_argument("--n", type=int, help="number of satellites per orbit", required=True)
+    parser.add_argument("--i", type=float, help="inclination degree of an orbit within the constellation",
+                        required=True)
+    parser.add_argument("--rev", type=float, help="mean motion revolutions per day for satellite network",
+                        required=True)
     parser.add_argument("--snapshots", type=int, nargs="+", help="ids of the snapshots for which to build "
                                                                  "a topology (minimum of 0, maximum is number of "
                                                                  "snapshots taken over the course of one orbital period"
-                                                                 ")")
-    parser.add_argument("--snapshot_interval", type=int, nargs="+", help="time intervals (s) between "
-                                                                         "snapshots, e.g. if 60, a topology is "
-                                                                         "constructed every 60s over 1 orbital period")
+                                                                 ")", required=True)
+    parser.add_argument("--snapshot_interval", type=int, help="time intervals (s) between snapshots, e.g. "
+                                                              "if 60, a topology is constructed every 60s over 1 "
+                                                              "orbital period", required=True)
     parser.add_argument("--weights", type=float, nargs=3, help="values of weights of cost function (alpha "
                                                                "for time visibility, beta for distance, gamma for "
-                                                               "probability of failure)")
-    parser.add_argument("--multi", type=bool, help="determines if the constellation contains multiple shells")
-    parser.add_argument("--optimise", type=bool, help="determines if cost function weights should be "
-                                                      "optimised and/or metrics returned")
+                                                               "probability of failure)", required=True)
+    parser.add_argument("--multi", type=str, help="determines if the constellation contains multiple shells",
+                        required=True)
+    parser.add_argument("--optimise", type=str, help="determines if cost function weights should be "
+                                                     "optimised and/or metrics returned", required=True)
     parser.add_argument("--optimisation_method", type=str, help="if cost function is optimised, determines"
                                                                 " method with which to find optimal weights (options: "
-                                                                "'random', 'evolutionary', 'machine-learning')")
+                                                                "'random', 'evolutionary', 'machine-learning')",
+                        required=True)
     parser.add_argument("--topology", type=str, help="determines method with which to construct topology "
-                                                     "for network (options: 'plus-grid', 'x-grid', 'mdtd', 'novel')")
+                                                     "for network (options: 'plus-grid', 'x-grid', 'mdtd', 'novel')",
+                        required=True)
     parser.add_argument("--dcmst", type=str, help="if novel topology construction algorithm is used, "
                                                   "determines which dcmst construction method is used (options: 'aco', "
-                                                  "'ga', 'primal')")
-    parser.add_argument("--isl_terminals", help="specify as an int or list of ints the number of terminals"
-                                                " each satellite in the given constellation has")
+                                                  "'ga', 'primal')", required=True)
+    parser.add_argument("--isl_terminals", type=int, nargs="+", help="specify as an int or list of ints "
+                                                                     "the number of terminals each satellite in the "
+                                                                     "given constellation has", required=True)
 
     args = parser.parse_args()
 
@@ -91,10 +94,6 @@ if __name__ == "__main__":
     # topology = 'novel'
     # dcmst = 'primal'
 
-    # Assign values
-    if len(sys.argv) != 16:
-        raise AttributeError("Not all arguments were assigned.")
-
     tle_file = args.tles
     constellation_name = args.constellation
     num_orbits = args.m
@@ -104,11 +103,27 @@ if __name__ == "__main__":
     snapshot_ids = args.snapshots
     params = args.weights
     multi_shell = args.multi
-    optimise = args.optimise
     optimisation_method = args.optimisation_method
     topology = args.topology
     dcmst = args.dcmst
     snapshot_interval = args.snapshot_interval
+
+    # Determine whether the cost function should be optimised for the novel proposed algorithm and if the topologies
+    # generated by other methods should be evaluated according to given metric
+    if args.optimise == "True":
+        optimise = True
+    elif args.optimise == "False":
+        optimise = False
+    else:
+        raise ValueError("Argument for --optimise should be either 'True' or 'False'.")
+
+    # Determine whether the satellite network involves multiple shells of satellites
+    if args.multi == "True":
+        multi_shell = True
+    elif args.multi == "False":
+        multi_shell = False
+    else:
+        raise ValueError("Argument for --multi should be either 'True' or 'False'.")
 
     # CALCULATE TOTAL SATELLITES
 
@@ -126,17 +141,25 @@ if __name__ == "__main__":
 
     # Set up degree constraints, i.e. assign the maximum number of ISLs (or maximum number of functioning/active ISL
     # terminals per satellite).
-    if type(args.isl_terminals) is int:
-        satellite_degree_constraints = [args.isl_terminals for _ in range(total_sat)]
-    elif type(args.isl_terminals) is list[int]:
+
+    if len(args.isl_terminals) == 1:
+        try:
+            satellite_degree_constraints = np.array([int(args.isl_terminals[0]) for _ in range(total_sat)],
+                                                    dtype=np.int32)
+        except ValueError:
+            raise ValueError(
+                "Satellite degree constraints must be specified as int or list of ints (length of list of ints"
+                " must be equal to the number of satellites within the network.")
+    else:
         if len(args.isl_terminals) != total_sat:
             raise ValueError("The number of specified degree constraints should match the number of satellites within "
                              "the network.")
-        else:
-            satellite_degree_constraints = args.isl_terminals
-    else:
-        raise ValueError("Satellite degree constraints must be specified as int or list of ints (length of list of ints"
-                         " must be equal to the number of satellites within the network.")
+        try:
+            satellite_degree_constraints = np.array([int(a) for a in args.isl_terminals], dtype=np.int32)
+        except ValueError:
+            raise ValueError(
+                "Satellite degree constraints must be specified as int or list of ints (length of list of ints"
+                " must be equal to the number of satellites within the network.")
 
     # # If optimising or analysing any topologies, need to construct a directory to store results
     # # Check directory for resulting topology exists
@@ -146,9 +169,13 @@ if __name__ == "__main__":
     #     except OSError:
     #         print("Directory to store distance matrices could not be created.")
 
+    print("Input Parsing Completed")
+
+    print("Building Topology... ", end='\r', flush=True)
+
     # STATIC ALGORITHMS #
     # Benchmark Static Topology Designs
-    if topology is "plus-grid":
+    if topology == "plus-grid":
 
         # Build topology with provided parameters
 
@@ -169,8 +196,12 @@ if __name__ == "__main__":
         plus_grid.generate_plus_grid_isls(location + "/isls_0.txt", num_orbits, num_sats_per_orbit, isl_shift=0,
                                           idx_offset=0)
 
+        print("+Grid Topology Build Completed")
+
         # Return metrics if optimise is true (so topology can be evaluated)
         if optimise is True:
+
+            print("Evaluating... ", end='\r', flush=True)
 
             # Calculate metrics for topology
             max_pd, mean_pd, av_hop_count, link_churn = measure.measure_static(constellation_name, location +
@@ -179,7 +210,9 @@ if __name__ == "__main__":
             data_handling.write_optimisation_results_to_csv(location, "static", [max_pd, mean_pd,
                                                                                  av_hop_count, link_churn])
 
-    elif topology is "x-grid":
+            print("+Grid Evaluation Completed")
+
+    elif topology == "x-grid":
 
         print("NEEDS IMPLEMENTING")
 
@@ -255,7 +288,6 @@ if __name__ == "__main__":
             # Calculate the distance matrix (symmetric) for each snapshot of the network. Distance between satellite and
             # itself = 0km.
             for k in snapshot_times:
-
                 # Calculates position of all satellites in the network at snapshot time k
                 satellites_at_k = [i.at(k).position.km for i in earth_satellite_objects]
 
@@ -272,7 +304,7 @@ if __name__ == "__main__":
         # GENERATES TOPOLOGY USING BENCHMARK MDTD ALGORITHM
 
         # Benchmark MDTD Design
-        if topology is "mdtd":
+        if topology == "mdtd":
 
             # Directory in which to store topologies
             if optimise is False:
@@ -284,8 +316,12 @@ if __name__ == "__main__":
             minimum_delay_topology_design_algorithm(constellation_name, num_snapshot, total_sat,
                                                     satellite_degree_constraints, topology)
 
+            print("MDTD Topology Build Completed")
+
             # If optimise is true, generate metrics for topology for evaluation/comparison with novel algorithm
             if optimise is True:
+
+                print("Evaluating...", end='\r', flush=True)
 
                 # Evaluate generated topologies according to given metrics
                 max_pd, mean_pd, av_hop_count, link_churn = measure.measure_dynamic(constellation_name, location,
@@ -295,14 +331,16 @@ if __name__ == "__main__":
                 data_handling.write_optimisation_results_to_csv(location, "dynamic", [max_pd, mean_pd,
                                                                                       av_hop_count, link_churn])
 
+                print("MDTD Evaluation Completed")
+
         # NOVEL TOPOLOGY DESIGN ALGORITHM (BUILT FOR THIS PROJECT)
-        else:
+        elif topology == "novel":
 
             # Directory in which to store topologies
             if optimise is False:
-                location = "./novel/" + dcmst + "/" + constellation_name.lower()
+                location = "./novel/" + dcmst + "/" + constellation_name.lower() + "/"
             else:
-                location = "./Results/novel/" + dcmst + "/" + constellation_name.lower()
+                location = "./Results/novel/" + dcmst + "/" + constellation_name.lower() + "/"
 
             # VISIBILITY AND TIME VISIBILITY MATRICES ###
 
@@ -374,13 +412,21 @@ if __name__ == "__main__":
 
                 pool.terminate()
 
+                print("Novel Algorithm Topology Build Completed")
+
             # Run cost optimisation function and calculate metrics for best topologies found
             else:
 
-                optimise()
+                print("Evaluating... ", end='\r', flush=True)
+
+                cost_function_optimise()
+
+                print("Novel Topology Algorithm Cost Function Optimisation Completed")
+
+        else:
+            raise ValueError("That topology design method does not exist.")
 
 print(time.time() - start)
-
 
 # References
 # Argparse Terminology - https://stackoverflow.com/questions/19124304/what-does-metavar-and-action-mean-in-argparse-in-

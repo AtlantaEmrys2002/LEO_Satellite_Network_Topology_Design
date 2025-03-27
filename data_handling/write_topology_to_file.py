@@ -16,11 +16,13 @@ def write_topology_to_file(location: str, topology, snapshot_num: int):
     # Create directory to store the topologies for each snapshot
     if os.path.isdir(location) is False:
 
-        # Create directory in which to store topology
-        try:
-            os.mkdir(location)
-        except OSError:
-            print("Directory to store resulting topologies could not be created.")
+        os.makedirs(location)
+
+        # # Create directory in which to store topology
+        # try:
+        #     os.mkdir(location)
+        # except OSError:
+        #     raise OSError("Directory to store resulting topologies could not be created.")
 
     # Select all ISLs within topology - lists edges in the graph
     tree_edges = np.argwhere(topology > 0)

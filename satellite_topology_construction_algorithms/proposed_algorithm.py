@@ -10,17 +10,17 @@ import satellite_network_attribute_functions as satnet
 # algorithm (see paper for references)
 def dcmst(cost_matrix, constraints, total_satellites, method):
 
-    if method is "primal":
+    if method == "primal":
 
         # Construct DCMST according to Primal Algorithm (see function file for more details)
         tree, degree = topology_build.primal_algorithm(cost_matrix, constraints, total_satellites,
                                                        random.randint(0, total_satellites))
 
-    elif method is "aco":
+    elif method == "aco":
         # Construct DCMST using ant-based algorithm
         tree, degree = topology_build.ant_colony(cost_matrix, constraints, total_satellites)
 
-    elif method is "ga":
+    elif method == "ga":
         # Construct DCMST using genetic algorithm
         tree, degree = topology_build.genetic_algorithm(cost_matrix, constraints, total_satellites)
 
