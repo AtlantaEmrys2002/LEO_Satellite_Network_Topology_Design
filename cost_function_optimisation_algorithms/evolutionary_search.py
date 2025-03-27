@@ -19,15 +19,13 @@ def in_0_1(parameter_set):
     return True
 
 
-def evolutionary_search(input_file_name: str, constellation_name: str, num_snapshots: int, num_sat: int,
-                        degree_constraints: list[int], dcmst_method: str, output_file_name: str, orbit_period=0,
-                        max_comm_dist=0, num_iterations: int = 1000, mu: int = 2, pop_size: int = 10,
-                        step_size: float = 0.05):
+def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: int, degree_constraints: list[int],
+                        dcmst_method: str, output_file_name: str, num_iterations: int = 1000, mu: int = 2,
+                        pop_size: int = 10, step_size: float = 0.05):
     """
     Runs an evolutionary search optimisation function (based on evolutionary strategy) to find near-optimal values for
     alpha, beta, and gamma weights (can easily be adapted to include more weights), generates the topologies for
     a given network using an evolutionary strategy algorithm and saves the metrics, along with the best topologies.
-    :param input_file_name:
     :param constellation_name:
     :param num_snapshots:
     :param num_sat:
@@ -72,8 +70,8 @@ def evolutionary_search(input_file_name: str, constellation_name: str, num_snaps
     for c in range(pop_size):
 
         # Generate arguments for topology build
-        snapshot_arguments = [(input_file_name, constellation_name, num_sat, orbit_period, num_snapshots, max_comm_dist,
-                               degree_constraints, snapshot_id, candidates[c][0], candidates[c][1], candidates[c][2],
+        snapshot_arguments = [(constellation_name, num_sat, num_snapshots,
+                               degree_constraints, snapshot_id, [candidates[c][0], candidates[c][1], candidates[c][2]],
                                output_file_name, dcmst_method) for snapshot_id in range(num_snapshots)]
 
         # Build topologies with given candidate values for alpha, beta, and gamma
@@ -146,8 +144,8 @@ def evolutionary_search(input_file_name: str, constellation_name: str, num_snaps
 
             # Generate arguments for topology build
             snapshot_arguments = [
-                (input_file_name, constellation_name, num_sat, num_snapshots, degree_constraints, snapshot_id, child[0],
-                 child[1], child[2], output_file_name, dcmst_method) for snapshot_id in range(num_snapshots)]
+                (constellation_name, num_sat, num_snapshots, degree_constraints, snapshot_id, [child[0], child[1],
+                 child[2]], output_file_name, dcmst_method) for snapshot_id in range(num_snapshots)]
 
             # Build topologies with given candidate values for alpha, beta, and gamma
 
@@ -186,6 +184,8 @@ def evolutionary_search(input_file_name: str, constellation_name: str, num_snaps
         writer.writeheader()
         for row in results:
             writer.writerow(row)
+
+
 
 # References:
 # Evolutionary Search - https://en.wikipedia.org/wiki/Evolutionary_algorithm#Monte-Carlo_methods

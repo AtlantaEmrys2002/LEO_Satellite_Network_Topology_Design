@@ -1,0 +1,19 @@
+def maximum_transmission_distance(constellation_name):
+    """
+    Returns the maximum transmission distance for a given constellation (based on satellite hardware specifications).
+    :param constellation_name:
+    :return:
+    """
+    # Constellation name
+    name = constellation_name.lower()
+
+    match name:
+        case 1 if "starlink" in name:
+            return 10000
+        case 2 if "telesat" in name:
+            return 10000
+        case 3 if "kuiper" in name:
+            return 10000
+        case _:
+            raise ValueError("No constellation has that name and, therefore, no maximum transmission distance can be "
+                             "returned.")

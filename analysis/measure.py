@@ -59,7 +59,7 @@ def measure_dynamic(constellation_name, topology_file_location, num_satellites, 
     :return:
     """
     # Initialise values
-    max_pd, mean_pd, av_hop_count, link_churn = 0, 0, 0, 0
+    av_max_pd, av_mean_pd, av_av_hop_count, link_churn = 0, 0, 0, 0
 
     # For each topology over the course of one orbital period
     for k in range(num_snapshots):
@@ -73,14 +73,24 @@ def measure_dynamic(constellation_name, topology_file_location, num_satellites, 
         # Calculate propagation delay (max and mean) for static topology
         max_pd, mean_pd = metrics.propagation_delay(topology, distance, topology[0].size)
 
+        av_max_pd += max_pd
+        av_mean_pd += mean_pd
+
         # Calculate hop count
         av_hop_count = metrics.hop_count(topology, distance, topology[0].size)
 
-    # Calculate link churn
-    link_churn = metrics.link_churn(topology_file_location, constellation_name, num_snapshots, num_satellites)
+        av_av_hop_count += av_hop_count
 
-    if max_pd == 0 or mean_pd == 0 or av_hop_count == 0:
+    # Calculate link churn
+    link_churn = metrics.link_churn(topology_file_location, num_snapshots, num_satellites)
+
+    # Find average of delays and hop count across all snapshots
+    av_max_pd /= num_snapshots
+    av_mean_pd /= num_snapshots
+    av_av_hop_count /= num_snapshots
+
+    if av_max_pd == 0 or av_mean_pd == 0 or av_av_hop_count == 0:
         raise ValueError("Check metric calculations - it is not possible for satellites in two different positions to "
                          "have a propagation delay value equal to 0. Similarly, hop count is always >= 1.")
 
-    return max_pd, mean_pd, av_hop_count, link_churn
+    return av_max_pd, av_mean_pd, av_av_hop_count, link_churn

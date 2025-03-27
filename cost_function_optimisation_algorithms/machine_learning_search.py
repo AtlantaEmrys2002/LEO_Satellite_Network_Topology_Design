@@ -3,7 +3,7 @@ import csv
 import os
 
 
-def machine_learning_optimisation(file_name: str, constellation_name: str, num_snapshots: int, num_sat: int,
+def machine_learning_optimisation(constellation_name: str, num_snapshots: int, num_sat: int,
                                   degree_constraints: list[int], dcmst_method: str):
 
     # CREATE LOCATIONS TO STORE RESULTS #

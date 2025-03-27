@@ -11,8 +11,11 @@ import warnings
 # NEED TO CHECK THIS IS CORRECT - MAKE SURE NX LINES WORKING - IF NOT, THEN USE SCIPY NUMBER OF COMPONENTS
 
 
-def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, num_satellites, constraints, constant,
-                                            method):
+def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, num_satellites, constraints, method,
+                                            constant=1.0):
+
+    # N.B. constant set to 1 as default like original paper - 'A Novel Topology Design Method for Multi-layered Optical
+    # Satellite Networks' (see report for full reference)
 
     # Stores previous snapshot's topology and average propagation delay
     # N.B. Cannot parallelise this function, as relies on results of previous topology calculations

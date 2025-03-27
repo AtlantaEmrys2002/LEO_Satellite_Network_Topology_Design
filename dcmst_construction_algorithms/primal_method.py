@@ -217,6 +217,32 @@ def modified_prims_algorithm(cost_matrix, constraints, total_satellites: int, in
 
     return tree.astype(int), degree
 
+
+def primal_algorithm(cost_matrix, constraints, total_satellites: int, initial_node):
+    """
+    Function builds DCMST according to Primal Algorithm presented in original paper on DCMSTs ('Degree-Constrained
+    Minimum Spanning Tree' - Narula and Ho - see report for full citation). See original paper on DCMST and Prim's
+    Algorithm (https://en.wikipedia.org/wiki/Prim%27s_algorithm). Tree holds a graphical representation of the network
+    topology (1 where an ISL exists between satellites i and j, 0 otherwise). Current ISL number holds the degree of
+    each node in the graph - i.e. the number of active ISLs each satellite.
+    # possesses
+    :param cost_matrix:
+    :param constraints:
+    :param total_satellites:
+    :param initial_node:
+    :return:
+    """
+    # Construct initial DCMST (Degree-Constrained Spanning Tree) using modified version of Prim's algorithm
+    # (modified so number of edges incident to any given vertex cannot be greater than constraint (maximum degree)
+    # of given vertex)
+    tree, degree = modified_prims_algorithm(cost_matrix, constraints, total_satellites, initial_node)
+
+    # Exchange edges if better edge found according to given conditions
+    tree, degree = edge_exchange(cost_matrix, constraints, total_satellites, tree, degree)
+
+    return tree, degree
+
+
 # References
 # Connected Components - https://www.geeksforgeeks.org/connected-components-in-an-undirected-graph/
 # Connected Components in Large Graphs - https://stackoverflow.com/questions/11016256/connected-components-in-a-graph-

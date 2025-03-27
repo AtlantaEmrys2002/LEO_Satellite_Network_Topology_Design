@@ -4,24 +4,23 @@ import os
 
 
 # Write resulting topology for given snapshot to file
-def write_topology_to_file(file_name: str, topology, method: str):
+def write_topology_to_file(location: str, topology, snapshot_num: int):
     """
     Writes a given snapshot's topology (list of ISLs) to file in correct format for integration with Hypatia software.
 
-    :param file_name:
+    :param location:
     :param topology:
-    :param method:
+    :param snapshot_num:
     """
-    # Create directory to store the topologies for each snapshot
-    # if os.path.isdir("./isl_topologies") is False:
-    if os.path.isdir("./" + method + "/isl_topologies") is False:
 
-        # Create directory in which to store distance matrices
+    # Create directory to store the topologies for each snapshot
+    if os.path.isdir(location) is False:
+
+        # Create directory in which to store topology
         try:
-            # os.mkdir("./isl_topologies")
-            os.mkdir("./" + method + "/isl_topologies")
+            os.mkdir(location)
         except OSError:
-            print("Directory to store distance matrices could not be created.")
+            print("Directory to store resulting topologies could not be created.")
 
     # Select all ISLs within topology - lists edges in the graph
     tree_edges = np.argwhere(topology > 0)
@@ -30,5 +29,4 @@ def write_topology_to_file(file_name: str, topology, method: str):
     tree_edges = np.unique(np.sort(tree_edges), axis=0)
 
     # Save results to file compatible with Hypatia simulation software
-    # np.savetxt("./isl_topologies/" + file_name, tree_edges, fmt='%i %i')
-    np.savetxt("./" + method + "/isl_topologies/" + file_name, tree_edges, fmt='%i %i')
+    np.savetxt(location + "/isls_" + str(snapshot_num) + ".txt", tree_edges, fmt='%i %i')

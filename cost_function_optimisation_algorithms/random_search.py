@@ -10,13 +10,12 @@ import os
 np.random.seed(42)
 
 
-def random_search(file_name: str, constellation_name: str, num_snapshots: int, num_param_sets: int, num_sat: int,
+def random_search(constellation_name: str, num_snapshots: int, num_param_sets: int, num_sat: int,
                   degree_constraints: list[int], dcmst_method: str):
     """
     Runs a random search optimisation function to find near-optimal values for alpha, beta, and gamma weights (can
     easily be adapted to include more weights), generates the topologies for randomly generated weight sets and saves
     the metrics, along with the best topologies.
-    :param file_name: name of TLE file storing satellite information
     :param constellation_name: name of satellite constellation for which a topology is being built
     :param num_snapshots: the number of snapshots over one orbital period for which to generate topology
     :param num_param_sets: the number of randomly generated sets of weights for which to build topologies
@@ -49,9 +48,9 @@ def random_search(file_name: str, constellation_name: str, num_snapshots: int, n
 
         # Generate arguments for functions - results file path will already exist
 
-        snapshot_arguments = [[file_name, constellation_name, num_sat, num_snapshots, degree_constraints, s,
-                               parameter_sets[t], results_location + str(t) + "/isls_" + str(s) + ".txt", dcmst_method]
-                              for s in range(num_snapshots)]
+        snapshot_arguments = [[constellation_name, num_sat, num_snapshots, degree_constraints, s, parameter_sets[t],
+                               results_location + str(t) + "/isls_" + str(s) + ".txt", dcmst_method] for s in
+                              range(num_snapshots)]
 
         # Run experiments with given parameters - assume that all "network attribute matrices", e.g. distance matrices
         # have already been created
