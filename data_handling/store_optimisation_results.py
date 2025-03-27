@@ -22,7 +22,7 @@ def write_optimisation_results_to_csv(location, algorithm, results):
                                  link_churn=link_churn))
         # Algorithm is novel (proposed in report)
         elif algorithm is "novel":
-            fieldnames = ['alpha', 'beta', 'gamma', 'max_latency', 'mean_latency', 'average_hop_count', 'link_churn']
+            fieldnames = ['alpha', 'beta', 'gamma', 'mean_latency', 'average_hop_count', 'link_churn']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             for row in results:

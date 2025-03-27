@@ -1,9 +1,9 @@
 # Libraries
-import csv
+from data_handling import write_optimisation_results_to_csv
 import os
 
 
-def machine_learning_optimisation(constellation_name: str, num_snapshots: int, num_sat: int,
+def machine_learning_optimisation(constellation_name: str, output_directory: str, num_snapshots: int, num_sat: int,
                                   degree_constraints: list[int], dcmst_method: str):
 
     # CREATE LOCATIONS TO STORE RESULTS #
@@ -11,14 +11,11 @@ def machine_learning_optimisation(constellation_name: str, num_snapshots: int, n
     # Initialise temporary array to store results
     results = []
 
-    # Results location
-    location = "./Results/novel/" + constellation_name.lower() + "/" + dcmst_method + "/machine_learning_optimisation/"
-
-    if os.path.isdir(location) is False:
+    if os.path.isdir(output_directory) is False:
 
         # Create directory in which to store evolutionary optimisation search results
         try:
-            os.makedirs(location)
+            os.makedirs(output_directory)
         except OSError:
             print("Directory to store results of machine learning optimisation could not be created.")
 
@@ -27,11 +24,4 @@ def machine_learning_optimisation(constellation_name: str, num_snapshots: int, n
     # NEED TO IMPLEMENT
 
     # WRITE RESULTS TO CSV #
-
-    with (open(location + "/results.csv", 'w', newline='')
-          as csvfile):
-        fieldnames = ['alpha', 'beta', 'gamma', 'mean_latency', 'average_hop_count', 'link_churn']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        for row in results:
-            writer.writerow(row)
+    write_optimisation_results_to_csv(output_directory, "novel", results)

@@ -1,6 +1,7 @@
 # Libraries
-import build
-import csv
+# from build import heuristic_topology_design_algorithm_isls
+from satellite_topology_construction_algorithms import heuristic_topology_design_algorithm_isls
+from data_handling import write_optimisation_results_to_csv
 import os
 from analysis.measure import measure_dynamic
 from multiprocessing import Pool
@@ -20,7 +21,7 @@ def in_0_1(parameter_set):
 
 
 def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: int, degree_constraints: list[int],
-                        dcmst_method: str, output_file_name: str, num_iterations: int = 1000, mu: int = 2,
+                        dcmst_method: str, output_directory: str, num_iterations: int = 1000, mu: int = 2,
                         pop_size: int = 10, step_size: float = 0.05):
     """
     Runs an evolutionary search optimisation function (based on evolutionary strategy) to find near-optimal values for
@@ -31,9 +32,7 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
     :param num_sat:
     :param degree_constraints:
     :param dcmst_method:
-    :param output_file_name:
-    :param orbit_period:
-    :param max_comm_dist:
+    :param output_directory:
     :param num_iterations:
     :param mu:
     :param pop_size:
@@ -45,14 +44,11 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
     # Temporary to store results before they are written to files
     results = []
 
-    # Results location
-    location = "./Results/novel/" + constellation_name.lower() + "/" + dcmst_method + "/evolutionary_optimisation/"
-
-    if os.path.isdir(location) is False:
+    if os.path.isdir(output_directory) is False:
 
         # Create directory in which to store evolutionary optimisation search results
         try:
-            os.makedirs(location)
+            os.makedirs(output_directory)
         except OSError:
             print("Directory to store results of evolutionary search optimisation could not be created.")
 
@@ -72,18 +68,18 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
         # Generate arguments for topology build
         snapshot_arguments = [(constellation_name, num_sat, num_snapshots,
                                degree_constraints, snapshot_id, [candidates[c][0], candidates[c][1], candidates[c][2]],
-                               output_file_name, dcmst_method) for snapshot_id in range(num_snapshots)]
+                               output_directory, dcmst_method) for snapshot_id in range(num_snapshots)]
 
         # Build topologies with given candidate values for alpha, beta, and gamma
 
         pool = Pool(processes=os.cpu_count())
 
-        pool.map(build.heuristic_topology_design_algorithm_isls, snapshot_arguments)
+        pool.map(heuristic_topology_design_algorithm_isls, snapshot_arguments)
 
         pool.terminate()
 
         # Calculate the fitness (metrics) of initial population
-        _, mean_delay, hop_count, link_churn = measure_dynamic(constellation_name, location + "isls", num_sat,
+        _, mean_delay, hop_count, link_churn = measure_dynamic(constellation_name, output_directory, num_sat,
                                                                num_snapshots)
 
         # Assign calculated fitness to population individuals
@@ -145,18 +141,18 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
             # Generate arguments for topology build
             snapshot_arguments = [
                 (constellation_name, num_sat, num_snapshots, degree_constraints, snapshot_id, [child[0], child[1],
-                 child[2]], output_file_name, dcmst_method) for snapshot_id in range(num_snapshots)]
+                 child[2]], output_directory, dcmst_method) for snapshot_id in range(num_snapshots)]
 
             # Build topologies with given candidate values for alpha, beta, and gamma
 
             pool = Pool(processes=os.cpu_count())
 
-            pool.map(build.heuristic_topology_design_algorithm_isls, snapshot_arguments)
+            pool.map(heuristic_topology_design_algorithm_isls, snapshot_arguments)
 
             pool.terminate()
 
             # Calculate fitness values for topology returned by child
-            _, mean_delay, hop_count, link_churn = measure_dynamic(constellation_name, location + "isls", num_sat,
+            _, mean_delay, hop_count, link_churn = measure_dynamic(constellation_name, output_directory, num_sat,
                                                                    num_snapshots)
 
             child_fitness.append([mean_delay, hop_count, link_churn])
@@ -177,15 +173,7 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
 
     # WRITE RESULTS TO CSV #
 
-    with (open(location + "/results.csv", 'w', newline='')
-          as csvfile):
-        fieldnames = ['alpha', 'beta', 'gamma', 'mean_latency', 'average_hop_count', 'link_churn']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        for row in results:
-            writer.writerow(row)
-
-
+    write_optimisation_results_to_csv(output_directory, "novel", results)
 
 # References:
 # Evolutionary Search - https://en.wikipedia.org/wiki/Evolutionary_algorithm#Monte-Carlo_methods

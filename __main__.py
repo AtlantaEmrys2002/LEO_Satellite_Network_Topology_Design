@@ -25,8 +25,9 @@ from skyfield.api import EarthSatellite, load  # recommended by astropy for calc
 # (https://rhodesmill.org/skyfield/api-time.html#skyfield.timelib.Time)
 import sys
 import time
-from build import heuristic_topology_design_algorithm_isls
-from satellite_topology_construction_algorithms import plus_grid, minimum_delay_topology_design_algorithm
+# from build import heuristic_topology_design_algorithm_isls
+from satellite_topology_construction_algorithms import (heuristic_topology_design_algorithm_isls, plus_grid,
+                                                        minimum_delay_topology_design_algorithm)
 
 # Global Timescale (used for determining how to calculate time with Skyfield functions)
 ts = load.timescale()
