@@ -1,4 +1,3 @@
-from .bandwidth import *
 from .cost_function import *
 from .maximum_communication_distance import maximum_communication_distance
 from .maximum_transmission_distance import maximum_transmission_distance

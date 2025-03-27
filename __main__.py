@@ -2,10 +2,8 @@
 # When running tests, check all data_generation params are correct (including defaults, e.g. does perigee arg change for
 # Kuiper?)
 # Find maximum transmission dist for Starlink, Kuiper and telesat - 27000 paper sets at 5014 km - also mentioned in code
-# Improve visibility by looking at NSGA-III paper and the antenna direction - will need a way to get antenna direction
 # EXPERIMENT WITH INCREASE CONNECTIVITY FUNC - IN FREE OPTICAL SPACE NETWORKS PAPER (BROADBAND NOT SATELLITE), THEY
 # CONNECT LARGEST COST EDGES - REDUCES GRAPH DIAMETER AT EXPENSE OF ENERGY EFFICIENCY
-# ADDED 1 to TIME VISIBILITY MATRIX IN COST FUNCTION - IS THIS JUST TEMPORARY FIX OR IS IT CORRECT - NEED TO CHECK!!!!
 # Randomly select edge from all edges with same cost rather than just selecting first one
 
 # Import Relevant Libraries
@@ -84,16 +82,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # # Default values - allows for quick testing
-    # (tle_file, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree, mean_motion_rev_per_day,
-    #  snapshot_ids, params, multi_shell) = "starlink-constellation_tles.txt.tmp", "Starlink-550", 72, 22, 53, 15.19, [
-    #     2, 6, 10, 14], [1, 1, 0.2], False
-
-    # optimise = True
-    # optimisation_method = 'random'
-    # topology = 'novel'
-    # dcmst = 'primal'
-
     tle_file = args.tles
     constellation_name = args.constellation
     num_orbits = args.m
@@ -160,14 +148,6 @@ if __name__ == "__main__":
             raise ValueError(
                 "Satellite degree constraints must be specified as int or list of ints (length of list of ints"
                 " must be equal to the number of satellites within the network.")
-
-    # # If optimising or analysing any topologies, need to construct a directory to store results
-    # # Check directory for resulting topology exists
-    # if os.path.isdir("./Results/" + topology + "/" + constellation_name.lower()) is False:
-    #     try:
-    #         os.makedirs("./Results/" + topology + "/" + constellation_name.lower())
-    #     except OSError:
-    #         print("Directory to store distance matrices could not be created.")
 
     print("Input Parsing Completed")
 
@@ -427,6 +407,9 @@ if __name__ == "__main__":
             raise ValueError("That topology design method does not exist.")
 
 print(time.time() - start)
+
+# Used to test at the moment
+# python LEO_Satellite_Network_Topology_Design --tles "starlink-constellation_tles.txt.tmp" --constellation "Starlink-550" --m 72 --n 22 --i 53 --rev 15.19 --snapshots 2 6 10 14 --weights 1 1 0.2 --multi False --optimise False --optimisation_method random --topology "novel" --dcmst "primal" --isl_terminals 3 --snapshot_interval 60
 
 # References
 # Argparse Terminology - https://stackoverflow.com/questions/19124304/what-does-metavar-and-action-mean-in-argparse-in-
