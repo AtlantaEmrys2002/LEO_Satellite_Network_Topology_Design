@@ -40,25 +40,41 @@
 <span class="sig-prename descclassname"><span class="pre">cost_function_optimisation_algorithms.evolutionary_search.</span></span><span class="sig-name descname"><span class="pre">evolutionary_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constellation_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_snapshots</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degree_constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dcmst_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pop_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cost_function_optimisation_algorithms/evolutionary_search.html#evolutionary_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cost_function_optimisation_algorithms.evolutionary_search.evolutionary_search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs an evolutionary search optimisation function (based on evolutionary strategy) to find near-optimal values for
 alpha, beta, and gamma weights (can easily be adapted to include more weights), generates the topologies for
-a given network using an evolutionary strategy algorithm and saves the metrics, along with the best topologies.
-:param constellation_name:
-:param num_snapshots:
-:param num_sat:
-:param degree_constraints:
-:param dcmst_method:
-:param output_directory:
-:param num_iterations:
-:param mu:
-:param pop_size:
-:param step_size:</p>
+a given network using an evolutionary strategy algorithm and saves the metrics, along with the best topologies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>constellation_name</strong> – name of satellite network constellation, e.g. Starlink-550</p></li>
+<li><p><strong>num_snapshots</strong> – the number of snapshots of the network over one orbit for which a topology is constructed</p></li>
+<li><p><strong>num_sat</strong> – the number of satellites within the network</p></li>
+<li><p><strong>degree_constraints</strong> – list that describes the maximum number of ISLs each satellite can establish at a given
+point in time</p></li>
+<li><p><strong>dcmst_method</strong> – the method with which to construct the initial degree-constrained minimum spanning tree (either
+‘primal’, ‘aco’, or ‘ga’)</p></li>
+<li><p><strong>output_directory</strong> – directory in which the results of the cost function optimisation/metric evaluation are
+stored</p></li>
+<li><p><strong>num_iterations</strong> – the number of iterations of the evolutionary strategy to execute</p></li>
+<li><p><strong>mu</strong> – the number of parents selected every iteration</p></li>
+<li><p><strong>pop_size</strong> – the size of the population of solutions in the algorithm</p></li>
+<li><p><strong>step_size</strong> – the standard deviation of the Gaussian distribution from which solution mutations are selected</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cost_function_optimisation_algorithms.evolutionary_search.in_0_1">
-<span class="sig-prename descclassname"><span class="pre">cost_function_optimisation_algorithms.evolutionary_search.</span></span><span class="sig-name descname"><span class="pre">in_0_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_set</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cost_function_optimisation_algorithms/evolutionary_search.html#in_0_1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cost_function_optimisation_algorithms.evolutionary_search.in_0_1" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cost_function_optimisation_algorithms.evolutionary_search.</span></span><span class="sig-name descname"><span class="pre">in_0_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cost_function_optimisation_algorithms/evolutionary_search.html#in_0_1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cost_function_optimisation_algorithms.evolutionary_search.in_0_1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determines if alpha, beta, and gamma all within [0, 1] interval
-:param parameter_set:
-:return:</p>
+:param parameter_set: a list which contains three values - alpha, beta, and gamma - which refer to the weights</p>
+<blockquote>
+<div><p>placed on each network attribute considered in the cost function</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

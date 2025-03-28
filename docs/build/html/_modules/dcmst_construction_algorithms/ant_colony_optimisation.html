@@ -40,18 +40,18 @@
 
 
 <div class="viewcode-block" id="Ant"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.Ant">[docs]</a><span class="k">class</span> <span class="nc">Ant</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Used to initialise a member of the Ant class in the ACO DCMST construction algorithm.</span>
-<span class="sd">        :param location:</span>
+<span class="sd">        :param location: node at which ant is currently situated</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">location</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tabu_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([])</span>
 
-<div class="viewcode-block" id="Ant.reset"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.Ant.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">):</span>
+<div class="viewcode-block" id="Ant.reset"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.Ant.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Used by ACO DCMST construction algorithm to &quot;reset&quot; an ant for the next iteration of the algorithm.</span>
-<span class="sd">        :param num_sat:</span>
+<span class="sd">        :param num_sat: the number of satellites within the network</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">coin_flip</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">coin_flip</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
@@ -60,14 +60,14 @@
 
 
 <div class="viewcode-block" id="Edge"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.Edge">[docs]</a><span class="k">class</span> <span class="nc">Edge</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_cost</span><span class="p">,</span> <span class="n">min_cost</span><span class="p">,</span> <span class="n">edge_cost</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_cost</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">min_cost</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">edge_cost</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Used to initialise a member of the Edge class in the ACO DCMST construction algorithm.</span>
-<span class="sd">        :param max_cost:</span>
-<span class="sd">        :param min_cost:</span>
-<span class="sd">        :param edge_cost:</span>
-<span class="sd">        :param u:</span>
-<span class="sd">        :param v:</span>
+<span class="sd">        :param max_cost: the maximum cost on any edge in the network</span>
+<span class="sd">        :param min_cost: the minimum cost of any edge in the network</span>
+<span class="sd">        :param edge_cost: the cost of the edge</span>
+<span class="sd">        :param u: one of the nodes incident to edge</span>
+<span class="sd">        :param v: one of the nodes incident to edge</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="n">u</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="n">v</span>
@@ -76,12 +76,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initPhm</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nVisited</span> <span class="o">=</span> <span class="mi">0</span>
 
-<div class="viewcode-block" id="Edge.update_pheromone"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.Edge.update_pheromone">[docs]</a>    <span class="k">def</span> <span class="nf">update_pheromone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">minPhm</span><span class="p">,</span> <span class="n">maxPhm</span><span class="p">):</span>
+<div class="viewcode-block" id="Edge.update_pheromone"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.Edge.update_pheromone">[docs]</a>    <span class="k">def</span> <span class="nf">update_pheromone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">minPhm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">maxPhm</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Used by Edge class in ACO DCMST construction algorithm to update pheromones of the edge.</span>
-<span class="sd">        :param eta:</span>
-<span class="sd">        :param minPhm:</span>
-<span class="sd">        :param maxPhm:</span>
+<span class="sd">        :param eta: used to determine amount to update edge pheromone</span>
+<span class="sd">        :param minPhm: minimum pheromone that can be on any edge</span>
+<span class="sd">        :param maxPhm: maximum pheromone that can be on any edge</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">eta</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nVisited</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">initPhm</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nVisited</span> <span class="o">=</span> <span class="mi">0</span>
@@ -90,11 +90,11 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">&lt;</span> <span class="n">minPhm</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">=</span> <span class="n">minPhm</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">initPhm</span></div>
 
-<div class="viewcode-block" id="Edge.enhance"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.Edge.enhance">[docs]</a>    <span class="k">def</span> <span class="nf">enhance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gamma</span><span class="p">):</span>
+<div class="viewcode-block" id="Edge.enhance"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.Edge.enhance">[docs]</a>    <span class="k">def</span> <span class="nf">enhance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Used by ACO DCMST construction algorithm to update pheromones of edges found in the best DCMST found (so far) by</span>
 <span class="sd">        the algorithm.</span>
-<span class="sd">        :param gamma:</span>
+<span class="sd">        :param gamma: used to determine amount of pheromone with which to update edges in best DCMST discovered</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">*</span> <span class="n">gamma</span></div>
 
@@ -105,12 +105,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="initialise_ants_and_edges"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.initialise_ants_and_edges">[docs]</a><span class="k">def</span> <span class="nf">initialise_ants_and_edges</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">):</span>
+<div class="viewcode-block" id="initialise_ants_and_edges"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.initialise_ants_and_edges">[docs]</a><span class="k">def</span> <span class="nf">initialise_ants_and_edges</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Ant</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">Edge</span><span class="p">],</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialises ants and edges (they are associated with other values, such as pheromones) for ACO DCMST construction</span>
 <span class="sd">    algorithm.</span>
-<span class="sd">    :param cost_matrix:</span>
-<span class="sd">    :param num_sat:</span>
+<span class="sd">    :param cost_matrix: costs assigned to each edge within the graph that represents the satellite network</span>
+<span class="sd">    :param num_sat: the number of satellites within the network</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># CREATE ANTS #</span>
@@ -136,14 +136,15 @@
     <span class="k">return</span> <span class="n">ants</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">maxPhm</span><span class="p">,</span> <span class="n">minPhm</span></div>
 
 
-<div class="viewcode-block" id="construct_spanning_tree"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.construct_spanning_tree">[docs]</a><span class="k">def</span> <span class="nf">construct_spanning_tree</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">nCandidates</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">):</span>
+<div class="viewcode-block" id="construct_spanning_tree"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.construct_spanning_tree">[docs]</a><span class="k">def</span> <span class="nf">construct_spanning_tree</span><span class="p">(</span><span class="n">edges</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Edge</span><span class="p">],</span> <span class="n">constraints</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nCandidates</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Modified version of Kruskal&#39;s algorithm used to construct a DCMST - used in the ACO algorithm to create a DCMST</span>
 <span class="sd">    based on pheromones laid by ants and edge costs.</span>
-<span class="sd">    :param edges:</span>
-<span class="sd">    :param constraints:</span>
-<span class="sd">    :param nCandidates:</span>
-<span class="sd">    :param num_sat:</span>
+<span class="sd">    :param edges: edges within the graph</span>
+<span class="sd">    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given</span>
+<span class="sd">     point in time</span>
+<span class="sd">    :param nCandidates: the number of candidate edges to evaluate at a time</span>
+<span class="sd">    :param num_sat: the number of satellites within the network</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Initialise spanning tree and degrees of each vertex</span>
@@ -216,8 +217,20 @@
 
 
 
-<div class="viewcode-block" id="move_ants"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.move_ants">[docs]</a><span class="k">def</span> <span class="nf">move_ants</span><span class="p">(</span><span class="n">ants</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span> <span class="n">update_period</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">minPhm</span><span class="p">,</span> <span class="n">maxPhm</span><span class="p">):</span>
-
+<div class="viewcode-block" id="move_ants"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.move_ants">[docs]</a><span class="k">def</span> <span class="nf">move_ants</span><span class="p">(</span><span class="n">ants</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Ant</span><span class="p">],</span> <span class="n">edges</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Edge</span><span class="p">],</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">update_period</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">minPhm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+              <span class="n">maxPhm</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Moves edges according to given constraints within the graph. Each ant&#39;s position is updated accordingly, as is the</span>
+<span class="sd">    pheromone level of each edge. This is often deemed the &#39;exploration phase&#39; of the algorithm</span>
+<span class="sd">    :param ants: the ants used to explore the graph</span>
+<span class="sd">    :param edges: edges within the graph</span>
+<span class="sd">    :param max_steps: maximum number of edges each ant can traverse</span>
+<span class="sd">    :param update_period:</span>
+<span class="sd">    :param eta:</span>
+<span class="sd">    :param minPhm: minimum pheromone that can be on any edge</span>
+<span class="sd">    :param maxPhm: maximum pheromone that can be on any edge</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># The ants explore for a given number of steps</span>
     <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_steps</span><span class="p">):</span>
         <span class="c1"># Update pheromones of edges after a given number of steps - helps reduce execution time.</span>

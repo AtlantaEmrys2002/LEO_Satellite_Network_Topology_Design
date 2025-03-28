@@ -32,31 +32,27 @@
             
   <h1>Source code for data_handling.data_generation</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Libraries</span>
-<span class="c1"># import generate_tles_from_scratch as hypatia_data</span>
 <span class="kn">from</span> <span class="nn">.generate_tles_from_scratch</span> <span class="kn">import</span> <span class="n">generate_tles_from_scratch_with_sgp</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
 
-<span class="c1"># Function calls on Hypatia software function generate_tles_from_scratch_with_sgp to build physical description of</span>
-<span class="c1"># satellite network using TLE coordinate system and stores description in temporary file. Orbit eccentricity must be &gt; 0</span>
-<span class="c1"># (according to Hypatia) - set close to 0 to ensure orbit approx. circular</span>
 <div class="viewcode-block" id="data_generation"><a class="viewcode-back" href="../../data_handling.data_generation.html#data_handling.data_generation.data_generation">[docs]</a><span class="k">def</span> <span class="nf">data_generation</span><span class="p">(</span><span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">constellation_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_orbits</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_sats_per_orbit</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                     <span class="n">inclination_degree</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">mean_motion_rev_per_day</span><span class="p">,</span> <span class="n">phase_diff</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eccentricity</span><span class="o">=</span><span class="mf">0.0000001</span><span class="p">,</span>
                     <span class="n">arg_of_perigee_degree</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Function calls on Hypatia function to build physical description of satellite network using TLE coordinate system</span>
 <span class="sd">    and stores description in temporary file. Orbit eccentricity must be &gt; 0 (according to Hypatia) - set close to 0 to</span>
-<span class="sd">     ensure orbit is approx. circular.</span>
+<span class="sd">    ensure orbit is approx. circular.</span>
 
-<span class="sd">    :param file_name:</span>
-<span class="sd">    :param constellation_name:</span>
-<span class="sd">    :param num_orbits:</span>
-<span class="sd">    :param num_sats_per_orbit:</span>
-<span class="sd">    :param inclination_degree:</span>
-<span class="sd">    :param mean_motion_rev_per_day:</span>
-<span class="sd">    :param phase_diff:</span>
-<span class="sd">    :param eccentricity:</span>
-<span class="sd">    :param arg_of_perigee_degree:</span>
+<span class="sd">    :param file_name: the name of the file that holds the TLE description of all satellites within the network</span>
+<span class="sd">    :param constellation_name: name of satellite network constellation, e.g. Starlink-550</span>
+<span class="sd">    :param num_orbits: the number of orbits (i.e. orbital paths) of satellites within the network</span>
+<span class="sd">    :param num_sats_per_orbit: the number of satellites per orbit</span>
+<span class="sd">    :param inclination_degree: the inclination degree (&quot;angle of orbit&quot;) of the satellite network</span>
+<span class="sd">    :param mean_motion_rev_per_day: the number of orbits of Earth each satellite completes per day</span>
+<span class="sd">    :param phase_diff: the difference in phase between satellites in adjacent orbits</span>
+<span class="sd">    :param eccentricity: the eccentricity of the orbit - assume orbits are circular as default</span>
+<span class="sd">    :param arg_of_perigee_degree: point in orbit at which satellite gets closest to Earth</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Check file does not already exist</span>
@@ -64,8 +60,7 @@
         <span class="c1"># Generate TLE coordinates of satellites</span>
         <span class="n">generate_tles_from_scratch_with_sgp</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">constellation_name</span><span class="p">,</span> <span class="n">num_orbits</span><span class="p">,</span> <span class="n">num_sats_per_orbit</span><span class="p">,</span> <span class="n">phase_diff</span><span class="p">,</span>
                                             <span class="n">inclination_degree</span><span class="p">,</span> <span class="n">eccentricity</span><span class="p">,</span> <span class="n">arg_of_perigee_degree</span><span class="p">,</span>
-                                            <span class="n">mean_motion_rev_per_day</span><span class="p">)</span>
-    <span class="k">return</span></div>
+                                            <span class="n">mean_motion_rev_per_day</span><span class="p">)</span></div>
 </pre></div>
 
           </div>

@@ -37,14 +37,14 @@
 <span id="data-handling-write-topology-to-file-module"></span><h1>data_handling.write_topology_to_file module<a class="headerlink" href="#module-data_handling.write_topology_to_file" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="data_handling.write_topology_to_file.write_topology_to_file">
-<span class="sig-prename descclassname"><span class="pre">data_handling.write_topology_to_file.</span></span><span class="sig-name descname"><span class="pre">write_topology_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snapshot_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_handling/write_topology_to_file.html#write_topology_to_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_handling.write_topology_to_file.write_topology_to_file" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">data_handling.write_topology_to_file.</span></span><span class="sig-name descname"><span class="pre">write_topology_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snapshot_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_handling/write_topology_to_file.html#write_topology_to_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_handling.write_topology_to_file.write_topology_to_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a given snapshot’s topology (list of ISLs) to file in correct format for integration with Hypatia software.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>location</strong> – </p></li>
-<li><p><strong>topology</strong> – </p></li>
-<li><p><strong>snapshot_num</strong> – </p></li>
+<li><p><strong>location</strong> – name of .npy file that contains ISl pairs describing a topology</p></li>
+<li><p><strong>topology</strong> – adjacency matrix format of topology produced by algorithm</p></li>
+<li><p><strong>snapshot_num</strong> – the number of snapshots of the network over one orbit for which a topology is constructed</p></li>
 </ul>
 </dd>
 </dl>

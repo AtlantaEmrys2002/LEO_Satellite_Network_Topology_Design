@@ -49,13 +49,16 @@
 <span class="sd">    Runs a random search optimisation function to find near-optimal values for alpha, beta, and gamma weights (can</span>
 <span class="sd">    easily be adapted to include more weights), generates the topologies for randomly generated weight sets and saves</span>
 <span class="sd">    the metrics, along with the best topologies.</span>
-<span class="sd">    :param constellation_name: name of satellite constellation for which a topology is being built</span>
-<span class="sd">    :param num_snapshots: the number of snapshots over one orbital period for which to generate topology</span>
+<span class="sd">    :param constellation_name: name of satellite network constellation, e.g. Starlink-550</span>
+<span class="sd">    :param num_snapshots: the number of snapshots of the network over one orbit for which a topology is constructed</span>
 <span class="sd">    :param num_param_sets: the number of randomly generated sets of weights for which to build topologies</span>
-<span class="sd">    :param num_sat: the number of satellites within the satellite network</span>
-<span class="sd">    :param degree_constraints: the degree constraints of each satellite within the network</span>
-<span class="sd">    :param dcmst_method: the method with which a degree-constrained minimum spanning tree is being built</span>
-<span class="sd">    :param output_directory:</span>
+<span class="sd">    :param num_sat: the number of satellites within the network</span>
+<span class="sd">    :param degree_constraints: list that describes the maximum number of ISLs each satellite can establish at a given</span>
+<span class="sd">     point in time</span>
+<span class="sd">    :param dcmst_method: the method with which to construct the initial degree-constrained minimum spanning tree (either</span>
+<span class="sd">     &#39;primal&#39;, &#39;aco&#39;, or &#39;ga&#39;)</span>
+<span class="sd">    :param output_directory: directory in which the results of the cost function optimisation/metric evaluation are</span>
+<span class="sd">     stored</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Randomly sample sets of parameters (where alpha, beta, and gamma can be random variables in range [0, 1])</span>
     <span class="n">parameter_sets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">num_param_sets</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>

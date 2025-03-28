@@ -1,5 +1,6 @@
 # Libraries
 import copy
+from itertools import chain
 import numpy as np
 import warnings
 
@@ -129,7 +130,10 @@ def random_trees(num_sat, constraints, pop_size):
 
     while len(np.unique(np.array(random_chromosomes), axis=0)) < pop_size:
         # Randomly select chromosome genes from uniform distribution - discard any trees that violate degree constraints
-        candidate = np.random.randint(0, num_sat, num_sat - 2)
+        # candidate = np.random.randint(0, num_sat, num_sat - 2)
+
+        candidate = np.random.permutation(np.array(list(chain.from_iterable((i, i, i, i) for i in
+                                                                            range(num_sat)))))[:num_sat-2]
 
         if check_degree(candidate, constraints, num_sat) is True:
             random_chromosomes.append(candidate)

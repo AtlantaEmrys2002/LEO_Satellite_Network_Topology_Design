@@ -32,7 +32,6 @@
             
   <h1>Source code for cost_function_optimisation_algorithms.evolutionary_search</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Libraries</span>
-<span class="c1"># from build import heuristic_topology_design_algorithm_isls</span>
 <span class="kn">from</span> <span class="nn">satellite_topology_construction_algorithms</span> <span class="kn">import</span> <span class="n">heuristic_topology_design_algorithm_isls</span>
 <span class="kn">from</span> <span class="nn">data_handling</span> <span class="kn">import</span> <span class="n">write_optimisation_results_to_csv</span>
 <span class="kn">import</span> <span class="nn">os</span>
@@ -41,14 +40,15 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 
-<div class="viewcode-block" id="in_0_1"><a class="viewcode-back" href="../../cost_function_optimisation_algorithms.evolutionary_search.html#cost_function_optimisation_algorithms.evolutionary_search.in_0_1">[docs]</a><span class="k">def</span> <span class="nf">in_0_1</span><span class="p">(</span><span class="n">parameter_set</span><span class="p">):</span>
+<div class="viewcode-block" id="in_0_1"><a class="viewcode-back" href="../../cost_function_optimisation_algorithms.evolutionary_search.html#cost_function_optimisation_algorithms.evolutionary_search.in_0_1">[docs]</a><span class="k">def</span> <span class="nf">in_0_1</span><span class="p">(</span><span class="n">parameter_set</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Determines if alpha, beta, and gamma all within [0, 1] interval</span>
-<span class="sd">    :param parameter_set:</span>
+<span class="sd">    :param parameter_set: a list which contains three values - alpha, beta, and gamma - which refer to the weights</span>
+<span class="sd">     placed on each network attribute considered in the cost function</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">parameter_set</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">parameter_set</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">parameter_set</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">parameter_set</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
     <span class="k">return</span> <span class="kc">True</span></div>
 
@@ -60,16 +60,20 @@
 <span class="sd">    Runs an evolutionary search optimisation function (based on evolutionary strategy) to find near-optimal values for</span>
 <span class="sd">    alpha, beta, and gamma weights (can easily be adapted to include more weights), generates the topologies for</span>
 <span class="sd">    a given network using an evolutionary strategy algorithm and saves the metrics, along with the best topologies.</span>
-<span class="sd">    :param constellation_name:</span>
-<span class="sd">    :param num_snapshots:</span>
-<span class="sd">    :param num_sat:</span>
-<span class="sd">    :param degree_constraints:</span>
-<span class="sd">    :param dcmst_method:</span>
-<span class="sd">    :param output_directory:</span>
-<span class="sd">    :param num_iterations:</span>
-<span class="sd">    :param mu:</span>
-<span class="sd">    :param pop_size:</span>
-<span class="sd">    :param step_size:</span>
+
+<span class="sd">    :param constellation_name: name of satellite network constellation, e.g. Starlink-550</span>
+<span class="sd">    :param num_snapshots: the number of snapshots of the network over one orbit for which a topology is constructed</span>
+<span class="sd">    :param num_sat: the number of satellites within the network</span>
+<span class="sd">    :param degree_constraints: list that describes the maximum number of ISLs each satellite can establish at a given</span>
+<span class="sd">     point in time</span>
+<span class="sd">    :param dcmst_method: the method with which to construct the initial degree-constrained minimum spanning tree (either</span>
+<span class="sd">     &#39;primal&#39;, &#39;aco&#39;, or &#39;ga&#39;)</span>
+<span class="sd">    :param output_directory: directory in which the results of the cost function optimisation/metric evaluation are</span>
+<span class="sd">     stored</span>
+<span class="sd">    :param num_iterations: the number of iterations of the evolutionary strategy to execute</span>
+<span class="sd">    :param mu: the number of parents selected every iteration</span>
+<span class="sd">    :param pop_size: the size of the population of solutions in the algorithm</span>
+<span class="sd">    :param step_size: the standard deviation of the Gaussian distribution from which solution mutations are selected</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># N.B. lambda / mu should have no remainder</span>
@@ -158,7 +162,7 @@
                     <span class="c1"># values of alpha, beta, and gamma. Sigma is derived from step_size (user-assigned). This is the</span>
                     <span class="c1"># mutation section of the Evolutionary Strategy</span>
                     <span class="n">child</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">parents</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">step_size</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">in_0_1</span><span class="p">(</span><span class="n">child</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">in_0_1</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">tolist</span><span class="p">()):</span>
                         <span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
                         <span class="k">break</span>
 

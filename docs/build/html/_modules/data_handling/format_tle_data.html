@@ -32,20 +32,19 @@
             
   <h1>Source code for data_handling.format_tle_data</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Libraries</span>
-<span class="c1"># import read_tles as hypatia_read_data</span>
 <span class="kn">from</span> <span class="nn">.read_tles</span> <span class="kn">import</span> <span class="n">read_tles</span>
 
 
 <div class="viewcode-block" id="format_tle_data"><a class="viewcode-back" href="../../data_handling.format_tle_data.html#data_handling.format_tle_data.format_tle_data">[docs]</a><span class="k">def</span> <span class="nf">format_tle_data</span><span class="p">(</span><span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    # Function calls on Hypatia read_tles to build dictionary containing the total number of orbits in the</span>
+<span class="sd">    Function calls on Hypatia read_tles to build dictionary containing the total number of orbits in the</span>
 <span class="sd">    constellation, as well as the number of satellites per orbit, the epoch of the network, and a description of each</span>
 <span class="sd">    satellite&#39;s position.</span>
 
-<span class="sd">    :param file_name:</span>
+<span class="sd">    :param file_name: the name of the file that holds the TLE description of all satellites within the network</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># return hypatia_read_data.read_tles(file_name)</span>
+
     <span class="k">return</span> <span class="n">read_tles</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span></div>
 </pre></div>
 

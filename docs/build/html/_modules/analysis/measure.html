@@ -36,12 +36,13 @@
 <span class="kn">import</span> <span class="nn">metrics</span>
 
 
-<div class="viewcode-block" id="read_isl_file"><a class="viewcode-back" href="../../analysis.measure.html#analysis.measure.read_isl_file">[docs]</a><span class="k">def</span> <span class="nf">read_isl_file</span><span class="p">(</span><span class="n">isl_file_name</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">):</span>
+<div class="viewcode-block" id="read_isl_file"><a class="viewcode-back" href="../../analysis.measure.html#analysis.measure.read_isl_file">[docs]</a><span class="k">def</span> <span class="nf">read_isl_file</span><span class="p">(</span><span class="n">isl_file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reads description of topology from file for analysis according to multiple metrics. Often used by cost function</span>
 <span class="sd">    optimisation code.</span>
-<span class="sd">    :param isl_file_name:</span>
-<span class="sd">    :param num_satellites:</span>
+
+<span class="sd">    :param isl_file_name: name of .npy file that contains ISl pairs describing a topology</span>
+<span class="sd">    :param num_satellites: the number of satellites within the network</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Read in topology built for given snapshot</span>
@@ -54,13 +55,14 @@
     <span class="k">return</span> <span class="n">topology_matrix</span></div>
 
 
-<div class="viewcode-block" id="measure_static"><a class="viewcode-back" href="../../analysis.measure.html#analysis.measure.measure_static">[docs]</a><span class="k">def</span> <span class="nf">measure_static</span><span class="p">(</span><span class="n">constellation_name</span><span class="p">,</span> <span class="n">topology_file_name</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">):</span>
+<div class="viewcode-block" id="measure_static"><a class="viewcode-back" href="../../analysis.measure.html#analysis.measure.measure_static">[docs]</a><span class="k">def</span> <span class="nf">measure_static</span><span class="p">(</span><span class="n">constellation_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">topology_file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span>
+        <span class="nb">tuple</span><span class="p">)[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the maximum propagation delay, mean propagation delay, and average hop count (as well as returning link</span>
 <span class="sd">    churn for completeness) for static satellite network topology.</span>
-<span class="sd">    :param constellation_name:</span>
-<span class="sd">    :param topology_file_name:</span>
-<span class="sd">    :param num_satellites:</span>
+<span class="sd">    :param constellation_name: name of satellite network constellation, e.g. Starlink-550</span>
+<span class="sd">    :param topology_file_name: name of .npy file that contains ISl pairs describing a topology</span>
+<span class="sd">    :param num_satellites: the number of satellites within the network</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Read in topology</span>
@@ -81,14 +83,15 @@
     <span class="k">return</span> <span class="n">max_pd</span><span class="p">,</span> <span class="n">mean_pd</span><span class="p">,</span> <span class="n">av_hop_count</span><span class="p">,</span> <span class="n">link_churn</span></div>
 
 
-<div class="viewcode-block" id="measure_dynamic"><a class="viewcode-back" href="../../analysis.measure.html#analysis.measure.measure_dynamic">[docs]</a><span class="k">def</span> <span class="nf">measure_dynamic</span><span class="p">(</span><span class="n">constellation_name</span><span class="p">,</span> <span class="n">topology_file_location</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">,</span> <span class="n">num_snapshots</span><span class="p">):</span>
+<div class="viewcode-block" id="measure_dynamic"><a class="viewcode-back" href="../../analysis.measure.html#analysis.measure.measure_dynamic">[docs]</a><span class="k">def</span> <span class="nf">measure_dynamic</span><span class="p">(</span><span class="n">constellation_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">topology_file_location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_snapshots</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span>
+        <span class="nb">tuple</span><span class="p">)[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the maximum propagation delay, mean propagation delay, average hop count, and link churn for dynamic</span>
 <span class="sd">    satellite network topology.</span>
-<span class="sd">    :param constellation_name:</span>
-<span class="sd">    :param topology_file_location:</span>
-<span class="sd">    :param num_satellites:</span>
-<span class="sd">    :param num_snapshots:</span>
+<span class="sd">    :param constellation_name: name of satellite network constellation, e.g. Starlink-550</span>
+<span class="sd">    :param topology_file_location: location of .npy file in which file(s) containing topology description(s) stored</span>
+<span class="sd">    :param num_satellites: the number of satellites within the network</span>
+<span class="sd">    :param num_snapshots: the number of snapshots of the network over one orbit for which a topology is constructed</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Initialise values</span>

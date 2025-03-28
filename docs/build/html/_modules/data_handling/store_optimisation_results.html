@@ -35,13 +35,14 @@
 <span class="kn">import</span> <span class="nn">csv</span>
 
 
-<div class="viewcode-block" id="write_optimisation_results_to_csv"><a class="viewcode-back" href="../../data_handling.store_optimisation_results.html#data_handling.store_optimisation_results.write_optimisation_results_to_csv">[docs]</a><span class="k">def</span> <span class="nf">write_optimisation_results_to_csv</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
+<div class="viewcode-block" id="write_optimisation_results_to_csv"><a class="viewcode-back" href="../../data_handling.store_optimisation_results.html#data_handling.store_optimisation_results.write_optimisation_results_to_csv">[docs]</a><span class="k">def</span> <span class="nf">write_optimisation_results_to_csv</span><span class="p">(</span><span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    # Write optimisation/metric results to CSV Format - this code was adapted from documentation -</span>
+<span class="sd">    Write optimisation/metric results to CSV Format - this code was adapted from documentation -</span>
 <span class="sd">    https://docs.python.org/3/library/csv.html#csv.DictWriter.</span>
-<span class="sd">    :param location:</span>
-<span class="sd">    :param algorithm:</span>
-<span class="sd">    :param results:</span>
+<span class="sd">    :param location: directory in which the results of the cost function optimisation/metric evaluation are</span>
+<span class="sd">     stored</span>
+<span class="sd">    :param algorithm: type of algorithm with which topologies were constructed (either &#39;static&#39;, &#39;dynamic&#39;, or &#39;novel&#39;)</span>
+<span class="sd">    :param results: results of topology optimisation and/or topology evaluation:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">location</span> <span class="o">+</span> <span class="s1">&#39;/results.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">csvfile</span><span class="p">):</span>
 

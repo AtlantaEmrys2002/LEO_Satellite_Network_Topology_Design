@@ -37,35 +37,43 @@
 <span id="analysis-measure-module"></span><h1>analysis.measure module<a class="headerlink" href="#module-analysis.measure" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="analysis.measure.measure_dynamic">
-<span class="sig-prename descclassname"><span class="pre">analysis.measure.</span></span><span class="sig-name descname"><span class="pre">measure_dynamic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constellation_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology_file_location</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_satellites</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_snapshots</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/measure.html#measure_dynamic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#analysis.measure.measure_dynamic" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">analysis.measure.</span></span><span class="sig-name descname"><span class="pre">measure_dynamic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constellation_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology_file_location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_satellites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_snapshots</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/analysis/measure.html#measure_dynamic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#analysis.measure.measure_dynamic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the maximum propagation delay, mean propagation delay, average hop count, and link churn for dynamic
 satellite network topology.
-:param constellation_name:
-:param topology_file_location:
-:param num_satellites:
-:param num_snapshots:
+:param constellation_name: name of satellite network constellation, e.g. Starlink-550
+:param topology_file_location: location of .npy file in which file(s) containing topology description(s) stored
+:param num_satellites: the number of satellites within the network
+:param num_snapshots: the number of snapshots of the network over one orbit for which a topology is constructed
 :return:</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="analysis.measure.measure_static">
-<span class="sig-prename descclassname"><span class="pre">analysis.measure.</span></span><span class="sig-name descname"><span class="pre">measure_static</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constellation_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology_file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_satellites</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/measure.html#measure_static"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#analysis.measure.measure_static" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">analysis.measure.</span></span><span class="sig-name descname"><span class="pre">measure_static</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constellation_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology_file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_satellites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/analysis/measure.html#measure_static"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#analysis.measure.measure_static" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the maximum propagation delay, mean propagation delay, and average hop count (as well as returning link
 churn for completeness) for static satellite network topology.
-:param constellation_name:
-:param topology_file_name:
-:param num_satellites:
+:param constellation_name: name of satellite network constellation, e.g. Starlink-550
+:param topology_file_name: name of .npy file that contains ISl pairs describing a topology
+:param num_satellites: the number of satellites within the network
 :return:</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="analysis.measure.read_isl_file">
-<span class="sig-prename descclassname"><span class="pre">analysis.measure.</span></span><span class="sig-name descname"><span class="pre">read_isl_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">isl_file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_satellites</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/measure.html#read_isl_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#analysis.measure.read_isl_file" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">analysis.measure.</span></span><span class="sig-name descname"><span class="pre">read_isl_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">isl_file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_satellites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/analysis/measure.html#read_isl_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#analysis.measure.read_isl_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads description of topology from file for analysis according to multiple metrics. Often used by cost function
-optimisation code.
-:param isl_file_name:
-:param num_satellites:
-:return:</p>
+optimisation code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>isl_file_name</strong> – name of .npy file that contains ISl pairs describing a topology</p></li>
+<li><p><strong>num_satellites</strong> – the number of satellites within the network</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

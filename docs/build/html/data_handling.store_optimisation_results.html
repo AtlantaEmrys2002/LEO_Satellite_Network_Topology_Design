@@ -37,12 +37,21 @@
 <span id="data-handling-store-optimisation-results-module"></span><h1>data_handling.store_optimisation_results module<a class="headerlink" href="#module-data_handling.store_optimisation_results" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="data_handling.store_optimisation_results.write_optimisation_results_to_csv">
-<span class="sig-prename descclassname"><span class="pre">data_handling.store_optimisation_results.</span></span><span class="sig-name descname"><span class="pre">write_optimisation_results_to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_handling/store_optimisation_results.html#write_optimisation_results_to_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_handling.store_optimisation_results.write_optimisation_results_to_csv" title="Permalink to this definition">¶</a></dt>
-<dd><p># Write optimisation/metric results to CSV Format - this code was adapted from documentation -
+<span class="sig-prename descclassname"><span class="pre">data_handling.store_optimisation_results.</span></span><span class="sig-name descname"><span class="pre">write_optimisation_results_to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_handling/store_optimisation_results.html#write_optimisation_results_to_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_handling.store_optimisation_results.write_optimisation_results_to_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write optimisation/metric results to CSV Format - this code was adapted from documentation -
 <a class="reference external" href="https://docs.python.org/3/library/csv.html#csv.DictWriter">https://docs.python.org/3/library/csv.html#csv.DictWriter</a>.
-:param location:
-:param algorithm:
-:param results:</p>
+:param location: directory in which the results of the cost function optimisation/metric evaluation are</p>
+<blockquote>
+<div><p>stored</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>algorithm</strong> – type of algorithm with which topologies were constructed (either ‘static’, ‘dynamic’, or ‘novel’)</p></li>
+<li><p><strong>results</strong> – results of topology optimisation and/or topology evaluation:</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
