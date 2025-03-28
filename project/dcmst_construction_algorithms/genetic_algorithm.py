@@ -5,7 +5,7 @@ import numpy as np
 import warnings
 
 
-def prufer_encode(tree):
+def prufer_encode(tree: np.ndarray) -> np.ndarray:
     """
     Encodes tree as its Prufer Number - uses Cayley's representation (see DCMST comparison paper).
     :param tree:
@@ -79,7 +79,7 @@ def prufer_decode(prufer_number):
     return tree.astype(np.int32), np.sum(tree, axis=1).astype(np.int32)
 
 
-def check_degree(tree_encoding, constraints, num_sat: int):
+def check_degree(tree_encoding: np.ndarray, constraints: np.ndarray, num_sat: int) -> bool:
     """
     Checks that all nodes within tree (encoded as a Prufer number) meet degree constraints. The degree of each node in
     the tree is 1 more than the number of times it appears in the Prufer number encoding.
@@ -95,7 +95,7 @@ def check_degree(tree_encoding, constraints, num_sat: int):
     return np.array_equal(np.full_like(constraints, True), comparison)
 
 
-def fitness(chromosome, cost_matrix):
+def fitness(chromosome, cost_matrix: np.ndarray):
     """
     Calculates the total sum cost of all edges in a given degree-constrained minimum spanning tree.
     :param chromosome:
@@ -117,7 +117,7 @@ def fitness(chromosome, cost_matrix):
     return total_cost
 
 
-def random_trees(num_sat, constraints, pop_size):
+def random_trees(num_sat: int, constraints: np.ndarray, pop_size: int) -> list:
     """
     Randomly generates a set number (indicated by population size) of valid degree-constrained spanning trees of
     satellite network.
@@ -141,7 +141,7 @@ def random_trees(num_sat, constraints, pop_size):
     return random_chromosomes
 
 
-def genetic_algorithm(cost_matrix, constraints, num_sat: int, population_size=30):
+def genetic_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, num_sat: int, population_size=20):
     """
     Returns a degree-constrained minimum spanning tree of the network built using a genetic algorithm presented in
     'Comparison of Algorithms for the Degree Constrained Minimum Spanning Tree'. https://doi.org/10.1023/A:1011977126230
@@ -153,7 +153,8 @@ def genetic_algorithm(cost_matrix, constraints, num_sat: int, population_size=30
     # CALCULATE TERMINATION CONDITION #
     # Justification in original paper - larger degree constraints makes problem significantly easier. However, larger
     # problems in general are harder to solve
-    termination_condition = (50 * num_sat) / (np.sum(constraints) / num_sat)
+    # termination_condition = (50 * num_sat) / (np.sum(constraints) / num_sat)
+    termination_condition = (20 * num_sat) / (np.sum(constraints) / num_sat)
 
     # Initialise counter for number of iterations
     iteration_count = 0
