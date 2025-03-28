@@ -155,6 +155,143 @@ if __name__ == "__main__":
 
     print("Building Topology... ", end='\r', flush=True)
 
+    # # STATIC ALGORITHMS #
+    # # Benchmark Static Topology Designs
+    # if topology == "plus-grid":
+    #
+    #     # Build topology with provided parameters
+    #
+    #     # Location to store ISL topology
+    #     if optimise is False:
+    #         location = "./plus_grid/" + constellation_name.lower()
+    #     else:
+    #         location = "./Results/plus_grid/" + constellation_name.lower()
+    #
+    #     # Check directory for resulting topology exists
+    #     if os.path.isdir(location) is False:
+    #         try:
+    #             os.makedirs(location)
+    #         except OSError:
+    #             print("Directory to store plus grid (+Grid) topology could not be created.")
+    #
+    #     # Use Hypatia implementation to create +Grid topology
+    #     plus_grid.generate_plus_grid_isls(location + "/isls_0.txt", num_orbits, num_sats_per_orbit, isl_shift=0,
+    #                                       idx_offset=0)
+    #
+    #     print("+Grid Topology Build Completed")
+    #
+    #     # Return metrics if optimise is true (so topology can be evaluated)
+    #     if optimise is True:
+    #
+    #         print("Evaluating... ", end='\r', flush=True)
+    #
+    #         # Calculate metrics for topology
+    #         max_pd, mean_pd, av_hop_count, link_churn = measure.measure_static(constellation_name, location +
+    #                                                                            "/isls_0.txt", total_sat)
+    #
+    #         data_handling.write_optimisation_results_to_csv(location, "static", [max_pd, mean_pd,
+    #                                                                              av_hop_count, link_churn])
+    #
+    #         print("+Grid Evaluation Completed")
+    #
+    # elif topology == "x-grid":
+    #
+    #     print("NEEDS IMPLEMENTING")
+
+    # DYNAMIC ALGORITHMS #
+    # else:
+
+    # UNINDENTED FROM HERE
+
+    # Generate test data using network description (data from Hypatia)
+    data_handling.data_generation(tle_file, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree,
+                                  mean_motion_rev_per_day)
+
+    # Read test data into appropriate data structure (dictionary) and extract description of satellite positions,
+    # as well as unique orbits, from data
+    satellite_data = data_handling.format_tle_data(tle_file)["satellites"]
+
+    # Calculate orbital period of network (or maximum orbital period if satellites orbit at different altitudes -
+    # i.e. in multiple shells)
+    if multi_shell is False:
+        orbital_period = satnet.orbital_period_calculation(satellite_data[0], total_sat)
+    else:
+        orbital_period = satnet.orbital_period_calculation(satellite_data, total_sat)
+
+    # Find the maximum communication distance between two satellites (varies as satellite altitudes vary)
+    max_communication_dist = satnet.maximum_communication_distance(tle_file, total_sat)
+
+    # This is the maximum distance a satellite can establish signal (transmission power) - can differ from max
+    # communication distance (which is determined by orbital positioning, rather than satellite hardware
+    # specifications)
+    max_transmission_dist = satnet.maximum_transmission_distance(constellation_name)
+
+    # Find smaller of these two numbers - the maximum distance before Earth is in the way or the max transmission
+    # distance (due to satellite power constraints)
+    max_communication_dist = min(max_communication_dist, max_transmission_dist)
+
+    # The number of snapshots over an orbital period for which to construct a topology
+    num_snapshot = int(orbital_period / snapshot_interval)
+
+    # Determines which snapshots to build topologies for (if specified, only construct topologies for those
+    # snapshots, otherwise construct a topology for all snapshots
+    if args.snapshots:
+        snapshot_ids = args.snapshots
+    else:
+        snapshot_ids = list(range(0, num_snapshot))
+
+    # Get TLEs-formatted data
+    tles_data = data_handling.read_file(tle_file)
+
+    # Convert TLES data to Skyfield EarthSatellite objects - used to convert satellite positions to geocentric
+    # coordinates - all measurements in km
+    earth_satellite_objects = [EarthSatellite(satellite_i[1], satellite_i[2], satellite_i[0], ts) for satellite_i in
+                               tles_data]
+
+    # CALCULATE NETWORK ATTRIBUTES #
+
+    # Directory in which to store network attributes
+    network_attributes_location = "./" + constellation_name
+
+    # DISTANCE MATRICES #
+
+    # Calculate distance matrices - set time t (using TDB time format) to indicate point in orbital period when
+    # snapshot taken
+
+    # Calculate the time (in TDB format) at which each snapshot is taken
+    snapshot_times = [satnet.snapshot_time_stamp(snapshot_interval * k) for k in range(num_snapshot)]
+
+    # Calculate distance matrices for each snapshot
+
+    # Create directory to store the distance matrix for each snapshot in individual file within directory (can't
+    # process all at once otherwise)
+    if os.path.isdir(network_attributes_location + "/distance_matrices") is False:
+
+        # Create directory in which to store distance matrices
+        try:
+            os.makedirs(network_attributes_location + "/distance_matrices")
+        except OSError:
+            print("Directory to store distance matrices could not be created.")
+
+        # Keep track of file ID
+        file_id = 0
+
+        # Calculate the distance matrix (symmetric) for each snapshot of the network. Distance between satellite and
+        # itself = 0km.
+        for k in snapshot_times:
+            # Calculates position of all satellites in the network at snapshot time k
+            satellites_at_k = [i.at(k).position.km for i in earth_satellite_objects]
+
+            # Calculate distance (Euclidean) between all satellite pairs i and j in the network at snapshot time k
+            dist_matrix = cdist(satellites_at_k, satellites_at_k, metric='euclidean')
+
+            # Save distance matrix to .npy file
+            np.save(network_attributes_location + "/distance_matrices/dist_matrix_" + str(file_id) + ".npy",
+                    dist_matrix)
+
+            # Increment ID counter
+            file_id += 1
+
     # STATIC ALGORITHMS #
     # Benchmark Static Topology Designs
     if topology == "plus-grid":
@@ -182,7 +319,6 @@ if __name__ == "__main__":
 
         # Return metrics if optimise is true (so topology can be evaluated)
         if optimise is True:
-
             print("Evaluating... ", end='\r', flush=True)
 
             # Calculate metrics for topology
@@ -198,265 +334,174 @@ if __name__ == "__main__":
 
         print("NEEDS IMPLEMENTING")
 
-    # DYNAMIC ALGORITHMS #
-    else:
+    # GENERATES TOPOLOGY USING BENCHMARK MDTD ALGORITHM
 
-        # Generate test data using network description (data from Hypatia)
-        data_handling.data_generation(tle_file, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree,
-                                      mean_motion_rev_per_day)
+    # Benchmark MDTD Design
+    # if topology == "mdtd":
+    elif topology == "mdtd":
 
-        # Read test data into appropriate data structure (dictionary) and extract description of satellite positions,
-        # as well as unique orbits, from data
-        satellite_data = data_handling.format_tle_data(tle_file)["satellites"]
-
-        # Calculate orbital period of network (or maximum orbital period if satellites orbit at different altitudes -
-        # i.e. in multiple shells)
-        if multi_shell is False:
-            orbital_period = satnet.orbital_period_calculation(satellite_data[0], total_sat)
+        # Directory in which to store topologies
+        if optimise is False:
+            location = "./mdtd/" + constellation_name.lower()
         else:
-            orbital_period = satnet.orbital_period_calculation(satellite_data, total_sat)
+            location = "./Results/mdtd/" + constellation_name.lower()
 
-        # Find the maximum communication distance between two satellites (varies as satellite altitudes vary)
-        max_communication_dist = satnet.maximum_communication_distance(tle_file, total_sat)
+        # Build topologies for satellite network
+        minimum_delay_topology_design_algorithm(constellation_name, num_snapshot, total_sat,
+                                                satellite_degree_constraints, topology)
 
-        # This is the maximum distance a satellite can establish signal (transmission power) - can differ from max
-        # communication distance (which is determined by orbital positioning, rather than satellite hardware
-        # specifications)
-        max_transmission_dist = satnet.maximum_transmission_distance(constellation_name)
+        print("MDTD Topology Build Completed")
 
-        # Find smaller of these two numbers - the maximum distance before Earth is in the way or the max transmission
-        # distance (due to satellite power constraints)
-        max_communication_dist = min(max_communication_dist, max_transmission_dist)
+        # If optimise is true, generate metrics for topology for evaluation/comparison with novel algorithm
+        if optimise is True:
 
-        # The number of snapshots over an orbital period for which to construct a topology
-        num_snapshot = int(orbital_period / snapshot_interval)
+            print("Evaluating...", end='\r', flush=True)
 
-        # Determines which snapshots to build topologies for (if specified, only construct topologies for those
-        # snapshots, otherwise construct a topology for all snapshots
-        if args.snapshots:
-            snapshot_ids = args.snapshots
+            # Evaluate generated topologies according to given metrics
+            max_pd, mean_pd, av_hop_count, link_churn = measure.measure_dynamic(constellation_name, location,
+                                                                                total_sat, num_snapshot)
+
+            # Store results accordingly
+            data_handling.write_optimisation_results_to_csv(location, "dynamic", [max_pd, mean_pd,
+                                                                                  av_hop_count, link_churn])
+
+            print("MDTD Evaluation Completed")
+
+    # NOVEL TOPOLOGY DESIGN ALGORITHM (BUILT FOR THIS PROJECT)
+    elif topology == "novel":
+
+        # PARSES OPTIONAL ARGUMENTS #
+        # Parses arguments only required by novel algorithm
+
+        # Checks weights exist and set to params
+        if args.weights:
+            params = args.weights
         else:
-            snapshot_ids = list(range(0, num_snapshot))
+            raise ValueError("Cost function weights must be specified for novel algorithm.")
 
-        # Get TLEs-formatted data
-        tles_data = data_handling.read_file(tle_file)
+        # Checks DCMST construction algorithm exists and sets to dcmst
+        if args.dcmst:
+            dcmst = args.dcmst
+        else:
+            raise ValueError("DCMST construction method must be specified for novel algorithm.")
 
-        # Convert TLES data to Skyfield EarthSatellite objects - used to convert satellite positions to geocentric
-        # coordinates - all measurements in km
-        earth_satellite_objects = [EarthSatellite(satellite_i[1], satellite_i[2], satellite_i[0], ts) for satellite_i in
-                                   tles_data]
+        # Directory in which to store topologies
+        if optimise is False:
+            location = "./novel/" + dcmst + "/" + constellation_name.lower() + "/"
+        else:
+            location = "./Results/novel/" + dcmst + "/" + constellation_name.lower() + "/"
 
-        # CALCULATE NETWORK ATTRIBUTES #
+        # VISIBILITY AND TIME VISIBILITY MATRICES ###
 
-        # Directory in which to store network attributes
-        network_attributes_location = "./" + constellation_name
+        # Calculate visibility and time visibility matrices for all snapshots
 
-        # DISTANCE MATRICES #
-
-        # Calculate distance matrices - set time t (using TDB time format) to indicate point in orbital period when
-        # snapshot taken
-
-        # Calculate the time (in TDB format) at which each snapshot is taken
-        snapshot_times = [satnet.snapshot_time_stamp(snapshot_interval * k) for k in range(num_snapshot)]
-
-        # Calculate distance matrices for each snapshot
-
-        # Create directory to store the distance matrix for each snapshot in individual file within directory (can't
-        # process all at once otherwise)
-        if os.path.isdir(network_attributes_location + "/distance_matrices") is False:
+        # Create directory to store the visibility matrix for each snapshot in individual file within directory
+        # (can't process all at once otherwise) - within a visibility matrix, element [i][j] is set to 0 if
+        # satellites are not visible to one another
+        if os.path.isdir(network_attributes_location + "/visibility_matrices") is False:
 
             # Create directory in which to store distance matrices
             try:
-                os.makedirs(network_attributes_location + "/distance_matrices")
+                os.makedirs(network_attributes_location + "/visibility_matrices")
             except OSError:
-                print("Directory to store distance matrices could not be created.")
+                print("Directory to store visibility matrices could not be created.")
 
-            # Keep track of file ID
+            # Calculate all visibility matrices
+            for k in range(num_snapshot):
+                # Calculate visibility matrix for snapshot and save to .npy file - load distance from corresponding
+                # distance matrix file
+                visibility_matrix = satnet.visibility_function(
+                    np.load(network_attributes_location + "/distance_matrices/dist_matrix_" + str(k) + ".npy"),
+                    max_communication_dist)
+
+                np.save(network_attributes_location + "/visibility_matrices/visibility_matrix_" + str(k) + ".npy",
+                        visibility_matrix)
+
+        # SUNLIGHT MATRICES #
+
+        # Calculate whether satellites are in sunlight (i.e. vulnerable to solar flares) or on the opposite side of
+        # the Earth
+
+        if os.path.isdir(network_attributes_location + "/sunlight_matrices") is False:
+
+            # Create directory in which to store distance matrices
+            try:
+                os.makedirs(network_attributes_location + "/sunlight_matrices")
+            except OSError:
+                print("Directory to store sunlight matrices could not be created.")
+
             file_id = 0
 
-            # Calculate the distance matrix (symmetric) for each snapshot of the network. Distance between satellite and
-            # itself = 0km.
+            # Calculate all distance matrices
             for k in snapshot_times:
-                # Calculates position of all satellites in the network at snapshot time k
-                satellites_at_k = [i.at(k).position.km for i in earth_satellite_objects]
+                # Calculate whether each satellite is in sunlight or not
+                satellites_in_sun = [i.at(k).is_sunlit(eph) for i in earth_satellite_objects]
 
-                # Calculate distance (Euclidean) between all satellite pairs i and j in the network at snapshot time k
-                dist_matrix = cdist(satellites_at_k, satellites_at_k, metric='euclidean')
+                # Update matrix such that element sunlight_matrix[i][j] is set to 1 if i or j is in sunlight and
+                # save to file
+                np.save(network_attributes_location + "/sunlight_matrices/sunlight_matrix_" + str(file_id) + ".npy",
+                        satnet.sunlight_function(satellites_in_sun, total_sat))
 
-                # Save distance matrix to .npy file
-                np.save(network_attributes_location + "/distance_matrices/dist_matrix_" + str(file_id) + ".npy",
-                        dist_matrix)
-
-                # Increment ID counter
                 file_id += 1
 
-        # GENERATES TOPOLOGY USING BENCHMARK MDTD ALGORITHM
+        # Run topology generation algorithm for each specified snapshot - utilise multiprocessing to make program
+        # faster (dependent on the number of cores of computer run program on)
 
-        # Benchmark MDTD Design
-        if topology == "mdtd":
+        if optimise is False:
 
-            # Directory in which to store topologies
-            if optimise is False:
-                location = "./mdtd/" + constellation_name.lower()
-            else:
-                location = "./Results/mdtd/" + constellation_name.lower()
+            # Generate arguments for functions
+            snapshot_arguments = [
+                [constellation_name, total_sat, num_snapshot, satellite_degree_constraints, t, params, location,
+                 dcmst] for t in snapshot_ids]
 
-            # Build topologies for satellite network
-            minimum_delay_topology_design_algorithm(constellation_name, num_snapshot, total_sat,
-                                                    satellite_degree_constraints, topology)
+            # Generate topology
+            pool = Pool(processes=os.cpu_count())
 
-            print("MDTD Topology Build Completed")
+            pool.map(heuristic_topology_design_algorithm_isls, snapshot_arguments)
 
-            # If optimise is true, generate metrics for topology for evaluation/comparison with novel algorithm
-            if optimise is True:
+            pool.terminate()
 
-                print("Evaluating...", end='\r', flush=True)
+            print("Novel Algorithm Topology Build Completed")
 
-                # Evaluate generated topologies according to given metrics
-                max_pd, mean_pd, av_hop_count, link_churn = measure.measure_dynamic(constellation_name, location,
-                                                                                    total_sat, num_snapshot)
-
-                # Store results accordingly
-                data_handling.write_optimisation_results_to_csv(location, "dynamic", [max_pd, mean_pd,
-                                                                                      av_hop_count, link_churn])
-
-                print("MDTD Evaluation Completed")
-
-        # NOVEL TOPOLOGY DESIGN ALGORITHM (BUILT FOR THIS PROJECT)
-        elif topology == "novel":
-
-            # PARSES OPTIONAL ARGUMENTS #
-            # Parses arguments only required by novel algorithm
-
-            # Checks weights exist and set to params
-            if args.weights:
-                params = args.weights
-            else:
-                raise ValueError("Cost function weights must be specified for novel algorithm.")
-
-            # Checks DCMST construction algorithm exists and sets to dcmst
-            if args.dcmst:
-                dcmst = args.dcmst
-            else:
-                raise ValueError("DCMST construction method must be specified for novel algorithm.")
-
-            # Directory in which to store topologies
-            if optimise is False:
-                location = "./novel/" + dcmst + "/" + constellation_name.lower() + "/"
-            else:
-                location = "./Results/novel/" + dcmst + "/" + constellation_name.lower() + "/"
-
-            # VISIBILITY AND TIME VISIBILITY MATRICES ###
-
-            # Calculate visibility and time visibility matrices for all snapshots
-
-            # Create directory to store the visibility matrix for each snapshot in individual file within directory
-            # (can't process all at once otherwise) - within a visibility matrix, element [i][j] is set to 0 if
-            # satellites are not visible to one another
-            if os.path.isdir(network_attributes_location + "/visibility_matrices") is False:
-
-                # Create directory in which to store distance matrices
-                try:
-                    os.makedirs(network_attributes_location + "/visibility_matrices")
-                except OSError:
-                    print("Directory to store visibility matrices could not be created.")
-
-                # Calculate all visibility matrices
-                for k in range(num_snapshot):
-                    # Calculate visibility matrix for snapshot and save to .npy file - load distance from corresponding
-                    # distance matrix file
-                    visibility_matrix = satnet.visibility_function(
-                        np.load(network_attributes_location + "/distance_matrices/dist_matrix_" + str(k) + ".npy"),
-                        max_communication_dist)
-
-                    np.save(network_attributes_location + "/visibility_matrices/visibility_matrix_" + str(k) + ".npy",
-                            visibility_matrix)
-
-            # SUNLIGHT MATRICES #
-
-            # Calculate whether satellites are in sunlight (i.e. vulnerable to solar flares) or on the opposite side of
-            # the Earth
-
-            if os.path.isdir(network_attributes_location + "/sunlight_matrices") is False:
-
-                # Create directory in which to store distance matrices
-                try:
-                    os.makedirs(network_attributes_location + "/sunlight_matrices")
-                except OSError:
-                    print("Directory to store sunlight matrices could not be created.")
-
-                file_id = 0
-
-                # Calculate all distance matrices
-                for k in snapshot_times:
-                    # Calculate whether each satellite is in sunlight or not
-                    satellites_in_sun = [i.at(k).is_sunlit(eph) for i in earth_satellite_objects]
-
-                    # Update matrix such that element sunlight_matrix[i][j] is set to 1 if i or j is in sunlight and
-                    # save to file
-                    np.save(network_attributes_location + "/sunlight_matrices/sunlight_matrix_" + str(file_id) + ".npy",
-                            satnet.sunlight_function(satellites_in_sun, total_sat))
-
-                    file_id += 1
-
-            # Run topology generation algorithm for each specified snapshot - utilise multiprocessing to make program
-            # faster (dependent on the number of cores of computer run program on)
-
-            if optimise is False:
-
-                # Generate arguments for functions
-                snapshot_arguments = [
-                    [constellation_name, total_sat, num_snapshot, satellite_degree_constraints, t, params, location,
-                     dcmst] for t in snapshot_ids]
-
-                # Generate topology
-                pool = Pool(processes=os.cpu_count())
-
-                pool.map(heuristic_topology_design_algorithm_isls, snapshot_arguments)
-
-                pool.terminate()
-
-                print("Novel Algorithm Topology Build Completed")
-
-            # Run cost optimisation function and calculate metrics for best topologies found
-            else:
-
-                # Checks that optimisation method is specified
-                if args.optimisation_method:
-                    optimisation_method = args.optimisation_method
-                else:
-                    raise ValueError("An optimisation method must be specified.")
-
-                print("Evaluating... ", end='\r', flush=True)
-
-                # Run random search optimisation method
-                if optimisation_method == "random":
-
-                    cost_function_optimisation_algorithms.random_search(constellation_name, num_snapshot, 50, total_sat,
-                                                                        satellite_degree_constraints, dcmst, location)
-
-                # Run evolutionary strategy optimisation method
-                elif optimisation_method == "evolutionary":
-
-                    cost_function_optimisation_algorithms.evolutionary_search(constellation_name, num_snapshot,
-                                                                              total_sat, satellite_degree_constraints,
-                                                                              dcmst, location)
-
-                # Run machine learning-based optimisation method
-                elif optimisation_method == "machine_learning":
-
-                    cost_function_optimisation_algorithms.machine_learning_optimisation(constellation_name, location,
-                                                                                        num_snapshot, total_sat,
-                                                                                        satellite_degree_constraints,
-                                                                                        dcmst)
-
-                else:
-                    raise ValueError("That cost function optimisation method does not exist.")
-
-                print("Novel Topology Algorithm Cost Function Optimisation Completed")
-
+        # Run cost optimisation function and calculate metrics for best topologies found
         else:
-            raise ValueError("That topology design method does not exist.")
+
+            # Checks that optimisation method is specified
+            if args.optimisation_method:
+                optimisation_method = args.optimisation_method
+            else:
+                raise ValueError("An optimisation method must be specified.")
+
+            print("Evaluating... ", end='\r', flush=True)
+
+            # Run random search optimisation method
+            if optimisation_method == "random":
+
+                cost_function_optimisation_algorithms.random_search(constellation_name, num_snapshot, 50, total_sat,
+                                                                    satellite_degree_constraints, dcmst, location)
+
+            # Run evolutionary strategy optimisation method
+            elif optimisation_method == "evolutionary":
+
+                cost_function_optimisation_algorithms.evolutionary_search(constellation_name, num_snapshot,
+                                                                          total_sat, satellite_degree_constraints,
+                                                                          dcmst, location)
+
+            # Run machine learning-based optimisation method
+            elif optimisation_method == "machine_learning":
+
+                cost_function_optimisation_algorithms.machine_learning_optimisation(constellation_name, location,
+                                                                                    num_snapshot, total_sat,
+                                                                                    satellite_degree_constraints,
+                                                                                    dcmst)
+
+            else:
+                raise ValueError("That cost function optimisation method does not exist.")
+
+            print("Novel Topology Algorithm Cost Function Optimisation Completed")
+
+    else:
+        raise ValueError("That topology design method does not exist.")
 
 print("\nExecution Time: " + str(time.time() - start) + "s \n")
 
