@@ -37,6 +37,6 @@ Documentation of each function within this Python package can be found [here]().
 
 ## Recreating Report
 
-To recreate the results in the project's final report, please run ```bash report.sh```. Please note that this scripts 
+To recreate the results in the project's final report, please run ```bash report.sh```. Please note that this script 
 takes significant execution time. However, a large proportion of this code is automatically parallelised -  if you have 
 access to a significant number of CPU cores, this code will run significantly faster.

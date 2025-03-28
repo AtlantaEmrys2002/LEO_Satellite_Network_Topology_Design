@@ -2,6 +2,10 @@
 import numpy as np
 import networkx as nx
 
+# Networkx Warning Suppression - warning already acknowledged and recommendation followed
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 
 def hop_count(topology_matrix, distance_matrix, num_satellites):
     """
@@ -18,7 +22,7 @@ def hop_count(topology_matrix, distance_matrix, num_satellites):
 
     # Calculate path from source to destination using Dijkstra's Shortest Path Algorithm
     graph = nx.from_numpy_array(distance_matrix)
-    result = nx.shortest_path(graph)
+    result = dict(nx.shortest_path(graph))
 
     average_hop_count = 0
 

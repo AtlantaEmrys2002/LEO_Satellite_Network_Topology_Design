@@ -6,20 +6,21 @@
 # CONNECT LARGEST COST EDGES - REDUCES GRAPH DIAMETER AT EXPENSE OF ENERGY EFFICIENCY
 # Randomly select edge from all edges with same cost rather than just selecting first one
 
-# Import Relevant Libraries
-from analysis import measure, cost_function_optimise
+# Libraries
 import argparse
-import data_handling
 from multiprocessing import Pool
 import numpy as np
 import os
 import random
-import satellite_network_attribute_functions as satnet
-from scipy.spatial.distance import cdist  # imported due to https://vaghefi.medium.com/fast-distance-calculation-in-
-# python-bb2bc9810ea5
+from scipy.spatial.distance import cdist
 from skyfield.api import EarthSatellite, load  # recommended by astropy documentation
 import time
-# from build import heuristic_topology_design_algorithm_isls
+
+# Implemented Modules
+from analysis import measure
+import cost_function_optimisation_algorithms
+import data_handling
+import satellite_network_attribute_functions as satnet
 from satellite_topology_construction_algorithms import (heuristic_topology_design_algorithm_isls, plus_grid,
                                                         minimum_delay_topology_design_algorithm)
 
@@ -36,11 +37,14 @@ start = time.time()
 if __name__ == "__main__":
 
     # PARSE INPUTS #
+    print('\n')
 
     print("Parsing Inputs...", end='\r', flush=True)
 
     # Parse inputs to module
     parser = argparse.ArgumentParser()
+
+    # Required arguments
     parser.add_argument("--tles", type=str, help="name of input file which contains TLE description of "
                                                  "satellite network", required=True)
     parser.add_argument("--constellation", type=str, help="name of satellite constellation for which a "
@@ -52,33 +56,35 @@ if __name__ == "__main__":
                         required=True)
     parser.add_argument("--rev", type=float, help="mean motion revolutions per day for satellite network",
                         required=True)
-    parser.add_argument("--snapshots", type=int, nargs="+", help="ids of the snapshots for which to build "
-                                                                 "a topology (minimum of 0, maximum is number of "
-                                                                 "snapshots taken over the course of one orbital period"
-                                                                 ")", required=True)
-    parser.add_argument("--snapshot_interval", type=int, help="time intervals (s) between snapshots, e.g. "
-                                                              "if 60, a topology is constructed every 60s over 1 "
-                                                              "orbital period", required=True)
-    parser.add_argument("--weights", type=float, nargs=3, help="values of weights of cost function (alpha "
-                                                               "for time visibility, beta for distance, gamma for "
-                                                               "probability of failure)", required=True)
+    parser.add_argument("--snapshot_interval", type=float, help="time intervals (s) between snapshots, e.g."
+                                                                " if 60, a topology is constructed every 60s over 1 "
+                                                                "orbital period", required=True)
     parser.add_argument("--multi", type=str, help="determines if the constellation contains multiple shells",
                         required=True)
     parser.add_argument("--optimise", type=str, help="determines if cost function weights should be "
                                                      "optimised and/or metrics returned", required=True)
-    parser.add_argument("--optimisation_method", type=str, help="if cost function is optimised, determines"
-                                                                " method with which to find optimal weights (options: "
-                                                                "'random', 'evolutionary', 'machine-learning')",
-                        required=True)
     parser.add_argument("--topology", type=str, help="determines method with which to construct topology "
                                                      "for network (options: 'plus-grid', 'x-grid', 'mdtd', 'novel')",
                         required=True)
-    parser.add_argument("--dcmst", type=str, help="if novel topology construction algorithm is used, "
-                                                  "determines which dcmst construction method is used (options: 'aco', "
-                                                  "'ga', 'primal')", required=True)
     parser.add_argument("--isl_terminals", type=int, nargs="+", help="specify as an int or list of ints "
                                                                      "the number of terminals each satellite in the "
                                                                      "given constellation has", required=True)
+
+    # Optional arguments
+    parser.add_argument("--snapshots", type=int, nargs="+", help="ids of the snapshots for which to build "
+                                                                 "a topology (minimum of 0, maximum is number of "
+                                                                 "snapshots taken over the course of one orbital period"
+                                                                 ")")
+    # Below are only required for novel algorithm
+    parser.add_argument("--dcmst", type=str, help="if novel topology construction algorithm is used, "
+                                                  "determines which dcmst construction method is used (options: 'aco', "
+                                                  "'ga', 'primal')")
+    parser.add_argument("--optimisation_method", type=str, help="if cost function is optimised, determines"
+                                                                " method with which to find optimal weights (options: "
+                                                                "'random', 'evolutionary', 'machine-learning')")
+    parser.add_argument("--weights", type=float, nargs=3, help="values of weights of cost function (alpha "
+                                                               "for time visibility, beta for distance, gamma for "
+                                                               "probability of failure)")
 
     args = parser.parse_args()
 
@@ -88,12 +94,8 @@ if __name__ == "__main__":
     num_sats_per_orbit = args.n
     inclination_degree = args.i
     mean_motion_rev_per_day = args.rev
-    snapshot_ids = args.snapshots
-    params = args.weights
     multi_shell = args.multi
-    optimisation_method = args.optimisation_method
     topology = args.topology
-    dcmst = args.dcmst
     snapshot_interval = args.snapshot_interval
 
     # Determine whether the cost function should be optimised for the novel proposed algorithm and if the topologies
@@ -143,7 +145,7 @@ if __name__ == "__main__":
             raise ValueError("The number of specified degree constraints should match the number of satellites within "
                              "the network.")
         try:
-            satellite_degree_constraints = np.array([int(a) for a in args.isl_terminals], dtype=np.int32)
+            satellite_degree_constraints = [int(a) for a in args.isl_terminals]
         except ValueError:
             raise ValueError(
                 "Satellite degree constraints must be specified as int or list of ints (length of list of ints"
@@ -228,6 +230,13 @@ if __name__ == "__main__":
 
         # The number of snapshots over an orbital period for which to construct a topology
         num_snapshot = int(orbital_period / snapshot_interval)
+
+        # Determines which snapshots to build topologies for (if specified, only construct topologies for those
+        # snapshots, otherwise construct a topology for all snapshots
+        if args.snapshots:
+            snapshot_ids = args.snapshots
+        else:
+            snapshot_ids = list(range(0, num_snapshot))
 
         # Get TLEs-formatted data
         tles_data = data_handling.read_file(tle_file)
@@ -316,6 +325,21 @@ if __name__ == "__main__":
         # NOVEL TOPOLOGY DESIGN ALGORITHM (BUILT FOR THIS PROJECT)
         elif topology == "novel":
 
+            # PARSES OPTIONAL ARGUMENTS #
+            # Parses arguments only required by novel algorithm
+
+            # Checks weights exist and set to params
+            if args.weights:
+                params = args.weights
+            else:
+                raise ValueError("Cost function weights must be specified for novel algorithm.")
+
+            # Checks DCMST construction algorithm exists and sets to dcmst
+            if args.dcmst:
+                dcmst = args.dcmst
+            else:
+                raise ValueError("DCMST construction method must be specified for novel algorithm.")
+
             # Directory in which to store topologies
             if optimise is False:
                 location = "./novel/" + dcmst + "/" + constellation_name.lower() + "/"
@@ -397,16 +421,44 @@ if __name__ == "__main__":
             # Run cost optimisation function and calculate metrics for best topologies found
             else:
 
+                # Checks that optimisation method is specified
+                if args.optimisation_method:
+                    optimisation_method = args.optimisation_method
+                else:
+                    raise ValueError("An optimisation method must be specified.")
+
                 print("Evaluating... ", end='\r', flush=True)
 
-                cost_function_optimise()
+                # Run random search optimisation method
+                if optimisation_method == "random":
+
+                    cost_function_optimisation_algorithms.random_search(constellation_name, num_snapshot, 50, total_sat,
+                                                                        satellite_degree_constraints, dcmst, location)
+
+                # Run evolutionary strategy optimisation method
+                elif optimisation_method == "evolutionary":
+
+                    cost_function_optimisation_algorithms.evolutionary_search(constellation_name, num_snapshot,
+                                                                              total_sat, satellite_degree_constraints,
+                                                                              dcmst, location)
+
+                # Run machine learning-based optimisation method
+                elif optimisation_method == "machine_learning":
+
+                    cost_function_optimisation_algorithms.machine_learning_optimisation(constellation_name, location,
+                                                                                        num_snapshot, total_sat,
+                                                                                        satellite_degree_constraints,
+                                                                                        dcmst)
+
+                else:
+                    raise ValueError("That cost function optimisation method does not exist.")
 
                 print("Novel Topology Algorithm Cost Function Optimisation Completed")
 
         else:
             raise ValueError("That topology design method does not exist.")
 
-print(time.time() - start)
+print("\nExecution Time: " + str(time.time() - start) + "s \n")
 
 # Used to test at the moment
 # python LEO_Satellite_Network_Topology_Design --tles "starlink-constellation_tles.txt.tmp" --constellation "Starlink-550" --m 72 --n 22 --i 53 --rev 15.19 --snapshots 2 6 10 14 --weights 1 1 0.2 --multi False --optimise False --optimisation_method random --topology "novel" --dcmst "primal" --isl_terminals 3 --snapshot_interval 60
@@ -420,6 +472,7 @@ print(time.time() - start)
 # Asserting Numpy Equality - https://stackoverflow.com/questions/3302949/best-way-to-assert-for-numpy-array-equality
 # Building Project Documentation - https://medium.com/@pratikdomadiya123/build-project-documentation-quickly-with-the-
 # sphinx-python-2a9732b66594
+# cdist - https://vaghefi.medium.com/fast-distance-calculation-in-python-bb2bc9810ea5
 # Check Number of Arguments - https://stackoverflow.com/questions/10698468/how-to-check-if-any-arguments-have-been-
 # passed-to-argparse
 # Combinations of Arrays - https://stackoverflow.com/questions/1208118/using-numpy-to-build-an-array-of-all-combinations
