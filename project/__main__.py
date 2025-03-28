@@ -2,6 +2,8 @@
 # Find maximum transmission dist for Starlink, Kuiper and telesat - 27000 paper sets at 5014 km - also mentioned in code
 # EXPERIMENT WITH INCREASE CONNECTIVITY FUNC - IN FREE OPTICAL SPACE NETWORKS PAPER (BROADBAND NOT SATELLITE), THEY
 # CONNECT LARGEST COST EDGES - REDUCES GRAPH DIAMETER AT EXPENSE OF ENERGY EFFICIENCY
+# When make modifications to documentation: look at this first: https://medium.com/@pratikdomadiya123/build-project-docu
+# mentation-quickly-with-the-sphinx-python-2a9732b66594
 
 # Libraries
 import argparse
@@ -364,8 +366,8 @@ if __name__ == "__main__":
                 # Checks that optimisation method is specified
                 if args.optimisation_method:
                     optimisation_method = args.optimisation_method
-                    location = ("./Results/novel/" + optimisation_method + "/" + dcmst + "/" + constellation_name.lower() +
-                                "/")
+                    location = ("./Results/novel/" + optimisation_method + "/" + dcmst + "/" +
+                                constellation_name.lower() + "/")
                 else:
                     raise ValueError("An optimisation method must be specified.")
 
@@ -564,6 +566,10 @@ print("\nExecution Time: " + str(time.time() - start) + "s \n")
 # Spg4 Import Error - https://stackoverflow.com/questions/72639365/no-module-named-sgp4-but-requirement-already-
 # satisfied-sgp4-in-c
 # Sphinx - https://www.sphinx-doc.org/en/master/tutorial/automatic-doc-generation.html
+# Sphinx Tutorial - https://medium.com/@pratikdomadiya123/build-project-documentation-quickly-with-the-sphinx-python-
+# 2a9732b66594
+# Sphinx Tutorial - https://stackoverflow.com/questions/74787850/generating-documentation-for-multiple-folders-with-
+# sphinx
 # Sorting by Column - https://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-column
 # Subset of Rows - https://stackoverflow.com/questions/70341932/select-subset-of-rows-of-numpy-array-based-on-a-
 # selection-of-rows-in-another-arr

@@ -1,0 +1,168 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dcmst_construction_algorithms.increase_connectivity &#8212; LEO_Satellite_Network_Topology_Design 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dcmst_construction_algorithms.increase_connectivity</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Libraries</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<span class="c1"># Adds edges (i.e. ISLs) to topology greedily (in order of increasing cost)</span>
+<div class="viewcode-block" id="increase_connectivity"><a class="viewcode-back" href="../../dcmst_construction_algorithms.increase_connectivity.html#dcmst_construction_algorithms.increase_connectivity.increase_connectivity">[docs]</a><span class="k">def</span> <span class="nf">increase_connectivity</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">degree_constraints</span><span class="p">,</span> <span class="n">current_isl_number</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gradually and greedily adds ISLs to graph to increase the connectivity between satellites until no more ISLs can be</span>
+<span class="sd">    established without breaking constraints.</span>
+
+<span class="sd">    :param tree:</span>
+<span class="sd">    :param degree_constraints:</span>
+<span class="sd">    :param current_isl_number:</span>
+<span class="sd">    :param cost_matrix:</span>
+<span class="sd">    :param total_satellites:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Ensure all feasible edges (i.e. ISL can be established between satellites) not in tree are considered</span>
+    <span class="n">cost_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">tree</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">cost_matrix</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Sort edges and remove duplicates (undirected edges)</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">edges</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Create array of potential edges and their associated costs and sort by cost</span>
+    <span class="n">costs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([[</span><span class="n">cost_matrix</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">])</span>
+    <span class="n">sorted_costs</span> <span class="o">=</span> <span class="n">costs</span><span class="p">[</span><span class="n">costs</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">argsort</span><span class="p">()]</span>
+
+    <span class="c1"># Once sorted, costs are no longer needed</span>
+    <span class="n">sorted_costs</span> <span class="o">=</span> <span class="n">sorted_costs</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">total_satellites</span><span class="p">):</span>
+        <span class="c1"># If satellite has already met degree constraint, ignore and move to next satellite</span>
+        <span class="k">if</span> <span class="n">current_isl_number</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="n">degree_constraints</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="c1"># Select all edges incident to vertex k</span>
+            <span class="n">potential_edges</span> <span class="o">=</span> <span class="n">sorted_costs</span><span class="p">[</span><span class="n">sorted_costs</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">k</span><span class="p">,</span> <span class="p">:]</span>
+
+            <span class="c1"># If no more potential edges</span>
+            <span class="k">if</span> <span class="n">potential_edges</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">potential_edges_num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential_edges</span><span class="p">)</span>
+                <span class="k">while</span> <span class="p">(</span><span class="n">pos</span> <span class="o">&lt;</span> <span class="n">potential_edges_num</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">current_isl_number</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">degree_constraints</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
+
+                    <span class="n">current_potential_a</span><span class="p">,</span> <span class="n">current_potential_b</span> <span class="o">=</span> <span class="n">potential_edges</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
+
+                    <span class="c1"># If both satellites don&#39;t have maximum degree (maximum number of ISLs established)</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">current_isl_number</span><span class="p">[</span><span class="n">current_potential_a</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">degree_constraints</span><span class="p">[</span><span class="n">current_potential_a</span><span class="p">]</span> <span class="ow">and</span>
+                            <span class="n">current_isl_number</span><span class="p">[</span><span class="n">current_potential_b</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">degree_constraints</span><span class="p">[</span><span class="n">current_potential_b</span><span class="p">]):</span>
+
+                        <span class="c1"># Add edge (ISL)</span>
+                        <span class="n">tree</span><span class="p">[</span><span class="n">current_potential_a</span><span class="p">,</span> <span class="n">current_potential_b</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="n">tree</span><span class="p">[</span><span class="n">current_potential_b</span><span class="p">,</span> <span class="n">current_potential_a</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+                        <span class="c1"># Update the current number of active ISLs each satellite has established</span>
+                        <span class="n">current_isl_number</span><span class="p">[</span><span class="n">current_potential_b</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">current_isl_number</span><span class="p">[</span><span class="n">current_potential_a</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                    <span class="c1"># Select next edge</span>
+                    <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">tree</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">LEO_Satellite_Network_Topology_Design</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">project</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, Millicent Riordan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

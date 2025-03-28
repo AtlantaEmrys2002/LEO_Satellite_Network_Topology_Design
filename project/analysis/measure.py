@@ -7,7 +7,7 @@ def read_isl_file(isl_file_name, num_satellites):
     """
     Reads description of topology from file for analysis according to multiple metrics. Often used by cost function
     optimisation code.
-    :param isl_file_name:
+    :param isl_file_name: name of to
     :param num_satellites:
     :return:
     """

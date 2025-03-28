@@ -1,0 +1,309 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>data_handling.generate_tles_from_scratch &#8212; LEO_Satellite_Network_Topology_Design 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for data_handling.generate_tles_from_scratch</h1><div class="highlight"><pre>
+<span></span><span class="c1"># The MIT License (MIT)</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020 ETH Zurich</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in all</span>
+<span class="c1"># copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">sgp4.exporter</span> <span class="kn">import</span> <span class="n">export_tle</span>
+<span class="kn">from</span> <span class="nn">sgp4.api</span> <span class="kn">import</span> <span class="n">Satrec</span><span class="p">,</span> <span class="n">WGS72</span>
+<span class="kn">from</span> <span class="nn">sgp4.api</span> <span class="kn">import</span> <span class="n">jday</span>
+
+
+<div class="viewcode-block" id="generate_tles_from_scratch_with_sgp"><a class="viewcode-back" href="../../data_handling.generate_tles_from_scratch.html#data_handling.generate_tles_from_scratch.generate_tles_from_scratch_with_sgp">[docs]</a><span class="k">def</span> <span class="nf">generate_tles_from_scratch_with_sgp</span><span class="p">(</span>
+        <span class="n">filename_out</span><span class="p">,</span>
+        <span class="n">constellation_name</span><span class="p">,</span>
+        <span class="n">num_orbits</span><span class="p">,</span>
+        <span class="n">num_sats_per_orbit</span><span class="p">,</span>
+        <span class="n">phase_diff</span><span class="p">,</span>
+        <span class="n">inclination_degree</span><span class="p">,</span>
+        <span class="n">eccentricity</span><span class="p">,</span>
+        <span class="n">arg_of_perigee_degree</span><span class="p">,</span>
+        <span class="n">mean_motion_rev_per_day</span>
+<span class="p">):</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename_out</span><span class="p">,</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_out</span><span class="p">:</span>
+
+        <span class="c1"># First line:</span>
+        <span class="c1">#</span>
+        <span class="c1"># &lt;number of orbits&gt; &lt;number of satellites per orbit&gt;</span>
+        <span class="c1">#</span>
+        <span class="n">f_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> </span><span class="si">%d</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">num_orbits</span><span class="p">,</span> <span class="n">num_sats_per_orbit</span><span class="p">))</span>
+
+        <span class="c1"># Each of the subsequent (number of orbits * number of satellites per orbit) blocks</span>
+        <span class="c1"># define a satellite as follows:</span>
+        <span class="c1">#</span>
+        <span class="c1"># &lt;constellation_name&gt; &lt;global satellite id&gt;</span>
+        <span class="c1"># &lt;TLE line 1&gt;</span>
+        <span class="c1"># &lt;TLE line 2&gt;</span>
+        <span class="n">satellite_counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">orbit</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_orbits</span><span class="p">):</span>
+
+            <span class="c1"># Orbit-dependent</span>
+            <span class="n">raan_degree</span> <span class="o">=</span> <span class="n">orbit</span> <span class="o">*</span> <span class="mf">360.0</span> <span class="o">/</span> <span class="n">num_orbits</span>
+            <span class="n">orbit_wise_shift</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">orbit</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">phase_diff</span><span class="p">:</span>
+                    <span class="n">orbit_wise_shift</span> <span class="o">=</span> <span class="mf">360.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">num_sats_per_orbit</span> <span class="o">*</span> <span class="mf">2.0</span><span class="p">)</span>
+
+            <span class="c1"># For each satellite in the orbit</span>
+            <span class="k">for</span> <span class="n">n_sat</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_sats_per_orbit</span><span class="p">):</span>
+                <span class="n">mean_anomaly_degree</span> <span class="o">=</span> <span class="n">orbit_wise_shift</span> <span class="o">+</span> <span class="p">(</span><span class="n">n_sat</span> <span class="o">*</span> <span class="mi">360</span> <span class="o">/</span> <span class="n">num_sats_per_orbit</span><span class="p">)</span>
+
+                <span class="c1"># Epoch is set to the year 2000</span>
+                <span class="c1"># This conveniently in TLE format gives 00001.00000000</span>
+                <span class="c1"># for the epoch year and Julian day fraction entry</span>
+                <span class="n">jd</span><span class="p">,</span> <span class="n">fr</span> <span class="o">=</span> <span class="n">jday</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+                <span class="c1"># Use SGP-4 to generate TLE</span>
+                <span class="n">sat_sgp4</span> <span class="o">=</span> <span class="n">Satrec</span><span class="p">()</span>
+
+                <span class="c1"># Based on: https://pypi.org/project/sgp4/</span>
+                <span class="n">sat_sgp4</span><span class="o">.</span><span class="n">sgp4init</span><span class="p">(</span>
+                    <span class="n">WGS72</span><span class="p">,</span>                  <span class="c1"># Gravity model [1]</span>
+                    <span class="s1">&#39;i&#39;</span><span class="p">,</span>                    <span class="c1"># Operating mode (a = old AFPSC mode, i = improved mode)</span>
+                    <span class="n">satellite_counter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>  <span class="c1"># satnum:  satellite number</span>
+                    <span class="p">(</span><span class="n">jd</span> <span class="o">+</span> <span class="n">fr</span><span class="p">)</span> <span class="o">-</span> <span class="mf">2433281.5</span><span class="p">,</span>  <span class="c1"># epoch:   days since 1949 December 31 00:00 UT [2]</span>
+                    <span class="mf">0.0</span><span class="p">,</span>                    <span class="c1"># bstar:   drag coefficient (kg/m2er)</span>
+                    <span class="mf">0.0</span><span class="p">,</span>                    <span class="c1"># ndot:    ballistic coefficient (revs/day)</span>
+                    <span class="mf">0.0</span><span class="p">,</span>                    <span class="c1"># nndot:   second derivative of mean motion (revs/day^3)</span>
+                    <span class="n">eccentricity</span><span class="p">,</span>           <span class="c1"># ecco:    eccentricity</span>
+                    <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">arg_of_perigee_degree</span><span class="p">),</span>              <span class="c1"># argpo:   argument or perigee (radians)</span>
+                    <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">inclination_degree</span><span class="p">),</span>                 <span class="c1"># inclo:    inclination(radians)</span>
+                    <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">mean_anomaly_degree</span><span class="p">),</span>                <span class="c1"># mo:       mean anomaly (radians)</span>
+                    <span class="n">mean_motion_rev_per_day</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">/</span> <span class="mf">13750.9870831397</span><span class="p">,</span>  <span class="c1"># no_kazai: mean motion (radians/minute) [3]</span>
+                    <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">raan_degree</span><span class="p">)</span>                         <span class="c1"># nodeo:    right ascension of</span>
+                                                                      <span class="c1">#           ascending node (radians)</span>
+                <span class="p">)</span>
+
+                <span class="c1"># Side notes:</span>
+                <span class="c1"># [1] WGS72 is also used in the NS-3 model</span>
+                <span class="c1"># [2] Due to a bug in sgp4init, the TLE below irrespective of the value here gives zeros.</span>
+                <span class="c1"># [3] Conversion factor from:</span>
+                <span class="c1">#     https://www.translatorscafe.com/unit-converter/en-US/ (continue on next line)</span>
+                <span class="c1">#     velocity-angular/1-9/radian/second-revolution/day/</span>
+                <span class="c1">#</span>
+
+                <span class="c1"># Export TLE from the SGP-4 object</span>
+                <span class="n">line1</span><span class="p">,</span> <span class="n">line2</span> <span class="o">=</span> <span class="n">export_tle</span><span class="p">(</span><span class="n">sat_sgp4</span><span class="p">)</span>
+
+                <span class="c1"># Line 1 has some problems: there are unknown characters entered for the international</span>
+                <span class="c1"># designator, and the Julian date is not respected</span>
+                <span class="c1"># As such, we set our own bogus international designator 00000ABC</span>
+                <span class="c1"># and we set our own epoch date as 1 January, 2000</span>
+                <span class="c1"># Why it&#39;s 00001.00000000: https://www.celestrak.com/columns/v04n03/#FAQ04</span>
+                <span class="n">tle_line1</span> <span class="o">=</span> <span class="n">line1</span><span class="p">[:</span><span class="mi">7</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;U 00000ABC 00001.00000000 &quot;</span> <span class="o">+</span> <span class="n">line1</span><span class="p">[</span><span class="mi">33</span><span class="p">:]</span>
+                <span class="n">tle_line1</span> <span class="o">=</span> <span class="n">tle_line1</span><span class="p">[:</span><span class="mi">68</span><span class="p">]</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">calculate_tle_line_checksum</span><span class="p">(</span><span class="n">tle_line1</span><span class="p">[:</span><span class="mi">68</span><span class="p">]))</span>
+                <span class="n">tle_line2</span> <span class="o">=</span> <span class="n">line2</span>
+
+                <span class="c1"># Check that the checksum is correct</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tle_line1</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">69</span> <span class="ow">or</span> <span class="n">calculate_tle_line_checksum</span><span class="p">(</span><span class="n">tle_line1</span><span class="p">[:</span><span class="mi">68</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tle_line1</span><span class="p">[</span><span class="mi">68</span><span class="p">]):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;TLE line 1 checksum failed&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tle_line2</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">69</span> <span class="ow">or</span> <span class="n">calculate_tle_line_checksum</span><span class="p">(</span><span class="n">tle_line2</span><span class="p">[:</span><span class="mi">68</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tle_line2</span><span class="p">[</span><span class="mi">68</span><span class="p">]):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;TLE line 2 checksum failed&quot;</span><span class="p">)</span>
+
+                <span class="c1"># Write TLE to file</span>
+                <span class="n">f_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">constellation_name</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">orbit</span> <span class="o">*</span> <span class="n">num_sats_per_orbit</span> <span class="o">+</span> <span class="n">n_sat</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">tle_line1</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">tle_line2</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="c1"># One more satellite there</span>
+                <span class="n">satellite_counter</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="generate_tles_from_scratch_manual"><a class="viewcode-back" href="../../data_handling.generate_tles_from_scratch.html#data_handling.generate_tles_from_scratch.generate_tles_from_scratch_manual">[docs]</a><span class="k">def</span> <span class="nf">generate_tles_from_scratch_manual</span><span class="p">(</span>
+        <span class="n">filename_out</span><span class="p">,</span>
+        <span class="n">constellation_name</span><span class="p">,</span>
+        <span class="n">num_orbits</span><span class="p">,</span>
+        <span class="n">num_sats_per_orbit</span><span class="p">,</span>
+        <span class="n">phase_diff</span><span class="p">,</span>
+        <span class="n">inclination_degree</span><span class="p">,</span>
+        <span class="n">eccentricity</span><span class="p">,</span>
+        <span class="n">arg_of_perigee_degree</span><span class="p">,</span>
+        <span class="n">mean_motion_rev_per_day</span>
+<span class="p">):</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename_out</span><span class="p">,</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_out</span><span class="p">:</span>
+
+        <span class="c1"># First line:</span>
+        <span class="c1">#</span>
+        <span class="c1"># &lt;number of orbits&gt; &lt;number of satellites per orbit&gt;</span>
+        <span class="c1">#</span>
+        <span class="n">f_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> </span><span class="si">%d</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">num_orbits</span><span class="p">,</span> <span class="n">num_sats_per_orbit</span><span class="p">))</span>
+
+        <span class="c1"># Each of the subsequent (number of orbits * number of satellites per orbit) blocks</span>
+        <span class="c1"># define a satellite as follows:</span>
+        <span class="c1">#</span>
+        <span class="c1"># &lt;constellation_name&gt; &lt;global satellite id&gt;</span>
+        <span class="c1"># &lt;TLE line 1&gt;</span>
+        <span class="c1"># &lt;TLE line 2&gt;</span>
+        <span class="n">satellite_counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">orbit</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_orbits</span><span class="p">):</span>
+
+            <span class="c1"># Orbit-dependent</span>
+            <span class="n">raan_degree</span> <span class="o">=</span> <span class="n">orbit</span> <span class="o">*</span> <span class="mf">360.0</span> <span class="o">/</span> <span class="n">num_orbits</span>
+            <span class="n">orbit_wise_shift</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">orbit</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">phase_diff</span><span class="p">:</span>
+                    <span class="n">orbit_wise_shift</span> <span class="o">=</span> <span class="mf">360.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">num_sats_per_orbit</span> <span class="o">*</span> <span class="mf">2.0</span><span class="p">)</span>
+
+            <span class="c1"># For each satellite in the orbit</span>
+            <span class="k">for</span> <span class="n">n_sat</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_sats_per_orbit</span><span class="p">):</span>
+                <span class="n">mean_anomaly_degree</span> <span class="o">=</span> <span class="n">orbit_wise_shift</span> <span class="o">+</span> <span class="p">(</span><span class="n">n_sat</span> <span class="o">*</span> <span class="mi">360</span> <span class="o">/</span> <span class="n">num_sats_per_orbit</span><span class="p">)</span>
+
+                <span class="c1"># Epoch is 2000-01-01 00:00:00, which is 00001 in ddyyy format</span>
+                <span class="c1"># See also: https://www.celestrak.com/columns/v04n03/#FAQ04</span>
+                <span class="n">tle_line1</span> <span class="o">=</span> <span class="s2">&quot;1 </span><span class="si">%05d</span><span class="s2">U 00000ABC 00001.00000000  .00000000  00000-0  00000+0 0    0&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">satellite_counter</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="p">)</span>
+
+                <span class="n">tle_line2</span> <span class="o">=</span> <span class="s2">&quot;2 </span><span class="si">%05d</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">    0&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">satellite_counter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="p">(</span><span class="s2">&quot;</span><span class="si">%3.4f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">inclination_degree</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s2">&quot;</span><span class="si">%3.4f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">raan_degree</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s2">&quot;</span><span class="si">%0.7f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">eccentricity</span><span class="p">)[</span><span class="mi">2</span><span class="p">:],</span>
+                    <span class="p">(</span><span class="s2">&quot;</span><span class="si">%3.4f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">arg_of_perigee_degree</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s2">&quot;</span><span class="si">%3.4f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">mean_anomaly_degree</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s2">&quot;</span><span class="si">%2.8f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">mean_motion_rev_per_day</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="mi">11</span><span class="p">),</span>
+                <span class="p">)</span>
+
+                <span class="c1"># Append checksums</span>
+                <span class="n">tle_line1</span> <span class="o">=</span> <span class="n">tle_line1</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">calculate_tle_line_checksum</span><span class="p">(</span><span class="n">tle_line1</span><span class="p">))</span>
+                <span class="n">tle_line2</span> <span class="o">=</span> <span class="n">tle_line2</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">calculate_tle_line_checksum</span><span class="p">(</span><span class="n">tle_line2</span><span class="p">))</span>
+
+                <span class="c1"># Write TLE to file</span>
+                <span class="n">f_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">constellation_name</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">orbit</span> <span class="o">*</span> <span class="n">num_sats_per_orbit</span> <span class="o">+</span> <span class="n">n_sat</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">tle_line1</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">tle_line2</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="c1"># One more satellite there</span>
+                <span class="n">satellite_counter</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="calculate_tle_line_checksum"><a class="viewcode-back" href="../../data_handling.generate_tles_from_scratch.html#data_handling.generate_tles_from_scratch.calculate_tle_line_checksum">[docs]</a><span class="k">def</span> <span class="nf">calculate_tle_line_checksum</span><span class="p">(</span><span class="n">tle_line_without_checksum</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tle_line_without_checksum</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">68</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must have exactly 68 characters&quot;</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tle_line_without_checksum</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">tle_line_without_checksum</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">isnumeric</span><span class="p">():</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tle_line_without_checksum</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">tle_line_without_checksum</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">s</span> <span class="o">%</span> <span class="mi">10</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">LEO_Satellite_Network_Topology_Design</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">project</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, Millicent Riordan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>analysis.measure module &#8212; LEO_Satellite_Network_Topology_Design 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="analysis.topology_visualisation module" href="analysis.topology_visualisation.html" />
+    <link rel="prev" title="analysis package" href="analysis.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-analysis.measure">
+<span id="analysis-measure-module"></span><h1>analysis.measure module<a class="headerlink" href="#module-analysis.measure" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="analysis.measure.measure_dynamic">
+<span class="sig-prename descclassname"><span class="pre">analysis.measure.</span></span><span class="sig-name descname"><span class="pre">measure_dynamic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constellation_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology_file_location</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_satellites</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_snapshots</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/measure.html#measure_dynamic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#analysis.measure.measure_dynamic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the maximum propagation delay, mean propagation delay, average hop count, and link churn for dynamic
+satellite network topology.
+:param constellation_name:
+:param topology_file_location:
+:param num_satellites:
+:param num_snapshots:
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="analysis.measure.measure_static">
+<span class="sig-prename descclassname"><span class="pre">analysis.measure.</span></span><span class="sig-name descname"><span class="pre">measure_static</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constellation_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology_file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_satellites</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/measure.html#measure_static"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#analysis.measure.measure_static" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the maximum propagation delay, mean propagation delay, and average hop count (as well as returning link
+churn for completeness) for static satellite network topology.
+:param constellation_name:
+:param topology_file_name:
+:param num_satellites:
+:return:</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="analysis.measure.read_isl_file">
+<span class="sig-prename descclassname"><span class="pre">analysis.measure.</span></span><span class="sig-name descname"><span class="pre">read_isl_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">isl_file_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_satellites</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis/measure.html#read_isl_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#analysis.measure.read_isl_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads description of topology from file for analysis according to multiple metrics. Often used by cost function
+optimisation code.
+:param isl_file_name:
+:param num_satellites:
+:return:</p>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">LEO_Satellite_Network_Topology_Design</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">project</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="analysis.html">analysis package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cost_function_optimisation_algorithms.html">cost_function_optimisation_algorithms package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_handling.html">data_handling package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dcmst_construction_algorithms.html">dcmst_construction_algorithms package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html">metrics package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="satellite_network_attribute_functions.html">satellite_network_attribute_functions package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="satellite_topology_construction_algorithms.html">satellite_topology_construction_algorithms package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">project</a><ul>
+  <li><a href="analysis.html">analysis package</a><ul>
+      <li>Previous: <a href="analysis.html" title="previous chapter">analysis package</a></li>
+      <li>Next: <a href="analysis.topology_visualisation.html" title="next chapter">analysis.topology_visualisation module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, Millicent Riordan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/analysis.measure.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

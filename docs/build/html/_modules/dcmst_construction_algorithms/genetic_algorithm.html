@@ -1,0 +1,427 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dcmst_construction_algorithms.genetic_algorithm &#8212; LEO_Satellite_Network_Topology_Design 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dcmst_construction_algorithms.genetic_algorithm</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Libraries</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+
+<div class="viewcode-block" id="prufer_encode"><a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.prufer_encode">[docs]</a><span class="k">def</span> <span class="nf">prufer_encode</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encodes tree as its Prufer Number - uses Cayley&#39;s representation (see DCMST comparison paper).</span>
+<span class="sd">    :param tree:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Will store Prufer encoding</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Find all edges in tree</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">tree</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Sort (smaller node first) and remove duplicates (undirected graph)</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">edges</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">edges</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+
+        <span class="c1"># Find leaf nodes (will only appear once)</span>
+        <span class="n">leaf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">edges</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Find edge that connects leaf to another node</span>
+        <span class="n">leaf_location</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">edges</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">leaf</span><span class="p">,</span> <span class="n">edges</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">leaf</span><span class="p">))[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Add leaf&#39;s neighbour to encoding</span>
+        <span class="k">if</span> <span class="n">leaf</span> <span class="o">==</span> <span class="n">edges</span><span class="p">[</span><span class="n">leaf_location</span><span class="p">,</span> <span class="mi">0</span><span class="p">]:</span>
+            <span class="n">P</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="n">leaf_location</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">P</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="n">leaf_location</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># Delete edge connecting leaf to neighbour from temporary edges</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">leaf_location</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="prufer_decode"><a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.prufer_decode">[docs]</a><span class="k">def</span> <span class="nf">prufer_decode</span><span class="p">(</span><span class="n">prufer_number</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decodes Prufer number and returns tree encoded in Prufer number as adjacency matrix, as well as the degree of each</span>
+<span class="sd">    node in the resulting tree.</span>
+<span class="sd">    :param prufer_number:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Tree will have 2 more nodes than length of list</span>
+    <span class="n">num_sat</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prufer_number</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span>
+
+    <span class="c1"># Initialise tree (using adjacency matrix representation) as array of all 0s</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_sat</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">))</span>
+
+    <span class="c1"># Stores degree of each vertex</span>
+    <span class="n">degree</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_sat</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">degree</span><span class="p">,</span> <span class="n">prufer_number</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">prufer_number</span><span class="p">:</span>
+
+        <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">degree</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">tree</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">tree</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">degree</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">degree</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+
+    <span class="c1"># Final two nodes in tree (not already included)</span>
+    <span class="n">degrees_of_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">degree</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">degrees_of_1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">degrees_of_1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">tree</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">tree</span><span class="p">[</span><span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c1"># Return tree in adjacency matrix format and degree of each node</span>
+    <span class="k">return</span> <span class="n">tree</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="check_degree"><a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.check_degree">[docs]</a><span class="k">def</span> <span class="nf">check_degree</span><span class="p">(</span><span class="n">tree_encoding</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks that all nodes within tree (encoded as a Prufer number) meet degree constraints. The degree of each node in</span>
+<span class="sd">    the tree is 1 more than the number of times it appears in the Prufer number encoding.</span>
+<span class="sd">    :param tree_encoding:</span>
+<span class="sd">    :param constraints:</span>
+<span class="sd">    :param num_sat:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">degrees</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">tree_encoding</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="n">num_sat</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">comparison</span> <span class="o">=</span> <span class="n">degrees</span> <span class="o">&lt;=</span> <span class="n">constraints</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span> <span class="n">comparison</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="fitness"><a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.fitness">[docs]</a><span class="k">def</span> <span class="nf">fitness</span><span class="p">(</span><span class="n">chromosome</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the total sum cost of all edges in a given degree-constrained minimum spanning tree.</span>
+<span class="sd">    :param chromosome:</span>
+<span class="sd">    :param cost_matrix:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Decode tree from Prufer number to adjacency matrix</span>
+    <span class="n">tree</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">prufer_decode</span><span class="p">(</span><span class="n">chromosome</span><span class="p">)</span>
+
+    <span class="c1"># Select all edges in the tree</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">tree</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Sort (smaller node first) and remove duplicates (undirected graph)</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">edges</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Find costs associated with those edges and sum together</span>
+    <span class="n">total_cost</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">cost_matrix</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">total_cost</span></div>
+
+
+<div class="viewcode-block" id="random_trees"><a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.random_trees">[docs]</a><span class="k">def</span> <span class="nf">random_trees</span><span class="p">(</span><span class="n">num_sat</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">pop_size</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Randomly generates a set number (indicated by population size) of valid degree-constrained spanning trees of</span>
+<span class="sd">    satellite network.</span>
+<span class="sd">    :param num_sat:</span>
+<span class="sd">    :param constraints:</span>
+<span class="sd">    :param pop_size:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">random_chromosomes</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">random_chromosomes</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">pop_size</span><span class="p">:</span>
+        <span class="c1"># Randomly select chromosome genes from uniform distribution - discard any trees that violate degree constraints</span>
+        <span class="n">candidate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">,</span> <span class="n">num_sat</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">check_degree</span><span class="p">(</span><span class="n">candidate</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">random_chromosomes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">random_chromosomes</span></div>
+
+
+<div class="viewcode-block" id="genetic_algorithm"><a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.genetic_algorithm">[docs]</a><span class="k">def</span> <span class="nf">genetic_algorithm</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">population_size</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a degree-constrained minimum spanning tree of the network built using a genetic algorithm presented in</span>
+<span class="sd">    &#39;Comparison of Algorithms for the Degree Constrained Minimum Spanning Tree&#39;. https://doi.org/10.1023/A:1011977126230</span>
+<span class="sd">    :param cost_matrix:</span>
+<span class="sd">    :param constraints:</span>
+<span class="sd">    :param num_sat:</span>
+<span class="sd">    :param population_size:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># CALCULATE TERMINATION CONDITION #</span>
+    <span class="c1"># Justification in original paper - larger degree constraints makes problem significantly easier. However, larger</span>
+    <span class="c1"># problems in general are harder to solve</span>
+    <span class="n">termination_condition</span> <span class="o">=</span> <span class="p">(</span><span class="mi">50</span> <span class="o">*</span> <span class="n">num_sat</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_sat</span><span class="p">)</span>
+
+    <span class="c1"># Initialise counter for number of iterations</span>
+    <span class="n">iteration_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># GENERATE INITIAL POPULATION OF CHROMOSOMES #</span>
+
+    <span class="c1"># Initialise population with degree constrained minimum spanning trees created by a modified version of Prim&#39;s</span>
+    <span class="c1"># algorithm (also used in the primal method for DCMST construction). This is the only change from the genetic</span>
+    <span class="c1"># algorithm presented in the original paper (which random initialises DCMSTs). Randomly select initial nodes.</span>
+    <span class="c1"># Encode DCMSTs in Prufer number representation.</span>
+
+    <span class="c1"># Randomly generate valid and unique degree-constrained trees as initial population</span>
+    <span class="n">chromosomes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">random_trees</span><span class="p">(</span><span class="n">num_sat</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">population_size</span><span class="p">))</span>
+
+    <span class="c1"># Calculate fitness of each chromosome</span>
+    <span class="n">fitness_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">fitness</span><span class="p">(</span><span class="n">chromosome</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">)</span> <span class="k">for</span> <span class="n">chromosome</span> <span class="ow">in</span> <span class="n">chromosomes</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chromosomes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only 1 unique DCMST could be constructed.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Successful evolution count - provides user with understanding of &quot;how much&quot; evolution has taken place</span>
+    <span class="n">unsuccessful_evol_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">previous_chromosomes</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">chromosomes</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="n">iteration_count</span> <span class="o">&lt;</span> <span class="n">termination_condition</span><span class="p">:</span>
+
+        <span class="c1"># CROSSOVER METHODS #</span>
+
+        <span class="c1"># Use a standard single point method to create a new population of children</span>
+
+        <span class="c1"># Randomly select sets of parents</span>
+        <span class="n">parents</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chromosomes</span><span class="p">),</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chromosomes</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">parents</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">parents</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">parents</span><span class="p">))])</span>
+
+        <span class="k">for</span> <span class="n">parent_pair</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">:</span>
+
+            <span class="c1"># Select a point at which to crossover</span>
+            <span class="n">crossover_point</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_sat</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+
+            <span class="c1"># Create 2 children using simple single-point crossover</span>
+            <span class="n">child_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">chromosomes</span><span class="p">[</span><span class="n">parent_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">crossover_point</span><span class="p">:],</span>
+                                      <span class="n">chromosomes</span><span class="p">[</span><span class="n">parent_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]][:</span><span class="n">crossover_point</span><span class="p">]))</span>
+            <span class="n">child_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">chromosomes</span><span class="p">[</span><span class="n">parent_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="n">crossover_point</span><span class="p">:],</span>
+                                      <span class="n">chromosomes</span><span class="p">[</span><span class="n">parent_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]][:</span><span class="n">crossover_point</span><span class="p">]))</span>
+
+            <span class="c1"># MUTATION #</span>
+            <span class="c1"># With probability 0.05, randomly change gene in child chromosome to another randomly chosen value</span>
+            <span class="n">mutation_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mutation_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.05</span><span class="p">:</span>
+                <span class="c1"># Randomly select gene and gene&#39;s new value</span>
+                <span class="n">gene</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_sat</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">gene_new_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">child_1</span><span class="p">[</span><span class="n">gene</span><span class="p">]</span> <span class="o">=</span> <span class="n">gene_new_val</span>
+            <span class="k">if</span> <span class="n">mutation_values</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.05</span><span class="p">:</span>
+                <span class="c1"># Randomly select gene and gene&#39;s new value</span>
+                <span class="n">gene</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_sat</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">gene_new_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">child_2</span><span class="p">[</span><span class="n">gene</span><span class="p">]</span> <span class="o">=</span> <span class="n">gene_new_val</span>
+
+            <span class="c1"># Check children are viable solutions (i.e. they are DCMSTs and do not violate degree constraints) and</span>
+            <span class="c1"># calculate their associated fitness if they are. Find the &quot;fitter&quot; of the two new solutions.</span>
+
+            <span class="n">child_1_check</span> <span class="o">=</span> <span class="n">check_degree</span><span class="p">(</span><span class="n">child_1</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">)</span>
+            <span class="n">child_2_check</span> <span class="o">=</span> <span class="n">check_degree</span><span class="p">(</span><span class="n">child_2</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">child_1_check</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">child_2_check</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">fitness_child_1</span> <span class="o">=</span> <span class="n">fitness</span><span class="p">(</span><span class="n">child_1</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">)</span>
+                <span class="n">fitness_child_2</span> <span class="o">=</span> <span class="n">fitness</span><span class="p">(</span><span class="n">child_2</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">fitness_child_1</span> <span class="o">&gt;</span> <span class="n">fitness_child_2</span><span class="p">:</span>
+                    <span class="n">best_new_fitness</span><span class="p">,</span> <span class="n">best_new_solution</span> <span class="o">=</span> <span class="n">fitness_child_2</span><span class="p">,</span> <span class="n">child_2</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">best_new_fitness</span><span class="p">,</span> <span class="n">best_new_solution</span> <span class="o">=</span> <span class="n">fitness_child_1</span><span class="p">,</span> <span class="n">child_1</span>
+
+            <span class="k">elif</span> <span class="n">child_1_check</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">best_new_fitness</span><span class="p">,</span> <span class="n">best_new_solution</span> <span class="o">=</span> <span class="n">fitness</span><span class="p">(</span><span class="n">child_1</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">),</span> <span class="n">child_1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">best_new_fitness</span><span class="p">,</span> <span class="n">best_new_solution</span> <span class="o">=</span> <span class="n">fitness</span><span class="p">(</span><span class="n">child_2</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">),</span> <span class="n">child_2</span>
+
+            <span class="c1"># BREEDING #</span>
+
+            <span class="k">if</span> <span class="n">child_1_check</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">or</span> <span class="n">child_2_check</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="c1"># Find weaker solution of the two parent solutions</span>
+                <span class="k">if</span> <span class="n">fitness_values</span><span class="p">[</span><span class="n">parent_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">&gt;</span> <span class="n">fitness_values</span><span class="p">[</span><span class="n">parent_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]]:</span>
+                    <span class="n">weaker_parent</span> <span class="o">=</span> <span class="n">parent_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">weaker_parent</span> <span class="o">=</span> <span class="n">parent_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+                <span class="c1"># Check if new solutions are better than current parent solution, if so, then replace</span>
+                <span class="k">if</span> <span class="n">fitness_values</span><span class="p">[</span><span class="n">weaker_parent</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">best_new_fitness</span><span class="p">:</span>
+                    <span class="n">chromosomes</span><span class="p">[</span><span class="n">weaker_parent</span><span class="p">]</span> <span class="o">=</span> <span class="n">best_new_solution</span>
+                    <span class="n">fitness_values</span><span class="p">[</span><span class="n">weaker_parent</span><span class="p">]</span> <span class="o">=</span> <span class="n">best_new_fitness</span>
+
+        <span class="c1"># Every 10 iterations, the best solution is merged with all other solutions in the population</span>
+        <span class="k">if</span> <span class="n">iteration_count</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+            <span class="c1"># Select random points at which to cross over each chromosome with best solution</span>
+            <span class="n">crossover_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_sat</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">chromosomes</span><span class="p">))</span>
+
+            <span class="c1"># Randomly select order of crossover (with the best solution) for each chromosome</span>
+            <span class="n">coin_flips</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chromosomes</span><span class="p">))</span>
+
+            <span class="c1"># Select best current solution</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fitness_values</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">chromosome</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chromosomes</span><span class="p">)):</span>
+
+                <span class="c1"># Don&#39;t cross over best solution with best solution</span>
+                <span class="k">if</span> <span class="n">chromosome</span> <span class="o">==</span> <span class="n">pos</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">crossover_point</span> <span class="o">=</span> <span class="n">crossover_points</span><span class="p">[</span><span class="n">chromosome</span><span class="p">]</span>
+                    <span class="c1"># Cross over</span>
+                    <span class="k">if</span> <span class="n">coin_flips</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span>
+
+                        <span class="n">potential_new_chromosome</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">chromosomes</span><span class="p">[</span><span class="n">chromosome</span><span class="p">][</span><span class="n">crossover_point</span><span class="p">:],</span>
+                                                                  <span class="n">chromosomes</span><span class="p">[</span><span class="n">pos</span><span class="p">][:</span><span class="n">crossover_point</span><span class="p">]))</span>
+
+                        <span class="k">if</span> <span class="n">check_degree</span><span class="p">(</span><span class="n">potential_new_chromosome</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                            <span class="n">chromosomes</span><span class="p">[</span><span class="n">chromosome</span><span class="p">]</span> <span class="o">=</span> <span class="n">potential_new_chromosome</span>
+
+                            <span class="c1"># Calculate new fitness</span>
+                            <span class="n">fitness_values</span><span class="p">[</span><span class="n">chromosome</span><span class="p">]</span> <span class="o">=</span> <span class="n">fitness</span><span class="p">(</span><span class="n">chromosomes</span><span class="p">[</span><span class="n">chromosome</span><span class="p">],</span> <span class="n">cost_matrix</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+
+                        <span class="n">potential_new_chromosome</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">chromosomes</span><span class="p">[</span><span class="n">pos</span><span class="p">][</span><span class="n">crossover_point</span><span class="p">:],</span>
+                                                                  <span class="n">chromosomes</span><span class="p">[</span><span class="n">chromosome</span><span class="p">][:</span><span class="n">crossover_point</span><span class="p">]))</span>
+
+                        <span class="k">if</span> <span class="n">check_degree</span><span class="p">(</span><span class="n">potential_new_chromosome</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                            <span class="n">chromosomes</span><span class="p">[</span><span class="n">chromosome</span><span class="p">]</span> <span class="o">=</span> <span class="n">potential_new_chromosome</span>
+
+                            <span class="c1"># Calculate new fitness</span>
+                            <span class="n">fitness_values</span><span class="p">[</span><span class="n">chromosome</span><span class="p">]</span> <span class="o">=</span> <span class="n">fitness</span><span class="p">(</span><span class="n">chromosomes</span><span class="p">[</span><span class="n">chromosome</span><span class="p">],</span> <span class="n">cost_matrix</span><span class="p">)</span>
+
+        <span class="n">iteration_count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">previous_chromosomes</span><span class="p">,</span> <span class="n">chromosomes</span><span class="p">):</span>
+            <span class="n">unsuccessful_evol_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">previous_chromosomes</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">chromosomes</span><span class="p">)</span>
+
+    <span class="n">percentage_unsuccessful_iterations</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">unsuccessful_evol_count</span> <span class="o">/</span> <span class="n">termination_condition</span><span class="p">)</span>
+
+    <span class="n">message</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Percentage of unsuccessful evolutions of total number of evolutions: &quot;</span> <span class="o">+</span>
+               <span class="nb">str</span><span class="p">(</span><span class="n">percentage_unsuccessful_iterations</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;%.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">percentage_unsuccessful_iterations</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="c1"># Find the best solution and return corresponding DCMST with degree of each node</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fitness_values</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">prufer_decode</span><span class="p">(</span><span class="n">chromosomes</span><span class="p">[</span><span class="n">pos</span><span class="p">])</span></div>
+
+
+<span class="c1"># References</span>
+<span class="c1"># Adding 1 to Specific Indices - https://stackoverflow.com/questions/66315038/add-1-to-numpy-array-from-a-list-of-</span>
+<span class="c1"># indices</span>
+<span class="c1"># Comparison of Algorithms for the Degree Constrained Minimum Spanning Tree Paper (see report for full reference)</span>
+<span class="c1"># Counting Occurrences in numpy - https://stackoverflow.com/questions/28663856/how-do-i-count-the-occurrence-of-a-</span>
+<span class="c1"># certain-item-in-an-ndarray</span>
+<span class="c1"># Crossover in Evolutionary Algorithms - https://en.wikipedia.org/wiki/Crossover_(evolutionary_algorithm)</span>
+<span class="c1"># Depth Error in numpy - https://stackoverflow.com/questions/15923081/what-does-valueerror-object-too-deep-for-desired-</span>
+<span class="c1"># array-mean-and-how-to-fix-it</span>
+<span class="c1"># First occurrences - https://stackoverflow.com/questions/432112/is-there-a-numpy-function-to-return-the-first-index-of-</span>
+<span class="c1"># something-in-an-array</span>
+<span class="c1"># Generating Random Pairs - https://stackoverflow.com/questions/30890434/how-to-generate-random-pairs-of-numbers-in-</span>
+<span class="c1"># python-including-pairs-with-one-entr</span>
+<span class="c1"># Genetic Algorithms - https://en.wikipedia.org/wiki/Genetic_algorithm</span>
+<span class="c1"># Prufer Sequence - https://en.wikipedia.org/wiki/Pr%C3%BCfer_sequence</span>
+<span class="c1"># Raising Warnings - https://stackoverflow.com/questions/3891804/raise-warning-in-python-without-interrupting-program</span>
+<span class="c1"># Selecting Rows - https://stackoverflow.com/questions/23359886/selecting-rows-in-numpy-ndarray-based-on-the-value-of-</span>
+<span class="c1"># two-columns</span>
+<span class="c1"># Sets and Numpy - https://stackoverflow.com/questions/33196102/how-to-turn-numpy-array-to-set-efficiently</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">LEO_Satellite_Network_Topology_Design</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">project</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, Millicent Riordan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

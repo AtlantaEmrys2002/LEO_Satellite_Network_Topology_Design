@@ -1,0 +1,217 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>satellite_topology_construction_algorithms.minimum_delay_topology_design_algorithm &#8212; LEO_Satellite_Network_Topology_Design 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for satellite_topology_construction_algorithms.minimum_delay_topology_design_algorithm</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Libraries</span>
+<span class="kn">import</span> <span class="nn">data_handling</span>
+<span class="kn">import</span> <span class="nn">dcmst_construction_algorithms</span> <span class="k">as</span> <span class="nn">topology_build</span>
+<span class="kn">from</span> <span class="nn">metrics</span> <span class="kn">import</span> <span class="n">propagation_delay</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">csr_array</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse.csgraph</span> <span class="kn">import</span> <span class="n">dijkstra</span><span class="p">,</span> <span class="n">reconstruct_path</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+
+<div class="viewcode-block" id="minimum_delay_topology_design_algorithm"><a class="viewcode-back" href="../../satellite_topology_construction_algorithms.minimum_delay_topology_design_algorithm.html#satellite_topology_construction_algorithms.minimum_delay_topology_design_algorithm.minimum_delay_topology_design_algorithm">[docs]</a><span class="k">def</span> <span class="nf">minimum_delay_topology_design_algorithm</span><span class="p">(</span><span class="n">constellation_name</span><span class="p">,</span> <span class="n">num_snapshots</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span>
+                                            <span class="n">constant</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+
+    <span class="c1"># N.B. constant set to 1 as default like original paper - &#39;A Novel Topology Design Method for Multi-layered Optical</span>
+    <span class="c1"># Satellite Networks&#39; (see report for full reference)</span>
+
+    <span class="c1"># Stores previous snapshot&#39;s topology and average propagation delay</span>
+    <span class="c1"># N.B. Cannot parallelise this function, as relies on results of previous topology calculations</span>
+    <span class="n">former_topology</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">previous_propagation_delay</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Generates topology for each snapshot</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_snapshots</span><span class="p">):</span>
+
+        <span class="c1"># Define output filename</span>
+        <span class="n">output_filename</span> <span class="o">=</span> <span class="n">constellation_name</span> <span class="o">+</span> <span class="s2">&quot;_isls&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.txt&quot;</span>
+
+        <span class="c1"># Initialise new topology</span>
+        <span class="n">new_topology</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_satellites</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">))</span>
+
+        <span class="c1"># Read in distance and visibility matrix</span>
+        <span class="n">distance_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;./&quot;</span> <span class="o">+</span> <span class="n">constellation_name</span> <span class="o">+</span> <span class="s2">&quot;/distance_matrices/dist_matrix_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.npy&quot;</span><span class="p">)</span>
+        <span class="n">visibility_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;./&quot;</span> <span class="o">+</span> <span class="n">constellation_name</span> <span class="o">+</span> <span class="s2">&quot;/visibility_matrices/visibility_matrix_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                                    <span class="o">+</span> <span class="s2">&quot;.npy&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Ignore edges where satellites not visible to one another</span>
+        <span class="n">distance_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">visibility_matrix</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Ensure no negative values</span>
+        <span class="n">distance_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">distance_matrix</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the shortest path between all satellite pairs in the network</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">csr_array</span><span class="p">(</span><span class="n">distance_matrix</span><span class="p">)</span>
+
+        <span class="c1"># For each pair of satellites, use Dijkstra to find the shortest path between the pair and add all edges on</span>
+        <span class="c1"># path to topology</span>
+        <span class="k">for</span> <span class="n">sat_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_satellites</span><span class="p">):</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">result</span> <span class="o">=</span> <span class="n">dijkstra</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">directed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">sat_i</span><span class="p">,</span> <span class="n">return_predecessors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># Find all edges to add to topology</span>
+            <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">((</span><span class="n">reconstruct_path</span><span class="p">(</span><span class="n">csgraph</span><span class="o">=</span><span class="n">graph</span><span class="p">,</span> <span class="n">predecessors</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">directed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span>
+                                 <span class="n">todense</span><span class="p">())</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">new_topology</span><span class="p">[</span><span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">new_topology</span><span class="p">[</span><span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># Let user know if the union of shortest paths is all paths</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">new_topology</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span> <span class="o">==</span> <span class="n">num_satellites</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;This has included every edge in the network.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Convert to networkx Graph</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">from_scipy_sparse_array</span><span class="p">(</span><span class="n">csr_array</span><span class="p">(</span><span class="n">new_topology</span><span class="p">))</span>
+
+        <span class="c1"># Attempt to delete edges to prevent violation of degree constraint</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_satellites</span><span class="p">):</span>
+
+            <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">degree</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">constraints</span><span class="p">[</span><span class="n">v</span><span class="p">]:</span>
+
+                <span class="c1"># Find all links where v is endpoint</span>
+                <span class="n">connected_satellites</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+                <span class="c1"># Find associated costs AND only keeps edges were u greater than v (otherwise those edges will have</span>
+                <span class="c1"># already been considered)</span>
+                <span class="n">links</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">distance_matrix</span><span class="p">[</span><span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">connected_satellites</span><span class="p">])</span>
+
+                <span class="c1"># Sort according to distance (cost) in decreasing order</span>
+                <span class="n">links</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">links</span><span class="p">[</span><span class="n">links</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">argsort</span><span class="p">()],</span> <span class="mi">0</span><span class="p">)</span>
+
+                <span class="c1"># In decreasing order, check if deleting component leads to disconnected graph</span>
+
+                <span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
+
+                    <span class="n">a</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">link</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="n">b</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">link</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+                    <span class="n">G</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">nx</span><span class="o">.</span><span class="n">is_connected</span><span class="p">(</span><span class="n">G</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                        <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">link</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">new_topology</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">to_numpy_array</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+        <span class="n">degree</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">degree</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Increase connectivity of topology (adding in edges such that degree constraints not violated)</span>
+        <span class="n">new_topology</span> <span class="o">=</span> <span class="n">topology_build</span><span class="o">.</span><span class="n">increase_connectivity</span><span class="p">(</span><span class="n">new_topology</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span>
+                                                            <span class="n">num_satellites</span><span class="p">)</span>
+
+        <span class="c1"># If first snapshot, this is the new topology</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">former_topology</span> <span class="o">=</span> <span class="n">new_topology</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">current_prop_delay</span> <span class="o">=</span> <span class="n">propagation_delay</span><span class="p">(</span><span class="n">new_topology</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">)</span>
+            <span class="n">previous_propagation_delay</span> <span class="o">=</span> <span class="n">current_prop_delay</span>
+
+            <span class="c1"># Write topology to file</span>
+            <span class="n">data_handling</span><span class="o">.</span><span class="n">write_topology_to_file</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">new_topology</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">current_prop_delay</span> <span class="o">=</span> <span class="n">propagation_delay</span><span class="p">(</span><span class="n">new_topology</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">)</span>
+            <span class="c1"># Assuming that if links are switched, changes are done concurrently, so there is no need to take into</span>
+            <span class="c1"># account link switch time (it will be constant no matter the number of link switches). If no link switches</span>
+            <span class="c1"># required, topology is same and will remain the same</span>
+            <span class="k">if</span> <span class="n">current_prop_delay</span> <span class="o">&lt;</span> <span class="n">constant</span> <span class="o">*</span> <span class="n">previous_propagation_delay</span><span class="p">:</span>
+                <span class="n">former_topology</span> <span class="o">=</span> <span class="n">new_topology</span>
+                <span class="n">previous_propagation_delay</span> <span class="o">=</span> <span class="n">current_prop_delay</span>
+                <span class="n">data_handling</span><span class="o">.</span><span class="n">write_topology_to_file</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">new_topology</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data_handling</span><span class="o">.</span><span class="n">write_topology_to_file</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">former_topology</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">LEO_Satellite_Network_Topology_Design</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">project</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, Millicent Riordan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

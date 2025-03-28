@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>satellite_topology_construction_algorithms.proposed_algorithm &#8212; LEO_Satellite_Network_Topology_Design 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for satellite_topology_construction_algorithms.proposed_algorithm</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Libraries</span>
+<span class="kn">import</span> <span class="nn">data_handling</span>
+<span class="kn">import</span> <span class="nn">dcmst_construction_algorithms</span> <span class="k">as</span> <span class="nn">topology_build</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">satellite_network_attribute_functions</span> <span class="k">as</span> <span class="nn">satnet</span>
+
+
+<span class="c1"># Returns heuristic approximation of degree constrained minimum spanning tree of network, using primal-cut branch</span>
+<span class="c1"># algorithm (see paper for references)</span>
+<div class="viewcode-block" id="dcmst"><a class="viewcode-back" href="../../satellite_topology_construction_algorithms.proposed_algorithm.html#satellite_topology_construction_algorithms.proposed_algorithm.dcmst">[docs]</a><span class="k">def</span> <span class="nf">dcmst</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;primal&quot;</span><span class="p">:</span>
+
+        <span class="c1"># Construct DCMST according to Primal Algorithm (see function file for more details)</span>
+        <span class="n">tree</span><span class="p">,</span> <span class="n">degree</span> <span class="o">=</span> <span class="n">topology_build</span><span class="o">.</span><span class="n">primal_algorithm</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">,</span>
+                                                       <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">))</span>
+
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;aco&quot;</span><span class="p">:</span>
+
+        <span class="c1"># Construct DCMST using ant-based algorithm</span>
+        <span class="n">tree</span><span class="p">,</span> <span class="n">degree</span> <span class="o">=</span> <span class="n">topology_build</span><span class="o">.</span><span class="n">ant_colony</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;ga&quot;</span><span class="p">:</span>
+        <span class="c1"># Construct DCMST using genetic algorithm</span>
+        <span class="n">tree</span><span class="p">,</span> <span class="n">degree</span> <span class="o">=</span> <span class="n">topology_build</span><span class="o">.</span><span class="n">genetic_algorithm</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;That DCMST algorithm does not exist.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tree</span><span class="p">,</span> <span class="n">degree</span></div>
+
+
+<span class="c1"># Builds ISL topology for a single snapshot</span>
+<div class="viewcode-block" id="heuristic_topology_design_algorithm_isls"><a class="viewcode-back" href="../../satellite_topology_construction_algorithms.proposed_algorithm.html#satellite_topology_construction_algorithms.proposed_algorithm.heuristic_topology_design_algorithm_isls">[docs]</a><span class="k">def</span> <span class="nf">heuristic_topology_design_algorithm_isls</span><span class="p">(</span><span class="n">arguments</span><span class="p">):</span>
+
+    <span class="p">(</span><span class="n">constellation_name</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">,</span> <span class="n">num_snapshot</span><span class="p">,</span> <span class="n">degree_constraints</span><span class="p">,</span> <span class="n">snapshot_id</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span>
+     <span class="n">output_filename_location</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span> <span class="o">=</span> <span class="n">arguments</span>
+
+    <span class="c1"># Location of network attributes values (i.e. distance matrices, visibility matrices, etc.)</span>
+    <span class="n">network_attributes_location</span> <span class="o">=</span> <span class="s2">&quot;./&quot;</span> <span class="o">+</span> <span class="n">constellation_name</span>
+
+    <span class="c1"># TIME VISIBILITY MATRIX #</span>
+
+    <span class="c1"># Calculate time visibility matrix for current snapshot - need to rearrange order of visibility matrices to get time</span>
+    <span class="c1"># visibility matrices of other snapshots</span>
+    <span class="n">time_visibility_matrix</span> <span class="o">=</span> <span class="n">satnet</span><span class="o">.</span><span class="n">time_visibility_function</span><span class="p">(</span><span class="n">num_snapshot</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">,</span> <span class="n">snapshot_id</span><span class="p">,</span>
+                                                             <span class="n">constellation_name</span><span class="p">)</span>
+
+    <span class="c1"># COST MATRIX #</span>
+
+    <span class="c1"># Calculates cost matrix for current snapshot</span>
+
+    <span class="c1"># Set hyperparameters</span>
+    <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="n">params</span>
+
+    <span class="c1"># Calculate cost matrix. Calculating for current snapshot, so visibility matrix chosen is at pos</span>
+    <span class="c1"># 0 in array (same for distance matrix</span>
+    <span class="n">cost_matrix</span> <span class="o">=</span> <span class="n">satnet</span><span class="o">.</span><span class="n">cost_function</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">network_attributes_location</span> <span class="o">+</span> <span class="s2">&quot;/visibility_matrices/visibility_matrix_&quot;</span> <span class="o">+</span>
+                                               <span class="nb">str</span><span class="p">(</span><span class="n">snapshot_id</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.npy&quot;</span><span class="p">),</span> <span class="n">time_visibility_matrix</span><span class="p">,</span>
+                                       <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">network_attributes_location</span> <span class="o">+</span> <span class="s2">&quot;/distance_matrices/dist_matrix_&quot;</span> <span class="o">+</span>
+                                               <span class="nb">str</span><span class="p">(</span><span class="n">snapshot_id</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.npy&quot;</span><span class="p">),</span>
+                                       <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">network_attributes_location</span> <span class="o">+</span> <span class="s2">&quot;/sunlight_matrices/sunlight_matrix_&quot;</span> <span class="o">+</span>
+                                               <span class="nb">str</span><span class="p">(</span><span class="n">snapshot_id</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.npy&quot;</span><span class="p">),</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">)</span>
+
+    <span class="c1"># BUILD DEGREE CONSTRAINED MINIMUM SPANNING TREE (HEURISTICALLY) #</span>
+
+    <span class="c1"># Using a heuristic algorithm, find the (approx.) degree constrained minimum spanning tree (where weights on edges</span>
+    <span class="c1"># are costs calculated by cost function).</span>
+
+    <span class="n">tree</span><span class="p">,</span> <span class="n">current_isl_number</span> <span class="o">=</span> <span class="n">dcmst</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">,</span> <span class="n">degree_constraints</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
+
+    <span class="c1"># INCREASE CONNECTIVITY #</span>
+
+    <span class="c1"># Add edges in increasing order of cost (experiment with decreasing cost) until no longer possible to increase</span>
+    <span class="c1"># connectivity (and, therefore, reliability/fault tolerance) at expense of energy efficiency</span>
+    <span class="n">isls</span> <span class="o">=</span> <span class="n">topology_build</span><span class="o">.</span><span class="n">increase_connectivity</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">degree_constraints</span><span class="p">,</span> <span class="n">current_isl_number</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">,</span>
+                                                <span class="n">total_satellites</span><span class="p">)</span>
+
+    <span class="c1"># SAVE TOPOLOGY #</span>
+
+    <span class="c1"># Convert final topology for given snapshot to correct format and save algorithm results to file.</span>
+    <span class="n">data_handling</span><span class="o">.</span><span class="n">write_topology_to_file</span><span class="p">(</span><span class="n">output_filename_location</span><span class="p">,</span> <span class="n">isls</span><span class="p">,</span> <span class="n">snapshot_id</span><span class="p">)</span>
+
+    <span class="k">return</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">LEO_Satellite_Network_Topology_Design</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">project</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, Millicent Riordan.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
