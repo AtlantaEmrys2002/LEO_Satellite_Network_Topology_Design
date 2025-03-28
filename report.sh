@@ -99,25 +99,19 @@ echo -n "Starlink Novel Algorithm Topology: "
 # Random Search Optimisation
 
 python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method random
-
 python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method random
-
 python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method random
 
 # Evolutionary Strategy Search Optimisation
 
 python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method evolutionary
-
 python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method evolutionary
-
 python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method evolutionary
 
 # Machine Learning Search Optimisation
 
 python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method machine-learning
-
 python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method machine-learning
-
 python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method machine-learning
 
 # Telesat
@@ -127,27 +121,20 @@ echo -n "Telesat Novel Algorithm Topology: "
 # Random Search Optimisation
 
 python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method random
-
 python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method random
-
 python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method random
 
 # Evolutionary Strategy Search Optimisation
 
 python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method evolutionary
-
 python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method evolutionary
-
 python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method evolutionary
 
 # Machine Learning Search Optimisation
 
 python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method machine-learning
-
 python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method machine-learning
-
 python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method machine-learning
-
 
 echo""
 echo "Report Recreation Finished"

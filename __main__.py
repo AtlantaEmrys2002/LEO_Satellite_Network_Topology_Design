@@ -461,9 +461,6 @@ if __name__ == "__main__":
 
 print("\nExecution Time: " + str(time.time() - start) + "s \n")
 
-# Used to test at the moment
-# python LEO_Satellite_Network_Topology_Design --tles "starlink-constellation_tles.txt.tmp" --constellation "Starlink-550" --m 72 --n 22 --i 53 --rev 15.19 --snapshots 2 6 10 14 --weights 1 1 0.2 --multi False --optimise False --optimisation_method random --topology "novel" --dcmst "primal" --isl_terminals 3 --snapshot_interval 60
-
 # References
 # Argparse Terminology - https://stackoverflow.com/questions/19124304/what-does-metavar-and-action-mean-in-argparse-in-
 # python
