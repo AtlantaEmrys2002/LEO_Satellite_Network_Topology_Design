@@ -16,13 +16,16 @@ def random_search(constellation_name: str, num_snapshots: int, num_param_sets: i
     Runs a random search optimisation function to find near-optimal values for alpha, beta, and gamma weights (can
     easily be adapted to include more weights), generates the topologies for randomly generated weight sets and saves
     the metrics, along with the best topologies.
-    :param constellation_name: name of satellite constellation for which a topology is being built
-    :param num_snapshots: the number of snapshots over one orbital period for which to generate topology
+    :param constellation_name: name of satellite network constellation, e.g. Starlink-550
+    :param num_snapshots: the number of snapshots of the network over one orbit for which a topology is constructed
     :param num_param_sets: the number of randomly generated sets of weights for which to build topologies
-    :param num_sat: the number of satellites within the satellite network
-    :param degree_constraints: the degree constraints of each satellite within the network
-    :param dcmst_method: the method with which a degree-constrained minimum spanning tree is being built
-    :param output_directory:
+    :param num_sat: the number of satellites within the network
+    :param degree_constraints: list that describes the maximum number of ISLs each satellite can establish at a given
+     point in time
+    :param dcmst_method: the method with which to construct the initial degree-constrained minimum spanning tree (either
+     'primal', 'aco', or 'ga')
+    :param output_directory: directory in which the results of the cost function optimisation/metric evaluation are
+     stored
     """
     # Randomly sample sets of parameters (where alpha, beta, and gamma can be random variables in range [0, 1])
     parameter_sets = np.random.rand(num_param_sets, 3)

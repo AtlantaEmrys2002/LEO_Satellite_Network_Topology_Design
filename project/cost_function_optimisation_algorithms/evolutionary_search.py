@@ -1,5 +1,4 @@
 # Libraries
-# from build import heuristic_topology_design_algorithm_isls
 from satellite_topology_construction_algorithms import heuristic_topology_design_algorithm_isls
 from data_handling import write_optimisation_results_to_csv
 import os
@@ -8,14 +7,15 @@ from multiprocessing import Pool
 import numpy as np
 
 
-def in_0_1(parameter_set):
+def in_0_1(parameter_set: list[float]):
     """
     Determines if alpha, beta, and gamma all within [0, 1] interval
-    :param parameter_set:
+    :param parameter_set: a list which contains three values - alpha, beta, and gamma - which refer to the weights
+     placed on each network attribute considered in the cost function
     :return:
     """
     for i in range(0, 3):
-        if parameter_set[i] < 0 or parameter_set > 1:
+        if parameter_set[i] < 0 or parameter_set[i] > 1:
             return False
     return True
 
@@ -27,16 +27,20 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
     Runs an evolutionary search optimisation function (based on evolutionary strategy) to find near-optimal values for
     alpha, beta, and gamma weights (can easily be adapted to include more weights), generates the topologies for
     a given network using an evolutionary strategy algorithm and saves the metrics, along with the best topologies.
-    :param constellation_name:
-    :param num_snapshots:
-    :param num_sat:
-    :param degree_constraints:
-    :param dcmst_method:
-    :param output_directory:
-    :param num_iterations:
-    :param mu:
-    :param pop_size:
-    :param step_size:
+
+    :param constellation_name: name of satellite network constellation, e.g. Starlink-550
+    :param num_snapshots: the number of snapshots of the network over one orbit for which a topology is constructed
+    :param num_sat: the number of satellites within the network
+    :param degree_constraints: list that describes the maximum number of ISLs each satellite can establish at a given
+     point in time
+    :param dcmst_method: the method with which to construct the initial degree-constrained minimum spanning tree (either
+     'primal', 'aco', or 'ga')
+    :param output_directory: directory in which the results of the cost function optimisation/metric evaluation are
+     stored
+    :param num_iterations: the number of iterations of the evolutionary strategy to execute
+    :param mu: the number of parents selected every iteration
+    :param pop_size: the size of the population of solutions in the algorithm
+    :param step_size: the standard deviation of the Gaussian distribution from which solution mutations are selected
     """
 
     # N.B. lambda / mu should have no remainder
@@ -125,7 +129,7 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
                     # values of alpha, beta, and gamma. Sigma is derived from step_size (user-assigned). This is the
                     # mutation section of the Evolutionary Strategy
                     child = np.random.normal(parents[k], step_size, 3)
-                    if in_0_1(child):
+                    if in_0_1(child.tolist()):
                         children.append(child)
                         break
 

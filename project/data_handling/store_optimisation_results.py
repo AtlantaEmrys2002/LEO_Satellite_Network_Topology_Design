@@ -2,13 +2,14 @@
 import csv
 
 
-def write_optimisation_results_to_csv(location, algorithm, results):
+def write_optimisation_results_to_csv(location: str, algorithm: str, results: list):
     """
-    # Write optimisation/metric results to CSV Format - this code was adapted from documentation -
+    Write optimisation/metric results to CSV Format - this code was adapted from documentation -
     https://docs.python.org/3/library/csv.html#csv.DictWriter.
-    :param location:
-    :param algorithm:
-    :param results:
+    :param location: directory in which the results of the cost function optimisation/metric evaluation are
+     stored
+    :param algorithm: type of algorithm with which topologies were constructed (either 'static', 'dynamic', or 'novel')
+    :param results: results of topology optimisation and/or topology evaluation:
     """
     with (open(location + '/results.csv', 'w', newline='') as csvfile):
 

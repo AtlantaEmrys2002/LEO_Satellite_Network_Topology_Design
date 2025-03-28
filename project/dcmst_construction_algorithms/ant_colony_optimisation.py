@@ -7,18 +7,18 @@ import random
 
 
 class Ant:
-    def __init__(self, location):
+    def __init__(self, location: int):
         """
         Used to initialise a member of the Ant class in the ACO DCMST construction algorithm.
-        :param location:
+        :param location: node at which ant is currently situated
         """
         self.location = location
         self.tabu_list = deque([])
 
-    def reset(self, num_sat):
+    def reset(self, num_sat: int):
         """
         Used by ACO DCMST construction algorithm to "reset" an ant for the next iteration of the algorithm.
-        :param num_sat:
+        :param num_sat: the number of satellites within the network
         """
         coin_flip = random.random()
         if coin_flip < 0.5:
@@ -27,14 +27,14 @@ class Ant:
 
 
 class Edge:
-    def __init__(self, max_cost, min_cost, edge_cost, u, v):
+    def __init__(self, max_cost: float, min_cost: float, edge_cost: float, u: int, v: int):
         """
         Used to initialise a member of the Edge class in the ACO DCMST construction algorithm.
-        :param max_cost:
-        :param min_cost:
-        :param edge_cost:
-        :param u:
-        :param v:
+        :param max_cost: the maximum cost on any edge in the network
+        :param min_cost: the minimum cost of any edge in the network
+        :param edge_cost: the cost of the edge
+        :param u: one of the nodes incident to edge
+        :param v: one of the nodes incident to edge
         """
         self.u = u
         self.v = v
@@ -43,12 +43,12 @@ class Edge:
         self.phm = self.initPhm
         self.nVisited = 0
 
-    def update_pheromone(self, eta, minPhm, maxPhm):
+    def update_pheromone(self, eta: float, minPhm: float, maxPhm: float):
         """
         Used by Edge class in ACO DCMST construction algorithm to update pheromones of the edge.
-        :param eta:
-        :param minPhm:
-        :param maxPhm:
+        :param eta: used to determine amount to update edge pheromone
+        :param minPhm: minimum pheromone that can be on any edge
+        :param maxPhm: maximum pheromone that can be on any edge
         """
         self.phm = (1 - eta) * self.phm + self.nVisited * self.initPhm
         self.nVisited = 0
@@ -57,11 +57,11 @@ class Edge:
         if self.phm < minPhm:
             self.phm = minPhm + self.initPhm
 
-    def enhance(self, gamma):
+    def enhance(self, gamma: float):
         """
         Used by ACO DCMST construction algorithm to update pheromones of edges found in the best DCMST found (so far) by
         the algorithm.
-        :param gamma:
+        :param gamma: used to determine amount of pheromone with which to update edges in best DCMST discovered
         """
         self.phm = self.phm * gamma
 
@@ -72,12 +72,12 @@ class Edge:
         self.phm = self.phm * random.uniform(0.1, 0.3)
 
 
-def initialise_ants_and_edges(cost_matrix, num_sat):
+def initialise_ants_and_edges(cost_matrix: np.ndarray, num_sat: int) -> tuple[list[Ant], list[Edge], float, float]:
     """
     Initialises ants and edges (they are associated with other values, such as pheromones) for ACO DCMST construction
     algorithm.
-    :param cost_matrix:
-    :param num_sat:
+    :param cost_matrix: costs assigned to each edge within the graph that represents the satellite network
+    :param num_sat: the number of satellites within the network
     :return:
     """
     # CREATE ANTS #
@@ -103,14 +103,15 @@ def initialise_ants_and_edges(cost_matrix, num_sat):
     return ants, edges, maxPhm, minPhm
 
 
-def construct_spanning_tree(edges, constraints, nCandidates, num_sat):
+def construct_spanning_tree(edges: list[Edge], constraints: np.ndarray, nCandidates: int, num_sat: int) -> list:
     """
     Modified version of Kruskal's algorithm used to construct a DCMST - used in the ACO algorithm to create a DCMST
     based on pheromones laid by ants and edge costs.
-    :param edges:
-    :param constraints:
-    :param nCandidates:
-    :param num_sat:
+    :param edges: edges within the graph
+    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given
+     point in time
+    :param nCandidates: the number of candidate edges to evaluate at a time
+    :param num_sat: the number of satellites within the network
     :return:
     """
     # Initialise spanning tree and degrees of each vertex
@@ -183,8 +184,20 @@ def construct_spanning_tree(edges, constraints, nCandidates, num_sat):
 
 
 
-def move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm):
-
+def move_ants(ants: list[Ant], edges: list[Edge], max_steps: int, update_period: float, eta: float, minPhm: float,
+              maxPhm: float):
+    """
+    Moves edges according to given constraints within the graph. Each ant's position is updated accordingly, as is the
+    pheromone level of each edge. This is often deemed the 'exploration phase' of the algorithm
+    :param ants: the ants used to explore the graph
+    :param edges: edges within the graph
+    :param max_steps: maximum number of edges each ant can traverse
+    :param update_period:
+    :param eta:
+    :param minPhm: minimum pheromone that can be on any edge
+    :param maxPhm: maximum pheromone that can be on any edge
+    :return:
+    """
     # The ants explore for a given number of steps
     for s in range(max_steps):
         # Update pheromones of edges after a given number of steps - helps reduce execution time.

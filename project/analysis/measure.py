@@ -3,12 +3,13 @@ import numpy as np
 import metrics
 
 
-def read_isl_file(isl_file_name, num_satellites):
+def read_isl_file(isl_file_name: str, num_satellites: int) -> np.ndarray:
     """
     Reads description of topology from file for analysis according to multiple metrics. Often used by cost function
     optimisation code.
-    :param isl_file_name: name of to
-    :param num_satellites:
+
+    :param isl_file_name: name of .npy file that contains ISl pairs describing a topology
+    :param num_satellites: the number of satellites within the network
     :return:
     """
     # Read in topology built for given snapshot
@@ -21,13 +22,14 @@ def read_isl_file(isl_file_name, num_satellites):
     return topology_matrix
 
 
-def measure_static(constellation_name, topology_file_name, num_satellites):
+def measure_static(constellation_name: str, topology_file_name: str, num_satellites: int) -> (
+        tuple)[float, float, float, int]:
     """
     Calculates the maximum propagation delay, mean propagation delay, and average hop count (as well as returning link
     churn for completeness) for static satellite network topology.
-    :param constellation_name:
-    :param topology_file_name:
-    :param num_satellites:
+    :param constellation_name: name of satellite network constellation, e.g. Starlink-550
+    :param topology_file_name: name of .npy file that contains ISl pairs describing a topology
+    :param num_satellites: the number of satellites within the network
     :return:
     """
     # Read in topology
@@ -48,14 +50,15 @@ def measure_static(constellation_name, topology_file_name, num_satellites):
     return max_pd, mean_pd, av_hop_count, link_churn
 
 
-def measure_dynamic(constellation_name, topology_file_location, num_satellites, num_snapshots):
+def measure_dynamic(constellation_name: str, topology_file_location: str, num_satellites: int, num_snapshots: int) -> (
+        tuple)[float, float, float, int]:
     """
     Calculates the maximum propagation delay, mean propagation delay, average hop count, and link churn for dynamic
     satellite network topology.
-    :param constellation_name:
-    :param topology_file_location:
-    :param num_satellites:
-    :param num_snapshots:
+    :param constellation_name: name of satellite network constellation, e.g. Starlink-550
+    :param topology_file_location: location of .npy file in which file(s) containing topology description(s) stored
+    :param num_satellites: the number of satellites within the network
+    :param num_snapshots: the number of snapshots of the network over one orbit for which a topology is constructed
     :return:
     """
     # Initialise values
