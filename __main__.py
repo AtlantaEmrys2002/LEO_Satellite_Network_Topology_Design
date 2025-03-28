@@ -354,12 +354,6 @@ if __name__ == "__main__":
             # PARSES OPTIONAL ARGUMENTS #
             # Parses arguments only required by novel algorithm
 
-            # Checks weights exist and set to params
-            if args.weights:
-                params = args.weights
-            else:
-                raise ValueError("Cost function weights must be specified for novel algorithm.")
-
             # Checks DCMST construction algorithm exists and sets to dcmst
             if args.dcmst:
                 dcmst = args.dcmst
@@ -403,6 +397,13 @@ if __name__ == "__main__":
             # faster (dependent on the number of cores of computer run program on)
 
             if optimise is False:
+
+                # Checks weights exist and set to params
+                if args.weights:
+                    params = args.weights
+                else:
+                    raise ValueError("Cost function weights must be specified for novel algorithm that does not undergo"
+                                     " optimisation.")
 
                 # Generate arguments for functions
                 snapshot_arguments = [
