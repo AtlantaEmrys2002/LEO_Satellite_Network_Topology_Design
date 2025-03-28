@@ -155,54 +155,6 @@ if __name__ == "__main__":
 
     print("Building Topology... ", end='\r', flush=True)
 
-    # # STATIC ALGORITHMS #
-    # # Benchmark Static Topology Designs
-    # if topology == "plus-grid":
-    #
-    #     # Build topology with provided parameters
-    #
-    #     # Location to store ISL topology
-    #     if optimise is False:
-    #         location = "./plus_grid/" + constellation_name.lower()
-    #     else:
-    #         location = "./Results/plus_grid/" + constellation_name.lower()
-    #
-    #     # Check directory for resulting topology exists
-    #     if os.path.isdir(location) is False:
-    #         try:
-    #             os.makedirs(location)
-    #         except OSError:
-    #             print("Directory to store plus grid (+Grid) topology could not be created.")
-    #
-    #     # Use Hypatia implementation to create +Grid topology
-    #     plus_grid.generate_plus_grid_isls(location + "/isls_0.txt", num_orbits, num_sats_per_orbit, isl_shift=0,
-    #                                       idx_offset=0)
-    #
-    #     print("+Grid Topology Build Completed")
-    #
-    #     # Return metrics if optimise is true (so topology can be evaluated)
-    #     if optimise is True:
-    #
-    #         print("Evaluating... ", end='\r', flush=True)
-    #
-    #         # Calculate metrics for topology
-    #         max_pd, mean_pd, av_hop_count, link_churn = measure.measure_static(constellation_name, location +
-    #                                                                            "/isls_0.txt", total_sat)
-    #
-    #         data_handling.write_optimisation_results_to_csv(location, "static", [max_pd, mean_pd,
-    #                                                                              av_hop_count, link_churn])
-    #
-    #         print("+Grid Evaluation Completed")
-    #
-    # elif topology == "x-grid":
-    #
-    #     print("NEEDS IMPLEMENTING")
-
-    # DYNAMIC ALGORITHMS #
-    # else:
-
-    # UNINDENTED FROM HERE
-
     # Generate test data using network description (data from Hypatia)
     data_handling.data_generation(tle_file, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree,
                                   mean_motion_rev_per_day)
@@ -334,66 +286,12 @@ if __name__ == "__main__":
 
         print("NEEDS IMPLEMENTING")
 
-    # GENERATES TOPOLOGY USING BENCHMARK MDTD ALGORITHM
+    else:
 
-    # Benchmark MDTD Design
-    # if topology == "mdtd":
-    elif topology == "mdtd":
+        # VISIBILITY MATRICES ###
 
-        # Directory in which to store topologies
-        if optimise is False:
-            location = "./mdtd/" + constellation_name.lower()
-        else:
-            location = "./Results/mdtd/" + constellation_name.lower()
-
-        # Build topologies for satellite network
-        minimum_delay_topology_design_algorithm(constellation_name, num_snapshot, total_sat,
-                                                satellite_degree_constraints, topology)
-
-        print("MDTD Topology Build Completed")
-
-        # If optimise is true, generate metrics for topology for evaluation/comparison with novel algorithm
-        if optimise is True:
-
-            print("Evaluating...", end='\r', flush=True)
-
-            # Evaluate generated topologies according to given metrics
-            max_pd, mean_pd, av_hop_count, link_churn = measure.measure_dynamic(constellation_name, location,
-                                                                                total_sat, num_snapshot)
-
-            # Store results accordingly
-            data_handling.write_optimisation_results_to_csv(location, "dynamic", [max_pd, mean_pd,
-                                                                                  av_hop_count, link_churn])
-
-            print("MDTD Evaluation Completed")
-
-    # NOVEL TOPOLOGY DESIGN ALGORITHM (BUILT FOR THIS PROJECT)
-    elif topology == "novel":
-
-        # PARSES OPTIONAL ARGUMENTS #
-        # Parses arguments only required by novel algorithm
-
-        # Checks weights exist and set to params
-        if args.weights:
-            params = args.weights
-        else:
-            raise ValueError("Cost function weights must be specified for novel algorithm.")
-
-        # Checks DCMST construction algorithm exists and sets to dcmst
-        if args.dcmst:
-            dcmst = args.dcmst
-        else:
-            raise ValueError("DCMST construction method must be specified for novel algorithm.")
-
-        # Directory in which to store topologies
-        if optimise is False:
-            location = "./novel/" + dcmst + "/" + constellation_name.lower() + "/"
-        else:
-            location = "./Results/novel/" + dcmst + "/" + constellation_name.lower() + "/"
-
-        # VISIBILITY AND TIME VISIBILITY MATRICES ###
-
-        # Calculate visibility and time visibility matrices for all snapshots
+        # Calculate visibility matrices for all snapshots - these visibility matrices are utilised by both the MDTD and
+        # novel algorithms
 
         # Create directory to store the visibility matrix for each snapshot in individual file within directory
         # (can't process all at once otherwise) - within a visibility matrix, element [i][j] is set to 0 if
@@ -417,91 +315,148 @@ if __name__ == "__main__":
                 np.save(network_attributes_location + "/visibility_matrices/visibility_matrix_" + str(k) + ".npy",
                         visibility_matrix)
 
-        # SUNLIGHT MATRICES #
+        # GENERATES TOPOLOGY USING BENCHMARK MDTD ALGORITHM
 
-        # Calculate whether satellites are in sunlight (i.e. vulnerable to solar flares) or on the opposite side of
-        # the Earth
+        # Benchmark MDTD Design
+        # if topology == "mdtd":
+        if topology == "mdtd":
 
-        if os.path.isdir(network_attributes_location + "/sunlight_matrices") is False:
+            # Directory in which to store topologies
+            if optimise is False:
+                location = "./mdtd/" + constellation_name.lower()
+            else:
+                location = "./Results/mdtd/" + constellation_name.lower()
 
-            # Create directory in which to store distance matrices
-            try:
-                os.makedirs(network_attributes_location + "/sunlight_matrices")
-            except OSError:
-                print("Directory to store sunlight matrices could not be created.")
+            # Build topologies for satellite network
+            minimum_delay_topology_design_algorithm(constellation_name, num_snapshot, total_sat,
+                                                    satellite_degree_constraints, topology)
 
-            file_id = 0
+            print("MDTD Topology Build Completed")
 
-            # Calculate all distance matrices
-            for k in snapshot_times:
-                # Calculate whether each satellite is in sunlight or not
-                satellites_in_sun = [i.at(k).is_sunlit(eph) for i in earth_satellite_objects]
+            # If optimise is true, generate metrics for topology for evaluation/comparison with novel algorithm
+            if optimise is True:
 
-                # Update matrix such that element sunlight_matrix[i][j] is set to 1 if i or j is in sunlight and
-                # save to file
-                np.save(network_attributes_location + "/sunlight_matrices/sunlight_matrix_" + str(file_id) + ".npy",
-                        satnet.sunlight_function(satellites_in_sun, total_sat))
+                print("Evaluating...", end='\r', flush=True)
 
-                file_id += 1
+                # Evaluate generated topologies according to given metrics
+                max_pd, mean_pd, av_hop_count, link_churn = measure.measure_dynamic(constellation_name, location,
+                                                                                    total_sat, num_snapshot)
 
-        # Run topology generation algorithm for each specified snapshot - utilise multiprocessing to make program
-        # faster (dependent on the number of cores of computer run program on)
+                # Store results accordingly
+                data_handling.write_optimisation_results_to_csv(location, "dynamic", [max_pd, mean_pd,
+                                                                                      av_hop_count, link_churn])
 
-        if optimise is False:
+                print("MDTD Evaluation Completed")
 
-            # Generate arguments for functions
-            snapshot_arguments = [
-                [constellation_name, total_sat, num_snapshot, satellite_degree_constraints, t, params, location,
-                 dcmst] for t in snapshot_ids]
+        # NOVEL TOPOLOGY DESIGN ALGORITHM (BUILT FOR THIS PROJECT)
+        elif topology == "novel":
 
-            # Generate topology
-            pool = Pool(processes=os.cpu_count())
+            # PARSES OPTIONAL ARGUMENTS #
+            # Parses arguments only required by novel algorithm
 
-            pool.map(heuristic_topology_design_algorithm_isls, snapshot_arguments)
+            # Checks weights exist and set to params
+            if args.weights:
+                params = args.weights
+            else:
+                raise ValueError("Cost function weights must be specified for novel algorithm.")
 
-            pool.terminate()
+            # Checks DCMST construction algorithm exists and sets to dcmst
+            if args.dcmst:
+                dcmst = args.dcmst
+            else:
+                raise ValueError("DCMST construction method must be specified for novel algorithm.")
 
-            print("Novel Algorithm Topology Build Completed")
+            # Directory in which to store topologies
+            if optimise is False:
+                location = "./novel/" + dcmst + "/" + constellation_name.lower() + "/"
+            else:
+                location = "./Results/novel/" + dcmst + "/" + constellation_name.lower() + "/"
 
-        # Run cost optimisation function and calculate metrics for best topologies found
+            # SUNLIGHT MATRICES #
+
+            # Calculate whether satellites are in sunlight (i.e. vulnerable to solar flares) or on the opposite side of
+            # the Earth
+
+            if os.path.isdir(network_attributes_location + "/sunlight_matrices") is False:
+
+                # Create directory in which to store distance matrices
+                try:
+                    os.makedirs(network_attributes_location + "/sunlight_matrices")
+                except OSError:
+                    print("Directory to store sunlight matrices could not be created.")
+
+                file_id = 0
+
+                # Calculate all distance matrices
+                for k in snapshot_times:
+                    # Calculate whether each satellite is in sunlight or not
+                    satellites_in_sun = [i.at(k).is_sunlit(eph) for i in earth_satellite_objects]
+
+                    # Update matrix such that element sunlight_matrix[i][j] is set to 1 if i or j is in sunlight and
+                    # save to file
+                    np.save(network_attributes_location + "/sunlight_matrices/sunlight_matrix_" + str(file_id) + ".npy",
+                            satnet.sunlight_function(satellites_in_sun, total_sat))
+
+                    file_id += 1
+
+            # Run topology generation algorithm for each specified snapshot - utilise multiprocessing to make program
+            # faster (dependent on the number of cores of computer run program on)
+
+            if optimise is False:
+
+                # Generate arguments for functions
+                snapshot_arguments = [
+                    [constellation_name, total_sat, num_snapshot, satellite_degree_constraints, t, params, location,
+                     dcmst] for t in snapshot_ids]
+
+                # Generate topology
+                pool = Pool(processes=os.cpu_count())
+
+                pool.map(heuristic_topology_design_algorithm_isls, snapshot_arguments)
+
+                pool.terminate()
+
+                print("Novel Algorithm Topology Build Completed")
+
+            # Run cost optimisation function and calculate metrics for best topologies found
+            else:
+
+                # Checks that optimisation method is specified
+                if args.optimisation_method:
+                    optimisation_method = args.optimisation_method
+                else:
+                    raise ValueError("An optimisation method must be specified.")
+
+                print("Evaluating... ", end='\r', flush=True)
+
+                # Run random search optimisation method
+                if optimisation_method == "random":
+
+                    cost_function_optimisation_algorithms.random_search(constellation_name, num_snapshot, 50, total_sat,
+                                                                        satellite_degree_constraints, dcmst, location)
+
+                # Run evolutionary strategy optimisation method
+                elif optimisation_method == "evolutionary":
+
+                    cost_function_optimisation_algorithms.evolutionary_search(constellation_name, num_snapshot,
+                                                                              total_sat, satellite_degree_constraints,
+                                                                              dcmst, location)
+
+                # Run machine learning-based optimisation method
+                elif optimisation_method == "machine_learning":
+
+                    cost_function_optimisation_algorithms.machine_learning_optimisation(constellation_name, location,
+                                                                                        num_snapshot, total_sat,
+                                                                                        satellite_degree_constraints,
+                                                                                        dcmst)
+
+                else:
+                    raise ValueError("That cost function optimisation method does not exist.")
+
+                print("Novel Topology Algorithm Cost Function Optimisation Completed")
+
         else:
-
-            # Checks that optimisation method is specified
-            if args.optimisation_method:
-                optimisation_method = args.optimisation_method
-            else:
-                raise ValueError("An optimisation method must be specified.")
-
-            print("Evaluating... ", end='\r', flush=True)
-
-            # Run random search optimisation method
-            if optimisation_method == "random":
-
-                cost_function_optimisation_algorithms.random_search(constellation_name, num_snapshot, 50, total_sat,
-                                                                    satellite_degree_constraints, dcmst, location)
-
-            # Run evolutionary strategy optimisation method
-            elif optimisation_method == "evolutionary":
-
-                cost_function_optimisation_algorithms.evolutionary_search(constellation_name, num_snapshot,
-                                                                          total_sat, satellite_degree_constraints,
-                                                                          dcmst, location)
-
-            # Run machine learning-based optimisation method
-            elif optimisation_method == "machine_learning":
-
-                cost_function_optimisation_algorithms.machine_learning_optimisation(constellation_name, location,
-                                                                                    num_snapshot, total_sat,
-                                                                                    satellite_degree_constraints,
-                                                                                    dcmst)
-
-            else:
-                raise ValueError("That cost function optimisation method does not exist.")
-
-            print("Novel Topology Algorithm Cost Function Optimisation Completed")
-
-    else:
-        raise ValueError("That topology design method does not exist.")
+            raise ValueError("That topology design method does not exist.")
 
 print("\nExecution Time: " + str(time.time() - start) + "s \n")
 
