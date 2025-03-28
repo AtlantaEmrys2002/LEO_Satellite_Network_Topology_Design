@@ -170,6 +170,19 @@ def construct_spanning_tree(edges, constraints, nCandidates, num_sat):
     return T_n
 
 
+
+
+
+
+
+# OPTIMISE BY CHANGING SPANNING TREE ALGORITHM - USE MODIFIED PRIM'S INSTEAD OF KRUSKAL
+
+
+
+
+
+
+
 def move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm):
 
     # The ants explore for a given number of steps

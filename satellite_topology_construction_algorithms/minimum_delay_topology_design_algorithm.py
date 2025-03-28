@@ -5,11 +5,8 @@ from metrics import propagation_delay
 import networkx as nx
 import numpy as np
 from scipy.sparse import csr_array
-from scipy.sparse.csgraph import dijkstra, reconstruct_path, minimum_spanning_tree, depth_first_order, breadth_first_order, connected_components, depth_first_tree
-import time
+from scipy.sparse.csgraph import dijkstra, reconstruct_path
 import warnings
-
-# NEED TO CHECK THIS IS CORRECT - MAKE SURE NX LINES WORKING - IF NOT, THEN USE SCIPY NUMBER OF COMPONENTS
 
 
 def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, num_satellites, constraints, method,
@@ -60,52 +57,7 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
         if len(np.argwhere(new_topology == 0)) == num_satellites:
             warnings.warn("This has included every edge in the network.")
 
-        # Calculate degree of all vertices
-        # degree = [np.sum(new_topology[k]) for k in range(num_satellites)]
-
-        # # Attempt to delete edges to prevent violation of degree constraint
-        # for v in range(num_satellites):
-        #
-        #     start_v = time.time()
-        #
-        #     if degree[v] > constraints[v]:
-        #
-        #         # Find all links where v is endpoint
-        #         connected_satellites = np.argwhere(new_topology[v] > 0).flatten()
-        #
-        #         # Find associated costs AND only keeps edges were u greater than v (otherwise those edges will have
-        #         # already been considered)
-        #         links = np.array([[distance_matrix[v, u], v, u] for u in connected_satellites if u > v])
-        #
-        #         # Sort according to distance (cost) in decreasing order - CHECK
-        #         links = np.flip(links[links[:, 0].argsort()], 0)
-        #
-        #         # In decreasing order, check if deleting component leads to disconnected graph
-        #
-        #         # Alternative
-        #
-        #         # Convert to networkx Graph
-        #         G = nx.from_numpy_array(new_topology)
-        #
-        #         for link in links:
-        #
-        #             a = int(link[1])
-        #             b = int(link[2])
-        #
-        #             G.remove_edge(a, b)
-        #
-        #             if nx.is_connected(G):
-        #                 # Decrease degree of relevant satellite vertices
-        #                 degree[a] -= 1
-        #                 degree[b] -= 1
-        #             else:
-        #                 G.add_edge(a, b, weight=link[0])
-        #
-        #         # CHECK WEIGHTS ARE CORRECT
-        #         new_topology = nx.to_numpy_array(G)
-
         # Convert to networkx Graph
-        # G = nx.from_numpy_array(new_topology)
         G = nx.from_scipy_sparse_array(csr_array(new_topology))
 
         # Attempt to delete edges to prevent violation of degree constraint

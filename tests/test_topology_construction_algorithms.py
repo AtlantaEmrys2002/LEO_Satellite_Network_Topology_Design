@@ -2,8 +2,14 @@ import unittest
 
 
 class TestTopologyConstructionAlgorithms(unittest.TestCase):
-    def test_something(self):
+    def test_mdtd(self):
         self.assertEqual(True, False)  # add assertion here
+
+    def test_plus_grid(self):
+        pass
+
+    def test_proposed_algorithm(self):
+        pass
 
 
 if __name__ == '__main__':

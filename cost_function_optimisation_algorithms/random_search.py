@@ -30,18 +30,18 @@ def random_search(constellation_name: str, num_snapshots: int, num_param_sets: i
     # Temporary to store results before they are written to files
     results = []
 
+    # Make directory for parameter sets
+    if os.path.isdir(output_directory) is False:
+
+        # Create directory in which to store random search results
+        try:
+            os.makedirs(output_directory)
+        except OSError:
+            print("Directory to store results of random search optimisation could not be created.")
+
     # For the number of parameter sets that have been randomly generated, build topology utilising these weights and
     # save recorded metrics
     for t in range(num_param_sets):
-
-        # Make directory for parameter sets
-        if os.path.isdir(output_directory) is False:
-
-            # Create directory in which to store random search results
-            try:
-                os.makedirs(output_directory)
-            except OSError:
-                print("Directory to store results of random search optimisation could not be created.")
 
         # Generate arguments for functions - results file path will already exist
 
@@ -56,9 +56,14 @@ def random_search(constellation_name: str, num_snapshots: int, num_param_sets: i
 
         pool.terminate()
 
+        # with Pool(os.cpu_count()) as pool:
+        #     pool.map(heuristic_topology_design_algorithm_isls, snapshot_arguments)
+
         # Generate results files (metrics)
         results.append(list(parameter_sets[t]) + [measure.measure_dynamic(constellation_name, output_directory,
                                                                           num_sat, num_snapshots)][1:])
+
+        print(results)
 
     # Write Results to CSV Format - this code was adapted from documentation
     write_optimisation_results_to_csv(output_directory, "novel", results)

@@ -1,10 +1,7 @@
 #TODO
-# When running tests, check all data_generation params are correct (including defaults, e.g. does perigee arg change for
-# Kuiper?)
 # Find maximum transmission dist for Starlink, Kuiper and telesat - 27000 paper sets at 5014 km - also mentioned in code
 # EXPERIMENT WITH INCREASE CONNECTIVITY FUNC - IN FREE OPTICAL SPACE NETWORKS PAPER (BROADBAND NOT SATELLITE), THEY
 # CONNECT LARGEST COST EDGES - REDUCES GRAPH DIAMETER AT EXPENSE OF ENERGY EFFICIENCY
-# Randomly select edge from all edges with same cost rather than just selecting first one
 
 # Libraries
 import argparse
@@ -364,7 +361,13 @@ if __name__ == "__main__":
             if optimise is False:
                 location = "./novel/" + dcmst + "/" + constellation_name.lower() + "/"
             else:
-                location = "./Results/novel/" + dcmst + "/" + constellation_name.lower() + "/"
+                # Checks that optimisation method is specified
+                if args.optimisation_method:
+                    optimisation_method = args.optimisation_method
+                    location = ("./Results/novel/" + optimisation_method + "/" + dcmst + "/" + constellation_name.lower() +
+                                "/")
+                else:
+                    raise ValueError("An optimisation method must be specified.")
 
             # SUNLIGHT MATRICES #
 
@@ -421,12 +424,6 @@ if __name__ == "__main__":
 
             # Run cost optimisation function and calculate metrics for best topologies found
             else:
-
-                # Checks that optimisation method is specified
-                if args.optimisation_method:
-                    optimisation_method = args.optimisation_method
-                else:
-                    raise ValueError("An optimisation method must be specified.")
 
                 print("Evaluating... ", end='\r', flush=True)
 

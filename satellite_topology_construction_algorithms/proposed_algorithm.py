@@ -17,6 +17,7 @@ def dcmst(cost_matrix, constraints, total_satellites, method):
                                                        random.randint(0, total_satellites))
 
     elif method == "aco":
+
         # Construct DCMST using ant-based algorithm
         tree, degree = topology_build.ant_colony(cost_matrix, constraints, total_satellites)
 
