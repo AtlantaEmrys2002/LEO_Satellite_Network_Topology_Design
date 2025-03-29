@@ -20,7 +20,6 @@ def data_generation(file_name: str, constellation_name: str, num_orbits: int, nu
     :param phase_diff: the difference in phase between satellites in adjacent orbits
     :param eccentricity: the eccentricity of the orbit - assume orbits are circular as default
     :param arg_of_perigee_degree: point in orbit at which satellite gets closest to Earth
-    :return:
     """
     # Check file does not already exist
     if os.path.isfile("./" + file_name) is False:

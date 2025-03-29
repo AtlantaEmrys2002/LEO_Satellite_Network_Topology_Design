@@ -35,10 +35,10 @@ trees (see report for full description).
 satellite network, such as the average hop count, propagation delay, and link churn.
 - `satellite_network_attribute_functions` - this module allows a user to determine various network attributes, such as 
 the visibility between pairs of satellites, the cost function used by the novel algorithm, and whether satellites are 
-more vulnerable to solar flares
+more vulnerable to solar flares.
 - `satellite_topology_construction_algorithms` - this module provides various functions for constructing topologies of 
 given satellite networks. As well as the novel algorithm proposed in the report, +Grid and MDTD topology construction algorithms are provided
-- `tests` - this module provides unit and integration tests for all the modules listed above
+- `tests` - this module provides unit and integration tests for all the modules listed above.
 
 More information about the purpose of each function is provided in the documentation of this project, as well as the 
 line by line comments within each function. Each module has been formatted according to PEP-8 standards.

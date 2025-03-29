@@ -8,8 +8,8 @@ import warnings
 def prufer_encode(tree: np.ndarray) -> np.ndarray:
     """
     Encodes tree as its Prufer Number - uses Cayley's representation (see DCMST comparison paper).
-    :param tree:
-    :return:
+    :param tree: adjacency matrix representing a spanning tree of the graph
+    :return: a Prufer number (encoding) of the given tree
     """
     # Will store Prufer encoding
     P = []
@@ -40,12 +40,13 @@ def prufer_encode(tree: np.ndarray) -> np.ndarray:
     return np.asarray(P, dtype=np.int32)
 
 
-def prufer_decode(prufer_number):
+def prufer_decode(prufer_number: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
     Decodes Prufer number and returns tree encoded in Prufer number as adjacency matrix, as well as the degree of each
     node in the resulting tree.
-    :param prufer_number:
-    :return:
+    :param prufer_number: a Prufer number (encoding) of a tree
+    :return: an adjacency matrix representing a spanning tree of the graph, as well as the degree of each vertex within
+     the tree
     """
     # Tree will have 2 more nodes than length of list
     num_sat = len(prufer_number) + 2
@@ -83,10 +84,11 @@ def check_degree(tree_encoding: np.ndarray, constraints: np.ndarray, num_sat: in
     """
     Checks that all nodes within tree (encoded as a Prufer number) meet degree constraints. The degree of each node in
     the tree is 1 more than the number of times it appears in the Prufer number encoding.
-    :param tree_encoding:
-    :param constraints:
-    :param num_sat:
-    :return:
+    :param tree_encoding: a Prufer number (encoding) of a tree
+    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given
+     point in time
+    :param num_sat: the number of satellites within the network
+    :return: determines if all degree constraints on vertices are met
     """
     degrees = np.bincount(tree_encoding, minlength=num_sat) + 1
 
@@ -95,12 +97,14 @@ def check_degree(tree_encoding: np.ndarray, constraints: np.ndarray, num_sat: in
     return np.array_equal(np.full_like(constraints, True), comparison)
 
 
-def fitness(chromosome, cost_matrix: np.ndarray):
+def fitness(chromosome: np.ndarray, cost_matrix: np.ndarray) -> float:
     """
     Calculates the total sum cost of all edges in a given degree-constrained minimum spanning tree.
-    :param chromosome:
-    :param cost_matrix:
-    :return:
+    :param chromosome: a list of possible solutions or "genes" to the DCMST problem
+    :param cost_matrix: an adjacency matrix, such that element cost_matrix[i][j] represents the cost of the graph edge
+     ij
+    :return: the fitness/suitability of each solution or "gene" within the chromosome, as determined by the total sum
+     cost of all edges within the tree (aim to minimise)
     """
     # Decode tree from Prufer number to adjacency matrix
     tree, _ = prufer_decode(chromosome)
@@ -121,10 +125,11 @@ def random_trees(num_sat: int, constraints: np.ndarray, pop_size: int) -> list:
     """
     Randomly generates a set number (indicated by population size) of valid degree-constrained spanning trees of
     satellite network.
-    :param num_sat:
-    :param constraints:
-    :param pop_size:
-    :return:
+    :param num_sat: the number of satellites within the network
+    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given
+     point in time
+    :param pop_size: number of solutions generated each iteration of the algorithm
+    :return: list of randomly generated degree constrained minimum spanning trees (encoded as prufer numbers)
     """
     random_chromosomes = []
 
@@ -145,10 +150,13 @@ def genetic_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, num_sat:
     """
     Returns a degree-constrained minimum spanning tree of the network built using a genetic algorithm presented in
     'Comparison of Algorithms for the Degree Constrained Minimum Spanning Tree'. https://doi.org/10.1023/A:1011977126230
-    :param cost_matrix:
-    :param constraints:
-    :param num_sat:
-    :param population_size:
+    :param cost_matrix: an adjacency matrix, such that element cost_matrix[i][j] represents the cost of the graph edge
+     ij
+    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given
+     point in time
+    :param num_sat: the number of satellites within the network
+    :param population_size: number of solutions generated each iteration of the algorithm
+    :return: a DCMST and the degree of each vertex within the tree
     """
     # CALCULATE TERMINATION CONDITION #
     # Justification in original paper - larger degree constraints makes problem significantly easier. However, larger

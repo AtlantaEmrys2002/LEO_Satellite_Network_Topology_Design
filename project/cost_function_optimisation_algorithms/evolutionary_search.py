@@ -7,12 +7,12 @@ from multiprocessing import Pool
 import numpy as np
 
 
-def in_0_1(parameter_set: list[float]):
+def in_0_1(parameter_set: list[float]) -> bool:
     """
     Determines if alpha, beta, and gamma all within [0, 1] interval
     :param parameter_set: a list which contains three values - alpha, beta, and gamma - which refer to the weights
      placed on each network attribute considered in the cost function
-    :return:
+    :return: True if all values in parameter set are in [0, 1]
     """
     for i in range(0, 3):
         if parameter_set[i] < 0 or parameter_set[i] > 1:

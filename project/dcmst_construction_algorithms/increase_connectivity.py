@@ -3,17 +3,20 @@ import numpy as np
 
 
 # Adds edges (i.e. ISLs) to topology greedily (in order of increasing cost)
-def increase_connectivity(tree, degree_constraints, current_isl_number, cost_matrix, total_satellites: int):
+def increase_connectivity(tree: np.ndarray, degree_constraints: np.ndarray, current_isl_number: np.ndarray,
+                          cost_matrix: np.ndarray, total_satellites: int) -> np.ndarray:
     """
     Gradually and greedily adds ISLs to graph to increase the connectivity between satellites until no more ISLs can be
     established without breaking constraints.
 
-    :param tree:
-    :param degree_constraints:
-    :param current_isl_number:
-    :param cost_matrix:
-    :param total_satellites:
-    :return:
+    :param tree: a degree-constrained minimum spanning tree of the graph
+    :param degree_constraints: list that describes the maximum number of ISLs each satellite can establish at a given
+     point in time
+    :param current_isl_number: list that describes the current degree of each satellite within the network
+    :param cost_matrix: costs assigned to each edge within the graph that represents the satellite network
+    :param total_satellites: the number of satellites within the network
+    :return: a network that contains the tree spanning the network, as well as other edges added such that the degree
+     constraint of each vertex is not broken
     """
     # Ensure all feasible edges (i.e. ISL can be established between satellites) not in tree are considered
     cost_matrix = np.where(tree == 0, cost_matrix, -1)

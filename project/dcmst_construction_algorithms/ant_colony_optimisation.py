@@ -4,7 +4,6 @@ import copy
 import numpy as np
 import random
 from scipy.cluster.hierarchy import DisjointSet
-import time
 
 
 def update_edge_pheromone(edges: np.ndarray, eta: float, minPhm: float, maxPhm: float) -> np.ndarray:
@@ -12,9 +11,11 @@ def update_edge_pheromone(edges: np.ndarray, eta: float, minPhm: float, maxPhm: 
     Used ACO DCMST construction algorithm to update pheromones of each potential edge in graph.
     :param edges: list of edges in graph with their respective values of edge cost, initial pheromone deposit, current
      pheromone deposit, and number of ants that have traversed the edge
-    :param eta: used to determine amount to update edge pheromone
+    :param eta: hyperparameter used to determine amount to update edge pheromone
     :param minPhm: minimum pheromone that can be on any edge
     :param maxPhm: maximum pheromone that can be on any edge
+    :return: returns list of edges where the pheromone level of each edge has been updated according to set of
+     conditions
     """
     const = 1 - eta
 
@@ -34,7 +35,12 @@ def update_edge_pheromone(edges: np.ndarray, eta: float, minPhm: float, maxPhm: 
     return edges
 
 
-def normalise(weights):
+def min_max(weights: np.ndarray) -> np.ndarray:
+    """
+    Min-max scales array of values to range [0, 1].
+    :param weights: array of values to be min-max scaled (in this case, pheromone levels for each edge in graph)
+    :return: min-max scaled values of weights parameter.
+    """
     return (weights - np.min(weights)) / (np.max(weights) - np.min(weights))
 
 
@@ -45,7 +51,8 @@ def initialise_ants_and_edges(cost_matrix: np.ndarray, num_sat: int) -> tuple[li
     algorithm.
     :param cost_matrix: costs assigned to each edge within the graph that represents the satellite network
     :param num_sat: the number of satellites within the network
-    :return:
+    :return: the initialised ants and edges (in the correct format), as well as the maximum pheromone level and minimum
+     pheromone level that may be assigned to any given edge
     """
     # CREATE ANTS #
 
@@ -84,7 +91,7 @@ def modified_kruskal(edges: np.ndarray, constraints: np.ndarray, nCandidates: in
      point in time
     :param nCandidates: the number of candidate edges to evaluate at a time
     :param num_sat: the number of satellites within the network
-    :return:
+    :return: a degree-constrained minimum spanning tree of the graph
     """
 
     # Initialise spanning tree and degrees of each vertex
@@ -125,6 +132,8 @@ def modified_kruskal(edges: np.ndarray, constraints: np.ndarray, nCandidates: in
             if disjoint_set.connected(u, v) is False:
                 disjoint_set.merge(u, v)
                 T_n.append(candidate)
+                degrees[u] += 1
+                degrees[v] += 1
 
         if len(candidate_edges) == 0:
             # Select next best candidates (if more edges are needed)
@@ -149,7 +158,13 @@ def modified_kruskal(edges: np.ndarray, constraints: np.ndarray, nCandidates: in
 
 
 def move_ant(a: list, edges: np.ndarray) -> list:
-
+    """
+    Moves ant through graph, effectively performing the "exploration phase" of the ant. Moves according to set number of
+    rules - see comments and original paper for more details.
+    :param a: list of ants
+    :param edges: edges within the graph
+    :return: edges within the graph
+    """
     nAttempts = 0
     moved = False
 
@@ -169,8 +184,7 @@ def move_ant(a: list, edges: np.ndarray) -> list:
 
         if len(potential_edges) != 0:
 
-            # random_edge = random.choices(list(range(len(potential_edges))), potential_edges[:, 4].tolist())[0]
-            random_edge = random.choices(list(range(len(potential_edges))), normalise(potential_edges[:, 4]).
+            random_edge = random.choices(list(range(len(potential_edges))), min_max(potential_edges[:, 4]).
                                          tolist())[0]
 
             # Find neighbouring vertex
@@ -194,18 +208,19 @@ def move_ant(a: list, edges: np.ndarray) -> list:
 
 
 def move_ants(ants: list, edges: np.ndarray, max_steps: int, update_period: float, eta: float, minPhm: float,
-              maxPhm: float):
+              maxPhm: float) -> tuple[list, np.ndarray]:
     """
     Moves edges according to given constraints within the graph. Each ant's position is updated accordingly, as is the
     pheromone level of each edge. This is often deemed the 'exploration phase' of the algorithm
     :param ants: the ants used to explore the graph
     :param edges: edges within the graph
     :param max_steps: maximum number of edges each ant can traverse
-    :param update_period:
-    :param eta:
+    :param update_period: determines when to update edge pheromones (don't update every time an ant moves)
+    :param eta: hyperparameter used to determine amount to update edge pheromone
     :param minPhm: minimum pheromone that can be on any edge
     :param maxPhm: maximum pheromone that can be on any edge
-    :return:
+    :return: returns updated ants (according to position and nodes recently visited) and edges (according to pheromone
+     levels)
     """
     # The ants explore for a given number of steps
     for s in range(max_steps):
@@ -223,32 +238,39 @@ def move_ants(ants: list, edges: np.ndarray, max_steps: int, update_period: floa
 def solution_fitness(tree) -> float:
     """
     Calculates the sum of all edge costs within a given DCMST - used by the ACO DCMST construction algorithm.
-    :param tree:
-    :return:
+    :param tree: a proposed DCMST of the given graph
+    :return: the fitness of a given proposed DCMST.
     """
     return np.sum(np.asarray(tree)[:, 2])
 
 
 def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100,
                max_iterations_without_improvement: int = 25, max_steps: int = 21, eta: float = 0.5,
-               gamma: float = 1.5, eta_change: float = 0.95, gamma_change: float = 1.05, R: int = 100):
+               gamma: float = 1.5, eta_change: float = 0.95, gamma_change: float = 1.05, R: int = 100) \
+        -> tuple[np.ndarray, np.ndarray]:
     """
     Algorithm that constructs a DCMST using an ant-based algorithm. Adapted from T. N. Bui, X. Deng, and C. M. Zrncic,
     “An Improved Ant-Based Algorithm for the Degree-Constrained Minimum Spanning Tree Problem,” IEEE Trans. On Evol.
     Computation, vol. 16, no. 2, pp. 266-278, Apr. 2012., doi: 10.1109/TEVC.2011.2125971. Default values for function
     recommended by this original paper.
-    :param cost_matrix:
-    :param constraints:
-    :param num_sat:
-    :param max_iterations: changed default from 10000 to 100
-    :param max_iterations_without_improvement:
-    :param max_steps: changed default from 75 to 21
-    :param eta:
-    :param gamma:
-    :param eta_change:
-    :param gamma_change:
-    :param R:
-    :return:
+    :param cost_matrix: an adjacency matrix, such that element cost_matrix[i][j] represents the cost of the graph edge
+     ij
+    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given
+     point in time
+    :param num_sat: the number of satellites within the network
+    :param max_iterations: the maximum number of iterations performed by the function. Changed paper default from 10000
+     to 100.
+    :param max_iterations_without_improvement: the maximum number of iterations performed by the function without any
+     improvement before the current best topology is returned
+    :param max_steps: the maximum number of exploration steps performed by each ant per iteration. Changed paper default
+     from 75 to 21
+    :param eta: hyperparameter used to determine amount to update edge pheromone
+    :param gamma: hyperparameter used to "enhance" the edge pheromones of the edges in the best spanning tree found so
+     far
+    :param eta_change: hyperparameter that determines the amount to adjust eta by each iteration
+    :param gamma_change: hyperparameter that determines the amount to adjust gamma by each iteration
+    :param R: used to prevent algorithm getting stuck in local optima
+    :return: a DCMST and the degree of each vertex within the tree
     """
     # Initialise counters
     i = 1
@@ -273,8 +295,6 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
     # Continues iteratively improving DCMST until either the maximum number of iterations exceeded or no improvements
     # have been made in a set number of iterations
     while i < max_iterations and (i - i_best) < max_iterations_without_improvement:
-
-        start_it = time.time()
 
         # ANT EXPLORATION #
 
@@ -329,11 +349,8 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
         gamma *= gamma_change
         eta *= eta_change
 
-        print(time.time() - start_it)
-
     best_spanning_tree_adjacency = np.zeros((num_sat, num_sat))
 
-    # for edge in edges:
     for edge in best_spanning_tree:
 
         best_spanning_tree_adjacency[int(edge[0]), int(edge[1])] = 1

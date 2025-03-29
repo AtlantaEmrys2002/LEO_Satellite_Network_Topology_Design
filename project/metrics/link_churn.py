@@ -2,14 +2,14 @@
 import numpy as np
 
 
-def link_churn(location, snapshot_num, num_satellites):
+def link_churn(location: str, snapshot_num: int, num_satellites: int) -> int:
     """
     Calculates link churn for satellite network over one orbital period (as determined by number of snapshots of network
-     taken).
-    :param location:
-    :param snapshot_num:
-    :param num_satellites:
-    :return:
+    taken).
+    :param location: location in which the topologies for which to calculate the link churn are situated
+    :param snapshot_num: the number of snapshots of the network over one orbit for which a topology is constructed
+    :param num_satellites: the number of satellites within the network
+    :return: the total number of link churns for the satellite network over one orbital period
     """
     # LOAD INITIAL TOPOLOGY MATRICES #
 

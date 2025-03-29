@@ -4,12 +4,13 @@ from scipy.sparse.csgraph import connected_components
 from scipy.sparse import csr_array
 
 
-def subtree_builder(tree, deleted_edge):
+def subtree_builder(tree: np.ndarray, deleted_edge: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
     Finds the two subtrees created by deleting a given edge from a given degree constrained minimum spanning tree.
-    :param tree:
-    :param deleted_edge:
-    :return:
+    :param tree: a degree-constrained minimum spanning tree of the graph
+    :param deleted_edge: an edge to be deleted from the tree to determine the two subtrees resulting from the edge
+     deletion
+    :return: the two subtrees created by deleting the given edge from the given tree
     """
     # Edge deleted from tree
     edge = deleted_edge
@@ -40,9 +41,21 @@ def subtree_builder(tree, deleted_edge):
     return subtree_i, subtree_j
 
 
-# This performs the edge exchange portion of the primal cut algorithm
-def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
-
+def edge_exchange(cost_matrix: np.ndarray, constraints: np.ndarray, total_satellites: int, tree: np.ndarray,
+                  degree: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """
+    This function performs the edge exchange portion of the primal cut algorithm - edges that can be exchanged with
+    others to build a more suitable (lower total edge cost) DCMST of the graph are exchanged without disconnecting the
+    tree or violating degree constraints.
+    :param cost_matrix: costs assigned to each edge within the graph that represents the satellite network
+    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given
+     point in time
+    :param total_satellites: the number of satellites within the network
+    :param tree: a degree-constrained minimum spanning tree of the graph
+    :param degree: list that describes the current degree of each satellite within the network
+    :return: a new tree such that edges that can be exchanged to decrease the total edge cost of the tree have been (see
+     report or original paper for more details)
+    """
     # List edges in the tree
     tree_edges = np.argwhere(tree > 0)
 
@@ -135,20 +148,19 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
     return tree, degree
 
 
-# Function constructs initial DCMST by greedily adding the shortest edges that connect vertices not currently within the
-# tree to vertices already within the tree. Function returns tree and degree of each vertex in the tree.
-def modified_prims_algorithm(cost_matrix, constraints, total_satellites: int, initial_node: int):
+def modified_prims_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, total_satellites: int,
+                             initial_node: int) -> tuple[np.ndarray, np.ndarray]:
     """
     # Function constructs initial DCMST by greedily adding the shortest edges that connect vertices not currently
     within the tree to vertices already within the tree. However, degree constraints for each node are obeyed. I.e.
     this is the modified version of Prim's Minimum Spanning Tree Algorithm presented in the original paper on DCMST (
     see report for full reference). Function returns tree and degree of each vertex in the tree.
-
-    :param cost_matrix:
-    :param constraints:
-    :param total_satellites:
-    :param initial_node:
-    :return:
+    :param cost_matrix: costs assigned to each edge within the graph that represents the satellite network
+    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given
+     point in time
+    :param total_satellites: the number of satellites within the network
+    :param initial_node: the first node added to the DCMST (determined at random)
+    :return: a degree-constrained minimum spanning tree of the graph
     """
     # Initialise list of edges
     tree = np.zeros((total_satellites, total_satellites))
@@ -219,7 +231,8 @@ def modified_prims_algorithm(cost_matrix, constraints, total_satellites: int, in
     return tree.astype(int), degree
 
 
-def primal_algorithm(cost_matrix, constraints, total_satellites: int, initial_node):
+def primal_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, total_satellites: int, initial_node: int) \
+        -> tuple[np.ndarray, np.ndarray]:
     """
     Function builds DCMST according to Primal Algorithm presented in original paper on DCMSTs ('Degree-Constrained
     Minimum Spanning Tree' - Narula and Ho - see report for full citation). See original paper on DCMST and Prim's
@@ -227,11 +240,12 @@ def primal_algorithm(cost_matrix, constraints, total_satellites: int, initial_no
     topology (1 where an ISL exists between satellites i and j, 0 otherwise). Current ISL number holds the degree of
     each node in the graph - i.e. the number of active ISLs each satellite.
     # possesses
-    :param cost_matrix:
-    :param constraints:
-    :param total_satellites:
-    :param initial_node:
-    :return:
+    :param cost_matrix: costs assigned to each edge within the graph that represents the satellite network
+    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given
+     point in time
+    :param total_satellites: the number of satellites within the network
+    :param initial_node: the first node added to the DCMST (determined at random)
+    :return: a degree-constrained minimum spanning tree of the graph
     """
     # Construct initial DCMST (Degree-Constrained Spanning Tree) using modified version of Prim's algorithm
     # (modified so number of edges incident to any given vertex cannot be greater than constraint (maximum degree)

@@ -7,14 +7,14 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def hop_count(topology_matrix, distance_matrix, num_satellites):
+def hop_count(topology_matrix: np.ndarray, distance_matrix: np.ndarray, num_satellites: int) -> float:
     """
     Calculate the average hop count for a network topology based on calculations of hop count between all satellite
     pairs in the network.
-    :param topology_matrix:
-    :param distance_matrix:
-    :param num_satellites:
-    :return:
+    :param topology_matrix: an adjacency matrix representing a satellite network topology
+    :param distance_matrix: an adjacency matrix where each element represents the distance between a satellite pair
+    :param num_satellites: the number of satellites within the network
+    :return: the average hop count for the given satellite network
     """
     # Calculate distance matrix for dijkstra function, such that only distances between satellites with an active ISL
     # are included
