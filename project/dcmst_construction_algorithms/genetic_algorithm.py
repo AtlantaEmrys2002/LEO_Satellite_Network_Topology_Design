@@ -112,7 +112,7 @@ def fitness(chromosome, cost_matrix: np.ndarray):
     edges = np.unique(np.sort(edges), axis=0)
 
     # Find costs associated with those edges and sum together
-    total_cost = sum([cost_matrix[edge[0], edge[1]] for edge in edges])
+    total_cost = np.sum(np.asarray([cost_matrix[edge[0], edge[1]] for edge in edges]))
 
     return total_cost
 
@@ -170,7 +170,7 @@ def genetic_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, num_sat:
     chromosomes = np.array(random_trees(num_sat, constraints, population_size))
 
     # Calculate fitness of each chromosome
-    fitness_values = [fitness(chromosome, cost_matrix) for chromosome in chromosomes]
+    fitness_values = np.array([fitness(chromosome, cost_matrix) for chromosome in chromosomes])
 
     if len(chromosomes) == 1:
         raise ValueError("Only 1 unique DCMST could be constructed.")

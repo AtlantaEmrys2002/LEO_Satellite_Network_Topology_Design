@@ -59,7 +59,6 @@ def measure_dynamic(constellation_name: str, topology_file_location: str, num_sa
     :param topology_file_location: location of .npy file in which file(s) containing topology description(s) stored
     :param num_satellites: the number of satellites within the network
     :param num_snapshots: the number of snapshots of the network over one orbit for which a topology is constructed
-    :return:
     """
     # Initialise values
     av_max_pd, av_mean_pd, av_av_hop_count, link_churn = 0, 0, 0, 0

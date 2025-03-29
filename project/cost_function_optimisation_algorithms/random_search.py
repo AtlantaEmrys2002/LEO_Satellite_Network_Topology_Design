@@ -59,14 +59,9 @@ def random_search(constellation_name: str, num_snapshots: int, num_param_sets: i
 
         pool.terminate()
 
-        # with Pool(os.cpu_count()) as pool:
-        #     pool.map(heuristic_topology_design_algorithm_isls, snapshot_arguments)
-
         # Generate results files (metrics)
         results.append(list(parameter_sets[t]) + [measure.measure_dynamic(constellation_name, output_directory,
                                                                           num_sat, num_snapshots)][1:])
-
-        print(results)
 
     # Write Results to CSV Format - this code was adapted from documentation
     write_optimisation_results_to_csv(output_directory, "novel", results)

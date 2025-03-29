@@ -4,8 +4,6 @@ import copy
 import networkx as nx
 import numpy as np
 import random
-from scipy.cluster.hierarchy import DisjointSet
-import sys
 import time
 
 
@@ -75,7 +73,7 @@ class Edge:
         self.phm = self.phm * random.uniform(0.1, 0.3)
 
 
-def initialise_ants_and_edges(cost_matrix: np.ndarray, num_sat: int) -> tuple[list[Ant], np.ndarray, float, float]:
+def initialise_ants_and_edges(cost_matrix: np.ndarray, num_sat: int) -> tuple[list[Ant], list[Edge], float, float]:
     """
     Initialises ants and edges (they are associated with other values, such as pheromones) for ACO DCMST construction
     algorithm.
@@ -93,16 +91,11 @@ def initialise_ants_and_edges(cost_matrix: np.ndarray, num_sat: int) -> tuple[li
     max_cost = np.max(cost_matrix)
     min_cost = np.min(cost_matrix[cost_matrix > 0])
 
-    # Select all possible edges (remove duplicates, as undirected)
     graph_edges = np.argwhere(cost_matrix > 0)
+
     graph_edges = np.unique(np.sort(graph_edges), axis=0)
 
-    # Each edge in array consists of u, v (the two nodes incident to edge), the edge cost, the initial pheromone deposit
-    # on the edge, the current pheromone deposit on the edge (same as initial, and the number of ants that have
-    # traversed the edge
-    edges = np.array([[u[0], u[1], cost_matrix[u[0], u[1]], (max_cost - cost_matrix[u[0], u[1]]) + (max_cost - min_cost) / 3, (max_cost - cost_matrix[u[0], u[1]]) + (max_cost - min_cost) / 3, 0] for u in graph_edges])
-
-    # edges = [Edge(max_cost, min_cost, cost_matrix[u[0], u[1]], u[0], u[1]) for u in graph_edges]
+    edges = [Edge(max_cost, min_cost, cost_matrix[u[0], u[1]], u[0], u[1]) for u in graph_edges]
 
     # Calculate min and max pheromone each edge can have
     maxPhm = 1000 * (max_cost - min_cost) + (max_cost - min_cost) / 3
@@ -111,7 +104,7 @@ def initialise_ants_and_edges(cost_matrix: np.ndarray, num_sat: int) -> tuple[li
     return ants, edges, maxPhm, minPhm
 
 
-def construct_spanning_tree(edges: np.ndarray, constraints: np.ndarray, nCandidates: int, num_sat: int) -> list:
+def construct_spanning_tree(edges: list[Edge], constraints: np.ndarray, nCandidates: int, num_sat: int) -> list:
     """
     Modified version of Kruskal's algorithm used to construct a DCMST - used in the ACO algorithm to create a DCMST
     based on pheromones laid by ants and edge costs.
@@ -122,13 +115,12 @@ def construct_spanning_tree(edges: np.ndarray, constraints: np.ndarray, nCandida
     :param num_sat: the number of satellites within the network
     :return:
     """
-
     # Initialise spanning tree and degrees of each vertex
     T_n = []
     degrees = np.array([0 for _ in range(num_sat)])
 
     # Sort edges in decreasing order according to pheromone level
-    edges = edges[np.argsort(edges[:, 4])]
+    edges.sort(key=lambda x: x.phm, reverse=True)
 
     # Select top nCandidates edges from E
     if len(edges) > nCandidates:
@@ -137,36 +129,27 @@ def construct_spanning_tree(edges: np.ndarray, constraints: np.ndarray, nCandida
         candidate_edges = copy.deepcopy(edges)
 
     # Sort edges according to increasing edge cost
-    candidate_edges = candidate_edges[np.argsort(candidate_edges[:, 2])]
+    candidate_edges.sort(key=lambda x: x.edge_cost)
 
     G = nx.Graph()
 
     level_of_candidates = 1
 
-    num_edges_tree = num_sat - 1
+    while len(T_n) < num_sat - 1:
 
-    while len(T_n) < num_edges_tree:
-
-        candidate = candidate_edges[0]
-
-        candidate_edges = candidate_edges[1:]
-
-        u = int(candidate[0])
-        v = int(candidate[1])
-
+        candidate = candidate_edges.pop(0)
         # Check if degree constraint violated by adding edge to tree
-        if degrees[u] < constraints[u] and degrees[v] < constraints[v]:
+        if degrees[candidate.u] < constraints[candidate.u] and degrees[candidate.v] < constraints[candidate.v]:
 
-            G.add_edge(u, v)
+            G.add_edge(candidate.u, candidate.v)
 
             # Check if cycle created (i.e. no longer a tree if edge added)
-            try:
-                nx.find_cycle(G)
-                G.remove_edge(u, v)
-            except nx.NetworkXNoCycle:
+            if len(list(nx.simple_cycles(G))) != 0:
+                G.remove_edge(candidate.u, candidate.v)
+            else:
                 T_n.append(candidate)
-                degrees[u] += 1
-                degrees[v] += 1
+                degrees[candidate.u] += 1
+                degrees[candidate.v] += 1
 
         if len(candidate_edges) == 0:
             # Select next best candidates (if more edges are needed)
@@ -183,98 +166,23 @@ def construct_spanning_tree(edges: np.ndarray, constraints: np.ndarray, nCandida
                     candidate_edges = copy.deepcopy(edges[lowest:])
                 else:
                     candidate_edges = copy.deepcopy(edges[lowest:highest])
-
                 # Sort C in order of increasing edge cost
-                candidate_edges = candidate_edges[np.argsort(candidate_edges[:, 2])]
+                candidate_edges.sort(key=lambda x: x.edge_cost)
 
     return T_n
 
 
-def modified_kruskal(edges: np.ndarray, constraints: np.ndarray, nCandidates: int, num_sat: int) -> list:
-    """
-    Modified version of Kruskal's algorithm used to construct a DCMST - used in the ACO algorithm to create a DCMST
-    based on pheromones laid by ants and edge costs.
-    :param edges: edges within the graph
-    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given
-     point in time
-    :param nCandidates: the number of candidate edges to evaluate at a time
-    :param num_sat: the number of satellites within the network
-    :return:
-    """
 
-    # Initialise spanning tree and degrees of each vertex
-    T_n = []
-    degrees = np.array([0 for _ in range(num_sat)])
 
-    # Sort edges in decreasing order according to pheromone level
-    edges = edges[np.argsort(edges[:, 4])]
 
-    # Select top nCandidates edges from E
-    if len(edges) > nCandidates:
-        candidate_edges = copy.deepcopy(edges[:nCandidates])
-    else:
-        candidate_edges = copy.deepcopy(edges)
 
-    # Sort edges according to increasing edge cost
-    candidate_edges = candidate_edges[np.argsort(candidate_edges[:, 2])]
 
-    G = nx.Graph()
+# OPTIMISE BY CHANGING SPANNING TREE ALGORITHM - USE MODIFIED PRIM'S INSTEAD OF KRUSKAL
 
-    # Initialise Disjoint set data structure of all nodes
-    disjoint_set = DisjointSet(list(range(num_sat)))
 
-    level_of_candidates = 1
 
-    num_edges_tree = num_sat - 1
 
-    while len(T_n) < num_edges_tree:
 
-        candidate = candidate_edges[0]
-
-        candidate_edges = candidate_edges[1:]
-
-        u = int(candidate[0])
-        v = int(candidate[1])
-
-        # Check if degree constraint violated by adding edge to tree
-        if degrees[u] < constraints[u] and degrees[v] < constraints[v]:
-
-            if disjoint_set.connected(u, v) is False:
-                disjoint_set.merge(u, v)
-                # G.add_edge(u, v)
-                T_n.append(candidate)
-
-            # G.add_edge(u, v)
-            #
-            # # Check if cycle created (i.e. no longer a tree if edge added)
-            # try:
-            #     nx.find_cycle(G)
-            #     G.remove_edge(u, v)
-            # except nx.NetworkXNoCycle:
-            #     T_n.append(candidate)
-            #     degrees[u] += 1
-            #     degrees[v] += 1
-
-        if len(candidate_edges) == 0:
-            # Select next best candidates (if more edges are needed)
-            if len(edges) <= nCandidates:
-                raise ValueError("DCMST cannot be constructed, as not enough edges.")
-            else:
-                # Calculate new slice indices
-                lowest = level_of_candidates * nCandidates
-                level_of_candidates += 1
-                highest = level_of_candidates * nCandidates
-                if highest > len(edges) and lowest > len(edges):
-                    raise ValueError("DCMST cannot be constructed, as not enough edges.")
-                elif highest > len(edges):
-                    candidate_edges = copy.deepcopy(edges[lowest:])
-                else:
-                    candidate_edges = copy.deepcopy(edges[lowest:highest])
-
-                # Sort C in order of increasing edge cost
-                candidate_edges = candidate_edges[np.argsort(candidate_edges[:, 2])]
-
-    return T_n
 
 
 def move_ants(ants: list[Ant], edges: list[Edge], max_steps: int, update_period: float, eta: float, minPhm: float,
@@ -394,16 +302,12 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
     # Initialise |V| ants and edges with corresponding pheromone levels
     ants, edges, maxPhm, minPhm = initialise_ants_and_edges(cost_matrix, num_sat)
 
-    # Construct spanning tree
-    # best_spanning_tree = construct_spanning_tree(edges, constraints, candidate_set_cardinality, num_sat)
-
     start = time.time()
-    best_spanning_tree = modified_kruskal(edges, constraints, candidate_set_cardinality, num_sat)
+
+    # Construct spanning tree
+    best_spanning_tree = construct_spanning_tree(edges, constraints, candidate_set_cardinality, num_sat)
+
     print(time.time() - start)
-
-    print(best_spanning_tree)
-
-    sys.kill("END TEST")
 
     # Calculate fitness of spanning tree
     best_fitness = solution_fitness(best_spanning_tree)
@@ -471,8 +375,7 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
 
     best_spanning_tree_adjacency = np.zeros((num_sat, num_sat))
 
-    # for edge in edges:
-    for edge in best_spanning_tree:
+    for edge in edges:
         best_spanning_tree_adjacency[edge[0], edge[1]] = 1
         best_spanning_tree_adjacency[edge[1], edge[0]] = 1
 

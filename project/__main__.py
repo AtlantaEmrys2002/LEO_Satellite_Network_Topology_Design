@@ -32,8 +32,10 @@ eph = load('./de421.bsp')
 # Seed Random so results can be reproduced
 random.seed(42)
 
-start = time.time()
+
 if __name__ == "__main__":
+
+    start = time.time()
 
     # PARSE INPUTS #
     print('\n')
@@ -359,18 +361,6 @@ if __name__ == "__main__":
             else:
                 raise ValueError("DCMST construction method must be specified for novel algorithm.")
 
-            # Directory in which to store topologies
-            if optimise is False:
-                location = "./novel/" + dcmst + "/" + constellation_name.lower() + "/"
-            else:
-                # Checks that optimisation method is specified
-                if args.optimisation_method:
-                    optimisation_method = args.optimisation_method
-                    location = ("./Results/novel/" + optimisation_method + "/" + dcmst + "/" +
-                                constellation_name.lower() + "/")
-                else:
-                    raise ValueError("An optimisation method must be specified.")
-
             # SUNLIGHT MATRICES #
 
             # Calculate whether satellites are in sunlight (i.e. vulnerable to solar flares) or on the opposite side of
@@ -403,6 +393,9 @@ if __name__ == "__main__":
 
             if optimise is False:
 
+                # Directory in which to store topologies
+                location = "./novel/" + dcmst + "/" + constellation_name.lower() + "/"
+
                 # Checks weights exist and set to params
                 if args.weights:
                     params = args.weights
@@ -427,7 +420,16 @@ if __name__ == "__main__":
             # Run cost optimisation function and calculate metrics for best topologies found
             else:
 
-                print("Evaluating... ", end='\r', flush=True)
+                # Checks that optimisation method is specified
+                if args.optimisation_method:
+                    optimisation_method = args.optimisation_method
+                    # Directory in which to store topologies
+                    location = ("./Results/novel/" + optimisation_method + "/" + dcmst + "/" +
+                                constellation_name.lower() + "/")
+                else:
+                    raise ValueError("An optimisation method must be specified.")
+
+                print("Building and Evaluating Topologies... ", end='\r', flush=True)
 
                 # Run random search optimisation method
                 if optimisation_method == "random":
@@ -458,7 +460,7 @@ if __name__ == "__main__":
         else:
             raise ValueError("That topology design method does not exist.")
 
-print("\nExecution Time: " + str(time.time() - start) + "s \n")
+    print("\nExecution Time: " + str(time.time() - start) + "s \n")
 
 # References
 # Argparse Terminology - https://stackoverflow.com/questions/19124304/what-does-metavar-and-action-mean-in-argparse-in-
