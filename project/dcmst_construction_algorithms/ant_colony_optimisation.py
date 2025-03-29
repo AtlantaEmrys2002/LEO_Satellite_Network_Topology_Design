@@ -482,6 +482,8 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
 # Array of Objects - https://stackoverflow.com/questions/4877624/numpy-array-of-objects
 # Cycle Detection - https://en.wikipedia.org/wiki/Cycle_(graph_theory)
 # Deep Copies - https://stackoverflow.com/questions/37593013/deep-copy-of-a-np-array-of-np-array
+# Kruskal Algorithms - https://en.wikipedia.org/wiki/Kruskal%27s_algorithm#:~:text=Kruskal's%20algorithm%20finds%20a%20
+# minimum,will%20not%20form%20a%20cycle.
 # Searching Numpy Arrays - https://stackoverflow.com/questions/3030480/how-do-i-select-elements-of-an-array-given-
 # condition
 # Sorting Objects - https://stackoverflow.com/questions/403421/how-do-i-sort-a-list-of-objects-based-on-an-attribute-of-
