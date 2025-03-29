@@ -1,6 +1,6 @@
 import numpy as np
 import os
-import satellite_network_attribute_functions as satnet
+import project.satellite_network_attribute_functions as satnet
 import unittest
 
 

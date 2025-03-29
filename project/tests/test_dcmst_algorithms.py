@@ -1,5 +1,5 @@
 # Libraries
-import dcmst_construction_algorithms
+import project.dcmst_construction_algorithms as alg
 import numpy as np
 import unittest
 from scipy.sparse.csgraph import connected_components
@@ -39,8 +39,7 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
                            [0, 0, 1, 0, 0, 0, 0, 0, 0]])
 
         self.assertTrue(np.array_equal(
-            dcmst_construction_algorithms.modified_prims_algorithm(test_costs, np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]), 9,
-                                                                   0)[0], answer))
+            alg.modified_prims_algorithm(test_costs, np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]), 9, 0)[0], answer))
 
     def test_subtree_builder(self):
         """
@@ -60,7 +59,8 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
                          [0, 0, 1, 0, 0, 0, 0, 0, 0]])
 
         # Find two subtrees i and j - error would be raised if more than two subtrees were created by edge deletion.
-        i, j = dcmst_construction_algorithms.subtree_builder(tree, np.array([2, 3]))
+        # i, j = dcmst_construction_algorithms.subtree_builder(tree, np.array([2, 3]))
+        i, j = alg.subtree_builder(tree, np.array([2, 3]))
 
         # Check two subtrees are in correct format and contain the correct vertices
         self.assertTrue((np.array_equal(np.sort(j), np.array([0, 1, 2, 8])) and
@@ -82,7 +82,7 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
                                 [3.0, 2.83, 4.47, 2.0, 6.0, 0, 2.83, 5.0, 7.07],
                                 [5.39, 4.0, 6.0, 2.0, 4.47, 2.83, 0, 3.61, 4.24],
                                 [8.0, 7.28, 9.22, 5.39, 7.81, 0, 3.61, 0, 5.0],
-                                [9.43, 7.62, 9.49, 5.83, 5.1, 7.07, 0, 5.0, 0],])
+                                [9.43, 7.62, 9.49, 5.83, 5.1, 7.07, 0, 5.0, 0], ])
 
         constraints = np.array([3, 3, 3, 3, 3, 3, 3, 3, 3])
 
@@ -94,7 +94,7 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
                                      [0, 0, 0, 1, 0, 0, 0, 0, 0],
                                      [0, 0, 0, 1, 0, 0, 0, 1, 1],
                                      [0, 0, 0, 0, 0, 0, 1, 0, 0],
-                                     [0, 0, 0, 0, 1, 0, 1, 0, 0],])
+                                     [0, 0, 0, 0, 1, 0, 1, 0, 0], ])
 
         current_degree = np.array([1, 3, 1, 3, 1, 1, 3, 1, 2])
 
@@ -106,10 +106,9 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
                            [0, 0, 0, 1, 0, 0, 0, 0, 0],
                            [0, 0, 0, 1, 0, 0, 0, 1, 1],
                            [0, 0, 0, 0, 0, 0, 1, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 1, 0, 0],])
+                           [0, 0, 0, 0, 0, 0, 1, 0, 0], ])
 
-        function_result = dcmst_construction_algorithms.edge_exchange(cost_matrix, constraints, 9,
-                                                                      current_topology, current_degree)[0]
+        function_result = alg.edge_exchange(cost_matrix, constraints, 9, current_topology, current_degree)[0]
 
         self.assertTrue(np.array_equal(function_result, answer))
 
@@ -132,7 +131,7 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
                          [1, 0, 1, 0, 0, 1, 0, 0, 0],
                          [0, 1, 0, 0, 0, 0, 1, 0, 0]])
 
-        prufer_encoding = dcmst_construction_algorithms.prufer_encode(tree)
+        prufer_encoding = alg.prufer_encode(tree)
 
         self.assertTrue(np.array_equal(prufer_encoding, np.array([8, 7, 0, 6, 7, 0, 6])))
 
@@ -154,7 +153,7 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
                          [1, 0, 1, 0, 0, 1, 0, 0, 0],
                          [0, 1, 0, 0, 0, 0, 1, 0, 0]])
 
-        prufer_decoding, _ = dcmst_construction_algorithms.prufer_decode(np.array([8, 7, 0, 6, 7, 0, 6]))
+        prufer_decoding, _ = alg.prufer_decode(np.array([8, 7, 0, 6, 7, 0, 6]))
 
         self.assertTrue(np.array_equal(prufer_decoding, tree))
 
@@ -177,11 +176,11 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
                          [0, 0, 0, 1, 0, 0, 0, 0, 0],
                          [0, 0, 0, 0, 1, 0, 0, 0, 0]])
 
-        self.assertTrue(np.array_equal(dcmst_construction_algorithms.prufer_decode(
-            dcmst_construction_algorithms.prufer_encode(tree))[0], tree))
+        self.assertTrue(np.array_equal(alg.prufer_decode(
+            alg.prufer_encode(tree))[0], tree))
 
-        self.assertTrue(np.array_equal(dcmst_construction_algorithms.prufer_encode(
-            dcmst_construction_algorithms.prufer_decode(prufer_encoding)[0]), prufer_encoding))
+        self.assertTrue(np.array_equal(alg.prufer_encode(
+            alg.prufer_decode(prufer_encoding)[0]), prufer_encoding))
 
     def test_degree_checker(self):
         """
@@ -191,11 +190,9 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
         # Prufer Number of Tree
         prufer_encoding = np.array([1, 3, 5, 2, 1, 0, 4], dtype=np.int32)
 
-        self.assertTrue(dcmst_construction_algorithms.check_degree(prufer_encoding, np.array([3 for _ in range(9)]),
-                                                                   9))
+        self.assertTrue(alg.check_degree(prufer_encoding, np.array([3 for _ in range(9)]), 9))
 
-        self.assertFalse(dcmst_construction_algorithms.check_degree(prufer_encoding, np.array([2 for _ in range(9)]),
-                                                                    9))
+        self.assertFalse(alg.check_degree(prufer_encoding, np.array([2 for _ in range(9)]), 9))
 
     def test_genetic_algorithm(self):
         """
@@ -216,8 +213,7 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
 
         num_sat = 9
 
-        tree, degree = dcmst_construction_algorithms.genetic_algorithm(cost_matrix, constraints, num_sat,
-                                                                       population_size=7)
+        tree, degree = alg.genetic_algorithm(cost_matrix, constraints, num_sat, population_size=7)
 
         # Check degree of each vertex in resulting tree
         self.assertTrue(False not in (degree <= constraints).tolist())
@@ -252,7 +248,7 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
 
         num_sat = 9
 
-        tree, degree = dcmst_construction_algorithms.ant_colony(cost_matrix, constraints, num_sat)
+        tree, degree = alg.ant_colony(cost_matrix, constraints, num_sat)
 
         # Check degree of each vertex in resulting tree
         self.assertTrue(False not in (degree <= constraints).tolist())
@@ -283,11 +279,11 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
                                  [8, 11, -1, -1, -1, -1, 1, -1, 7],
                                  [-1, -1, 2, -1, -1, -1, 6, 7, -1]])
 
-        current_topology, current_degree = dcmst_construction_algorithms.modified_prims_algorithm(test_costs,
-                                                                                                  np.array(
-                                                                                                      [3, 3, 3, 3,
-                                                                                                       3, 3, 3, 3,
-                                                                                                       3]), 9, 0)
+        current_topology, current_degree = alg.modified_prims_algorithm(test_costs,
+                                                                        np.array(
+                                                                            [3, 3, 3, 3,
+                                                                             3, 3, 3, 3,
+                                                                             3]), 9, 0)
 
         answer = np.array([[0, 1, 0, 0, 0, 0, 0, 1, 0],
                            [1, 0, 1, 0, 0, 0, 0, 1, 0],
@@ -300,9 +296,8 @@ class TestDegreeConstrainedMinimumSpanningTreeConstructionAlgorithms(unittest.Te
                            [0, 0, 1, 0, 0, 0, 1, 0, 0]])
 
         self.assertTrue(np.array_equal(
-            dcmst_construction_algorithms.increase_connectivity(current_topology,
-                                                                np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]),
-                                                                current_degree, test_costs, 9), answer))
+            alg.increase_connectivity(current_topology, np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]), current_degree,
+                                      test_costs, 9), answer))
 
 
 if __name__ == '__main__':

@@ -335,8 +335,9 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
 
     # for edge in edges:
     for edge in best_spanning_tree:
-        best_spanning_tree_adjacency[edge[0], edge[1]] = 1
-        best_spanning_tree_adjacency[edge[1], edge[0]] = 1
+
+        best_spanning_tree_adjacency[int(edge[0]), int(edge[1])] = 1
+        best_spanning_tree_adjacency[int(edge[1]), int(edge[0])] = 1
 
     return best_spanning_tree_adjacency, np.sum(best_spanning_tree_adjacency, axis=1).astype(np.int32)
 

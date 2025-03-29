@@ -63,7 +63,8 @@ def edge_exchange(cost_matrix, constraints, total_satellites, tree, degree):
         potential_better_edges = np.array(np.meshgrid(subtree_i, subtree_j)).T.reshape(-1, 2)
 
         # Sort (smaller node first) and remove duplicates (undirected graph)
-        potential_better_edges = np.unique(np.sort(potential_better_edges), axis=1)
+
+        potential_better_edges = np.sort(potential_better_edges)
 
         # Select all edges with a cost greater than zero
         potential_better_edge_costs = cost_matrix[potential_better_edges.T[0], potential_better_edges.T[1]]
@@ -235,6 +236,7 @@ def primal_algorithm(cost_matrix, constraints, total_satellites: int, initial_no
     # Construct initial DCMST (Degree-Constrained Spanning Tree) using modified version of Prim's algorithm
     # (modified so number of edges incident to any given vertex cannot be greater than constraint (maximum degree)
     # of given vertex)
+
     tree, degree = modified_prims_algorithm(cost_matrix, constraints, total_satellites, initial_node)
 
     # Exchange edges if better edge found according to given conditions

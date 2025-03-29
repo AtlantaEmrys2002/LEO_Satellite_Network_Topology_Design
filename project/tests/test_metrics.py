@@ -1,6 +1,6 @@
 # Libraries
 from astropy.constants import c
-from metrics import hop_count, link_churn, propagation_delay
+from project.metrics import hop_count, link_churn, propagation_delay
 import numpy as np
 import os
 import unittest

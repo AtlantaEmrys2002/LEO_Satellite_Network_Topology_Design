@@ -1,6 +1,6 @@
 # Libraries
 import numpy as np
-import metrics
+import project.metrics as metrics
 
 
 def read_isl_file(isl_file_name: str, num_satellites: int) -> np.ndarray:

@@ -1,5 +1,6 @@
 # Libraries
-import data_handling
+import project.data_handling
+
 import numpy as np
 import os
 import unittest
@@ -13,7 +14,8 @@ class TestDataHandlingFunctions(unittest.TestCase):
         # Example topology to be saved
         test_topology = np.array([[0, 1, 0, 1], [1, 0, 1, 1], [0, 1, 0, 0], [1, 1, 0, 0]])
 
-        data_handling.write_topology_to_file('test_topology_save.txt', test_topology, 'novel')
+        project.data_handling.write_topology_to_file('test_topology_save.txt', test_topology,
+                                                     'novel')
 
         # Check file exists
         self.assertTrue(os.path.isfile('./novel/isl_topologies/test_topology_save.txt'))
