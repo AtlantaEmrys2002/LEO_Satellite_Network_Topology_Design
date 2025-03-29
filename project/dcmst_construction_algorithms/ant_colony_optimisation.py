@@ -7,72 +7,6 @@ from scipy.cluster.hierarchy import DisjointSet
 import time
 
 
-class Ant:
-    def __init__(self, location: int):
-        """
-        Used to initialise a member of the Ant class in the ACO DCMST construction algorithm.
-        :param location: node at which ant is currently situated
-        """
-        self.location = location
-        self.tabu_list = deque([])
-
-    def reset(self, num_sat: int):
-        """
-        Used by ACO DCMST construction algorithm to "reset" an ant for the next iteration of the algorithm.
-        :param num_sat: the number of satellites within the network
-        """
-        coin_flip = random.random()
-        if coin_flip < 0.5:
-            self.location = random.randint(0, num_sat - 1)
-        self.tabu_list.clear()
-
-
-class Edge:
-    def __init__(self, max_cost: float, min_cost: float, edge_cost: float, u: int, v: int):
-        """
-        Used to initialise a member of the Edge class in the ACO DCMST construction algorithm.
-        :param max_cost: the maximum cost on any edge in the network
-        :param min_cost: the minimum cost of any edge in the network
-        :param edge_cost: the cost of the edge
-        :param u: one of the nodes incident to edge
-        :param v: one of the nodes incident to edge
-        """
-        self.u = u
-        self.v = v
-        self.edge_cost = edge_cost
-        self.initPhm = (max_cost - edge_cost) + (max_cost - min_cost) / 3
-        self.phm = self.initPhm
-        self.nVisited = 0
-
-    def update_pheromone(self, eta: float, minPhm: float, maxPhm: float):
-        """
-        Used by Edge class in ACO DCMST construction algorithm to update pheromones of the edge.
-        :param eta: used to determine amount to update edge pheromone
-        :param minPhm: minimum pheromone that can be on any edge
-        :param maxPhm: maximum pheromone that can be on any edge
-        """
-        self.phm = (1 - eta) * self.phm + self.nVisited * self.initPhm
-        self.nVisited = 0
-        if self.phm > maxPhm:
-            self.phm = maxPhm - self.initPhm
-        if self.phm < minPhm:
-            self.phm = minPhm + self.initPhm
-
-    def enhance(self, gamma: float):
-        """
-        Used by ACO DCMST construction algorithm to update pheromones of edges found in the best DCMST found (so far) by
-        the algorithm.
-        :param gamma: used to determine amount of pheromone with which to update edges in best DCMST discovered
-        """
-        self.phm = self.phm * gamma
-
-    def restart(self):
-        """
-        Used by ACO DCMST construction algorithm to escape local optimum.
-        """
-        self.phm = self.phm * random.uniform(0.1, 0.3)
-
-
 def update_edge_pheromone(edges: np.ndarray, eta: float, minPhm: float, maxPhm: float) -> np.ndarray:
     """
     Used ACO DCMST construction algorithm to update pheromones of each potential edge in graph.
@@ -100,7 +34,12 @@ def update_edge_pheromone(edges: np.ndarray, eta: float, minPhm: float, maxPhm: 
     return edges
 
 
-def initialise_ants_and_edges(cost_matrix: np.ndarray, num_sat: int) -> tuple[list[Ant], np.ndarray, float, float]:
+def normalise(weights):
+    return (weights - np.min(weights)) / (np.max(weights) - np.min(weights))
+
+
+# def initialise_ants_and_edges(cost_matrix: np.ndarray, num_sat: int) -> tuple[list[Ant], np.ndarray, float, float]:
+def initialise_ants_and_edges(cost_matrix: np.ndarray, num_sat: int) -> tuple[list, np.ndarray, float, float]:
     """
     Initialises ants and edges (they are associated with other values, such as pheromones) for ACO DCMST construction
     algorithm.
@@ -110,8 +49,9 @@ def initialise_ants_and_edges(cost_matrix: np.ndarray, num_sat: int) -> tuple[li
     """
     # CREATE ANTS #
 
-    # Initialise an ant at each vertex (cardinality will always be the number of satellites in the network)
-    ants = [Ant(v) for v in range(num_sat)]
+    # Initialise an ant at each vertex (cardinality will always be the number of satellites in the network) with a tabu
+    # list of all vertices ant has recently visited
+    ants = [[v, deque([])] for v in range(num_sat)]
 
     # CREATE EDGES #
 
@@ -208,7 +148,52 @@ def modified_kruskal(edges: np.ndarray, constraints: np.ndarray, nCandidates: in
     return T_n
 
 
-def move_ants(ants: list[Ant], edges: list[Edge], max_steps: int, update_period: float, eta: float, minPhm: float,
+def move_ant(a: list, edges: np.ndarray) -> list:
+
+    nAttempts = 0
+    moved = False
+
+    # Move between five vertices or until ant cannot move (which over occurs first).
+    while moved is False and nAttempts < 5:
+
+        v_1 = a[0]
+
+        # Select edges incident to v_1
+        potential_edge_indices = np.concatenate((np.argwhere(edges[:, 0] == v_1).flatten(), np.argwhere(edges[:, 1] ==
+                                                                                                        v_1).flatten()))
+
+        potential_edges = edges[potential_edge_indices]
+
+        # Select an edge adjacent to the vertex at which ant is located randomly (but proportional to the
+        # pheromone on that edge). If no more edges to explore, increase nAttempts
+
+        if len(potential_edges) != 0:
+
+            # random_edge = random.choices(list(range(len(potential_edges))), potential_edges[:, 4].tolist())[0]
+            random_edge = random.choices(list(range(len(potential_edges))), normalise(potential_edges[:, 4]).
+                                         tolist())[0]
+
+            # Find neighbouring vertex
+            if potential_edges[random_edge, 0] == v_1:
+                v_2 = potential_edges[random_edge][1]
+            else:
+                v_2 = potential_edges[random_edge][0]
+
+            # If ant has not visited that vertex recently, move ant to that vertex
+            if v_2 not in a[1]:
+                a[1].append(v_2)
+                a[0] = v_2
+                edges[potential_edge_indices[random_edge], 5] += 1
+                moved = True
+            else:
+                nAttempts += 1
+        else:
+            nAttempts += 1
+
+    return a
+
+
+def move_ants(ants: list, edges: np.ndarray, max_steps: int, update_period: float, eta: float, minPhm: float,
               maxPhm: float):
     """
     Moves edges according to given constraints within the graph. Each ant's position is updated accordingly, as is the
@@ -224,65 +209,15 @@ def move_ants(ants: list[Ant], edges: list[Edge], max_steps: int, update_period:
     """
     # The ants explore for a given number of steps
     for s in range(max_steps):
+
         # Update pheromones of edges after a given number of steps - helps reduce execution time.
         if s % update_period == 0:
             edges = update_edge_pheromone(edges, eta, minPhm, maxPhm)
 
-            # GOT TO ABOVE - NEEDS TESTING
-
-            # for e in edges:
-            #     e.update_pheromone(eta, minPhm, maxPhm)
-
         # Move each ant
-        for a in ants:
-
-            nAttempts = 0
-            moved = False
-
-            # Move between five vertices or until ant cannot move (which over occurs first).
-            while moved is False and nAttempts < 5:
-
-                v_1 = a.location
-
-                # Select random edge from edges incident to v_1 with probability proportional to pheromone on edge
-                potential_edges = [[edges[edge], edge] for edge in range(len(edges)) if edges[edge].u == v_1 or
-                                   edges[edge].v == v_1]
-
-                # Select an edge adjacent to the vertex at which ant is located randomly (but proportional to the
-                # pheromone on that edge)
-                random_edge = random.choices([e[1] for e in potential_edges], [e[0].phm for e in potential_edges])[0]
-
-                # Find neighbouring vertex
-                if edges[random_edge].u == v_1:
-                    v_2 = edges[random_edge].v
-                else:
-                    v_2 = edges[random_edge].u
-
-                # If ant has not visited that vertex recently, move ant to that vertex
-                if v_2 not in a.tabu_list:
-                    a.tabu_list.append(v_2)
-                    a.location = v_2
-                    edges[random_edge].nVisited += 1
-                    moved = True
-                else:
-                    nAttempts += 1
+        ants = [move_ant(a, edges) for a in ants]
 
     return ants, edges
-
-
-# def two_edge_replacement(T, num_sat):
-#     T_n = T
-#     nTries = 0
-#     while nTries < num_sat / 2:
-#         # Select random edge in T_n
-#         e_1 = random.randint(0, len(T_n))
-#         e_b = e_1
-#         c_b = 0
-#         # for e in T
-#
-#
-# def one_edge_replacement():
-#     pass
 
 
 def solution_fitness(tree) -> float:
@@ -291,23 +226,23 @@ def solution_fitness(tree) -> float:
     :param tree:
     :return:
     """
-    return np.sum(tree[:, 2])
+    return np.sum(np.asarray(tree)[:, 2])
 
 
-def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 10000,
-               max_iterations_without_improvement: int = 2500, max_steps: int = 75, eta: float = 0.5,
+def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100,
+               max_iterations_without_improvement: int = 25, max_steps: int = 21, eta: float = 0.5,
                gamma: float = 1.5, eta_change: float = 0.95, gamma_change: float = 1.05, R: int = 100):
     """
     Algorithm that constructs a DCMST using an ant-based algorithm. Adapted from T. N. Bui, X. Deng, and C. M. Zrncic,
-     “An Improved Ant-Based Algorithm for the Degree-Constrained Minimum Spanning Tree Problem,” IEEE Trans. On Evol.
-     Computation, vol. 16, no. 2, pp. 266-278, Apr. 2012., doi: 10.1109/TEVC.2011.2125971. Default values for function
-     recommended by this original paper.
+    “An Improved Ant-Based Algorithm for the Degree-Constrained Minimum Spanning Tree Problem,” IEEE Trans. On Evol.
+    Computation, vol. 16, no. 2, pp. 266-278, Apr. 2012., doi: 10.1109/TEVC.2011.2125971. Default values for function
+    recommended by this original paper.
     :param cost_matrix:
     :param constraints:
     :param num_sat:
-    :param max_iterations:
+    :param max_iterations: changed default from 10000 to 100
     :param max_iterations_without_improvement:
-    :param max_steps:
+    :param max_steps: changed default from 75 to 21
     :param eta:
     :param gamma:
     :param eta_change:
@@ -339,19 +274,14 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
     # have been made in a set number of iterations
     while i < max_iterations and (i - i_best) < max_iterations_without_improvement:
 
+        start_it = time.time()
+
         # ANT EXPLORATION #
 
         ants, edges = move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm)
 
         # Construct new spanning tree based on exploration
-        # T = construct_spanning_tree(edges, constraints, candidate_set_cardinality, num_sat)
         T = modified_kruskal(edges, constraints, candidate_set_cardinality, num_sat)
-
-        # REMOVED AS SIGNIFICANTLY INCREASES RUN TIME - IMPLEMENT!
-
-        # LOCAL OPTIMISATION #
-        # T = two_edge_replacement(T)
-        # T = one_edge_replacement()
 
         # Compare the fitness of current best solution to new one
         current_solution_fitness = solution_fitness(T)
@@ -365,12 +295,13 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
         # ENHANCE #
 
         # Enhance edges (lay pheromones) - update pheromones of all edges in the best solution found so far
+
+        # Find indices of all edges in best spanning tree and update their pheromone level accordingly
+
         for edge in best_spanning_tree:
             # Find edge in main set of edges and update accordingly
-            for e in range(len(edges)):
-                if edges[e].u == edge.u and edges[e].v == edge.v:
-                    edges[e].enhance(gamma)
-                    break
+            index_of_edge = np.where((edges[:, 0] == edge[0]) & (edges[:, 1] == edge[1]))[0]
+            edges[index_of_edge, 4] *= gamma
 
         # RESTART #
 
@@ -378,10 +309,10 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
         if i - max(i_best, i_restart) > R:
             i_restart = i
             for edge in best_spanning_tree:
-                for e in range(len(edges)):
-                    if edges[e].u == edge.u and edges[e].v == edge.v:
-                        edges[e].restart()
-                        break
+                # Find edge index
+                index_of_edge = np.where((edges[:, 0] == edge[0]) & (edges[:, 1] == edge[1]))[0]
+                # Restart
+                edges[index_of_edge, 4] *= random.uniform(0.1, 0.3)
 
         i += 1
 
@@ -389,13 +320,16 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
 
         # In next iteration, reset ants - approximately half (coin toss) of all ants remain in their current locations
         for a in ants:
-            a.reset(num_sat)
+            coin_flip = random.random()
+            if coin_flip < 0.5:
+                a[0] = random.randint(0, num_sat - 1)
+            a[1].clear()
 
         # Update gamma and eta
         gamma *= gamma_change
         eta *= eta_change
 
-    edges = [[e.u, e.v] for e in best_spanning_tree]
+        print(time.time() - start_it)
 
     best_spanning_tree_adjacency = np.zeros((num_sat, num_sat))
 
