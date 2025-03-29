@@ -469,6 +469,7 @@ if __name__ == "__main__":
 # order
 # Argsort Error - https://stackoverflow.com/questions/53923914/weird-wrong-outpout-of-np-argsort
 # Asserting Numpy Equality - https://stackoverflow.com/questions/3302949/best-way-to-assert-for-numpy-array-equality
+# BFS - https://stackoverflow.com/questions/59805631/algorithm-for-finding-graph-connectivity
 # Building Project Documentation - https://medium.com/@pratikdomadiya123/build-project-documentation-quickly-with-the-
 # sphinx-python-2a9732b66594
 # cdist - https://vaghefi.medium.com/fast-distance-calculation-in-python-bb2bc9810ea5
@@ -478,6 +479,8 @@ if __name__ == "__main__":
 # -of-two-arrays
 # Common Elements of Numpy Array - https://stackoverflow.com/questions/44265572/find-common-elements-in-2d-numpy-arrays
 # Conditional List Comprehension - https://stackoverflow.com/questions/4260280/if-else-in-a-list-comprehension
+# Connected Components - https://stackoverflow.com/questions/59347143/connected-components-from-an-adjacency-matrix-
+# using-numpy-or-scipy
 # Conversion with Numpy - https://stackoverflow.com/questions/17973507/why-is-converting-a-long-2d-list-to-numpy-array-
 # so-slow
 # Conversion with Numpy 2 - https://stackoverflow.com/questions/8466014/how-to-convert-a-python-set-to-a-numpy-array
@@ -486,6 +489,8 @@ if __name__ == "__main__":
 # DCMST Primal Algorithm - https://www-sciencedirect-com.ezphost.dur.ac.uk/science/article/pii/0305054880900222?via%3Di
 # hub
 # Deleting Rows - https://stackoverflow.com/questions/3877491/deleting-rows-in-numpy-array
+# Detecting Bridges - https://stackoverflow.com/questions/2994681/how-to-detect-if-breaking-an-edge-will-make-a-graph-
+# disjoint
 # Docstrings - https://realpython.com/documenting-python-code/
 # Docstrings Tutorial - https://www.datacamp.com/tutorial/docstrings-python
 # Earth Radius - https://en.wikipedia.org/wiki/Earth_radius
@@ -506,7 +511,11 @@ if __name__ == "__main__":
 # Internal Imports - https://www.reddit.com/r/learnpython/comments/yusnr0/python_modulespackages_internal_imports/
 # Intersecting Arrays - https://stackoverflow.com/questions/25220975/find-the-non-intersecting-values-of-two-arrays
 # Iterating over Numpy Columns - https://stackoverflow.com/questions/10148818/numpy-how-to-iterate-over-columns-of-array
+# Iterating over Variables (Bash) - https://stackoverflow.com/questions/169511/how-do-i-iterate-over-a-range-of-numbers-
+# defined-by-variables-in-bash
 # Itertools and Numpy Product - https://stackoverflow.com/questions/28684492/numpy-equivalent-of-itertools-product
+# List Comprehensions and Tuples - https://stackoverflow.com/questions/16594904/python-list-comprehension-to-produce-two
+# -values-in-one-iteration
 # Loop Speed-Up - https://medium.com/@nirmalya.ghosh/13-ways-to-speedup-python-loops-e3ee56cd6b73
 # Main Function Call - https://stackoverflow.com/questions/42012140/if-name-main-function-call
 # __main__ Use - https://stackoverflow.com/questions/4042905/what-is-main-py
@@ -514,6 +523,7 @@ if __name__ == "__main__":
 # level-in-project-hierar
 # Multiple Indices - https://stackoverflow.com/questions/14162026/how-to-get-the-values-from-a-numpy-array-using-
 # multiple-indices
+# Multiple Types - https://stackoverflow.com/questions/50366401/parser-add-argument-support-multiple-types
 # Multiprocessing Errors - https://www.reddit.com/r/learnpython/comments/yo8pab/why_does_multiprocessing_not_work_
 # properly_in/
 # Multiprocessing Imap - https://stackoverflow.com/questions/19063238/in-what-situation-do-we-need-to-use-
@@ -531,6 +541,7 @@ if __name__ == "__main__":
 # Numpy Equality - https://stackoverflow.com/questions/10580676/comparing-two-numpy-arrays-for-equality-element-wise
 # Numpy Linalg Overhead - https://stackoverflow.com/questions/49866638/why-is-numpy-linalg-norm-slow-when-called-many-
 # times-for-small-size-data
+# Numpy pops - https://stackoverflow.com/questions/39945410/numpy-equivalent-of-list-pop
 # Numpy savetxt Format - https://stackoverflow.com/questions/71499463/how-to-export-numpy-array-without-brackets
 # Orbital Distance - https://space.stackexchange.com/questions/27872/how-to-calculate-the-orbital-distance-between-2-
 # satellites-given-the-tles
@@ -540,12 +551,17 @@ if __name__ == "__main__":
 # argparse
 # Parsing Integer Lists - https://stackoverflow.com/questions/15459997/passing-integer-lists-to-python
 # Prim's Algorithm - https://en.wikipedia.org/wiki/Prim%27s_algorithm
+# Print Flush - https://stackoverflow.com/questions/230751/how-can-i-flush-the-output-of-the-print-function
 # Pyephem Code - https://github.com/brandon-rhodes/pyephem
 # Pyephem Documentation - https://rhodesmill.org/pyephem/quick
 # Python Documentation - https://docs.python.org/3/
 # Reading Files - https://stackoverflow.com/questions/3277503/how-to-read-a-file-line-by-line-into-a-list
 # Reading Files Line By Line - https://stackoverflow.com/questions/3277503/how-to-read-a-file-line-by-line-into-a-list
 # Relative Imports - https://stackoverflow.com/questions/16981921/relative-imports-in-python-3
+# Relative Imports - https://stackoverflow.com/questions/14132789/relative-imports-for-the-billionth-time
+# Replacing Console Output - https://stackoverflow.com/questions/6169217/replace-console-output-in-python
+# Same Line Print - https://stackoverflow.com/questions/5598181/how-can-i-print-multiple-things-on-the-same-line-one-at-
+# a-time
 # Satellite Test Data - https://github.com/AtlantaEmrys2002/hypatia/tree/master/paper/satellite_networks_state
 # Saving Numpy Data to Files - https://stackoverflow.com/questions/28439701/how-to-save-and-load-numpy-array-data-
 # properly
@@ -564,6 +580,8 @@ if __name__ == "__main__":
 # SkyField Documentation - https://rhodesmill.org/skyfield/ & https://rhodesmill.org/skyfield/toc.html
 # Skyfield Timings - https://stackoverflow.com/questions/49494082/skyfield-achieve-sgp4-results-with-1-second-
 # periodicity-for-given-time-interval
+# Sorting Networkx Edges - https://stackoverflow.com/questions/42856659/how-to-sort-edges-in-networkx-based-on-their-
+# weight
 # Speedup For Loops - https://stackoverflow.com/questions/8770791/how-to-speed-up-python-loop
 # Spg4 Import Error - https://stackoverflow.com/questions/72639365/no-module-named-sgp4-but-requirement-already-
 # satisfied-sgp4-in-c
@@ -573,8 +591,10 @@ if __name__ == "__main__":
 # Sphinx Tutorial - https://stackoverflow.com/questions/74787850/generating-documentation-for-multiple-folders-with-
 # sphinx
 # Sorting by Column - https://stackoverflow.com/questions/2828059/sorting-arrays-in-numpy-by-column
+# Stop Execution - https://stackoverflow.com/questions/543309/programmatically-stop-execution-of-python-script
 # Subset of Rows - https://stackoverflow.com/questions/70341932/select-subset-of-rows-of-numpy-array-based-on-a-
 # selection-of-rows-in-another-arr
+# Suppressing Warnings - https://stackoverflow.com/questions/15777951/how-to-suppress-pandas-future-warning
 # Sys Arguments - https://stackoverflow.com/questions/11853508/how-to-make-sys-argv-arguments-optional
 # Take (Numpy) - https://stackoverflow.com/questions/60192041/python-numpy-np-take-with-2-dimensional-array
 # Threshold Values with Numpy - https://stackoverflow.com/questions/37973135/numpy-argmin-for-elements-greater-than-a-
@@ -584,13 +604,18 @@ if __name__ == "__main__":
 # TLE Definitions - https://platform-cdn.leolabs.space/static/files/tle_definition.pdf?7ba94f05897b4ae630a3c5b65be739
 # 6c642d9c72
 # Type Hinting - https://stackoverflow.com/questions/35673895/type-hinting-annotation-pep-484-for-numpy-ndarray
+# Type Hinting Collection - https://stackoverflow.com/questions/24853923/type-hinting-a-collection-of-a-specified-type
 # Type Hinting with Numpy - https://stackoverflow.com/questions/58877370/pycharm-typehint-for-numpy-array-of-objects
 # Type Hinting with Numpy - https://stackoverflow.com/questions/70714087/how-to-typehint-numpy-array-of-floats-and-or-
 # integers
+# Type Hinting Multiple Values - https://stackoverflow.com/questions/73252729/how-to-do-type-hint-when-multiple-return-
+# value-assigned-to-different-variable-in
 # Typing - https://stackoverflow.com/questions/14113187/how-do-you-set-a-conditional-in-python-based-on-datatypes
 # Typing and Int Assignment - https://stackoverflow.com/questions/21390612/typeerror-int-object-does-not-support-item-
 # assignment
 # Unique Values from List - https://stackoverflow.com/questions/12897374/get-unique-values-from-a-list-in-python
+# ValueErrors with Scipy - https://stackoverflow.com/questions/74472201/valueerror-too-many-values-to-unpack-expected-2-
+# when-doing-djisktras-algorith
 # World Geodetic System - https://en.wikipedia.org/wiki/World_Geodetic_System#Definition
 # Writing Packages - https://stackoverflow.com/questions/15746675/how-to-write-a-python-module-package
 # Zero-Size Reduction - https://www.reddit.com/r/learnpython/comments/lhljgh/valueerror_zerosize_array_to_reduction_

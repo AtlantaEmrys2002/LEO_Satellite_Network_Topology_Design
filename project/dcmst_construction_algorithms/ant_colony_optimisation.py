@@ -360,10 +360,18 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
 
 # References
 # Array of Objects - https://stackoverflow.com/questions/4877624/numpy-array-of-objects
+# Column to Zero - https://stackoverflow.com/questions/37251992/set-a-column-in-numpy-array-to-zero
 # Cycle Detection - https://en.wikipedia.org/wiki/Cycle_(graph_theory)
 # Deep Copies - https://stackoverflow.com/questions/37593013/deep-copy-of-a-np-array-of-np-array
+# Disjoint-set Data Structure - https://en.wikipedia.org/wiki/Disjoint-set_data_structure
+# Extracting Rows - https://stackoverflow.com/questions/61025485/numpy-array-how-to-extract-whole-rows-based-on-values-
+# in-a-column
 # Kruskal Algorithms - https://en.wikipedia.org/wiki/Kruskal%27s_algorithm#:~:text=Kruskal's%20algorithm%20finds%20a%20
 # minimum,will%20not%20form%20a%20cycle.
+# Matching Rows - https://stackoverflow.com/questions/25823608/find-matching-rows-in-2-dimensional-numpy-array
+# Min-Max Normalisation - https://stackoverflow.com/questions/48178884/min-max-normalisation-of-a-numpy-array
+# Numpy to Tuples - https://stackoverflow.com/questions/10016352/convert-numpy-array-to-tuple
+# Row Search - https://stackoverflow.com/questions/14766194/testing-whether-a-numpy-array-contains-a-given-row
 # Searching Numpy Arrays - https://stackoverflow.com/questions/3030480/how-do-i-select-elements-of-an-array-given-
 # condition
 # Sorting Objects - https://stackoverflow.com/questions/403421/how-do-i-sort-a-list-of-objects-based-on-an-attribute-of-

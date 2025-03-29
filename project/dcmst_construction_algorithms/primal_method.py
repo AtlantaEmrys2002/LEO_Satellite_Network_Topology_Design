@@ -265,6 +265,7 @@ def primal_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, total_sat
 # with-100-million-nodes
 # csgraph - https://www.geeksforgeeks.org/scipy-csgraph-compressed-sparse-graph/
 # Edge Removal - https://www.geeksforgeeks.org/check-removing-given-edge-disconnects-given-graph/
+# Meshgrid - https://stackoverflow.com/questions/18200541/speed-up-numpy-meshgrid-command
 # Prim's Algorithm - https://en.wikipedia.org/wiki/Prim%27s_algorithm
 # Comparison of Networkx Functions - https://stackoverflow.com/questions/56726562/is-all-pairs-dijkstra-faster-than-
 # multiple-dijkstra-path
