@@ -37,7 +37,7 @@
 <span id="data-handling-format-tle-data-module"></span><h1>data_handling.format_tle_data module<a class="headerlink" href="#module-data_handling.format_tle_data" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="data_handling.format_tle_data.format_tle_data">
-<span class="sig-prename descclassname"><span class="pre">data_handling.format_tle_data.</span></span><span class="sig-name descname"><span class="pre">format_tle_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_handling/format_tle_data.html#format_tle_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_handling.format_tle_data.format_tle_data" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">data_handling.format_tle_data.</span></span><span class="sig-name descname"><span class="pre">format_tle_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/data_handling/format_tle_data.html#format_tle_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data_handling.format_tle_data.format_tle_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function calls on Hypatia read_tles to build dictionary containing the total number of orbits in the
 constellation, as well as the number of satellites per orbit, the epoch of the network, and a description of each
 satellite’s position.</p>
@@ -46,7 +46,8 @@ satellite’s position.</p>
 <dd class="field-odd"><p><strong>file_name</strong> – the name of the file that holds the TLE description of all satellites within the network</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>dictionary containing formatted descriptions of satellite network. The ‘satellites’ key provides
+descriptions used in several functions.</p>
 </dd>
 </dl>
 </dd></dl>

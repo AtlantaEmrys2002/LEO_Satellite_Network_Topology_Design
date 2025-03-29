@@ -40,14 +40,14 @@
 <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">FutureWarning</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="hop_count"><a class="viewcode-back" href="../../metrics.average_hop_count.html#metrics.average_hop_count.hop_count">[docs]</a><span class="k">def</span> <span class="nf">hop_count</span><span class="p">(</span><span class="n">topology_matrix</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">):</span>
+<div class="viewcode-block" id="hop_count"><a class="viewcode-back" href="../../metrics.average_hop_count.html#metrics.average_hop_count.hop_count">[docs]</a><span class="k">def</span> <span class="nf">hop_count</span><span class="p">(</span><span class="n">topology_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the average hop count for a network topology based on calculations of hop count between all satellite</span>
 <span class="sd">    pairs in the network.</span>
-<span class="sd">    :param topology_matrix:</span>
-<span class="sd">    :param distance_matrix:</span>
-<span class="sd">    :param num_satellites:</span>
-<span class="sd">    :return:</span>
+<span class="sd">    :param topology_matrix: an adjacency matrix representing a satellite network topology</span>
+<span class="sd">    :param distance_matrix: an adjacency matrix where each element represents the distance between a satellite pair</span>
+<span class="sd">    :param num_satellites: the number of satellites within the network</span>
+<span class="sd">    :return: the average hop count for the given satellite network</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Calculate distance matrix for dijkstra function, such that only distances between satellites with an active ISL</span>
     <span class="c1"># are included</span>

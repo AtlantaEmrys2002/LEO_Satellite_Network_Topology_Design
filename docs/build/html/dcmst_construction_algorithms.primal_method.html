@@ -37,54 +37,96 @@
 <span id="dcmst-construction-algorithms-primal-method-module"></span><h1>dcmst_construction_algorithms.primal_method module<a class="headerlink" href="#module-dcmst_construction_algorithms.primal_method" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="dcmst_construction_algorithms.primal_method.edge_exchange">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.primal_method.</span></span><span class="sig-name descname"><span class="pre">edge_exchange</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_satellites</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degree</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/primal_method.html#edge_exchange"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.primal_method.edge_exchange" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="dcmst_construction_algorithms.primal_method.modified_prims_algorithm">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.primal_method.</span></span><span class="sig-name descname"><span class="pre">modified_prims_algorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_satellites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/primal_method.html#modified_prims_algorithm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.primal_method.modified_prims_algorithm" title="Permalink to this definition">¶</a></dt>
-<dd><p># Function constructs initial DCMST by greedily adding the shortest edges that connect vertices not currently
-within the tree to vertices already within the tree. However, degree constraints for each node are obeyed. I.e.
-this is the modified version of Prim’s Minimum Spanning Tree Algorithm presented in the original paper on DCMST (
-see report for full reference). Function returns tree and degree of each vertex in the tree.</p>
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.primal_method.</span></span><span class="sig-name descname"><span class="pre">edge_exchange</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_satellites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degree</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/primal_method.html#edge_exchange"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.primal_method.edge_exchange" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function performs the edge exchange portion of the primal cut algorithm - edges that can be exchanged with
+others to build a more suitable (lower total edge cost) DCMST of the graph are exchanged without disconnecting the
+tree or violating degree constraints.
+:param cost_matrix: costs assigned to each edge within the graph that represents the satellite network
+:param constraints: list that describes the maximum number of ISLs each satellite can establish at a given</p>
+<blockquote>
+<div><p>point in time</p>
+</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cost_matrix</strong> – </p></li>
-<li><p><strong>constraints</strong> – </p></li>
-<li><p><strong>total_satellites</strong> – </p></li>
-<li><p><strong>initial_node</strong> – </p></li>
+<li><p><strong>total_satellites</strong> – the number of satellites within the network</p></li>
+<li><p><strong>tree</strong> – a degree-constrained minimum spanning tree of the graph</p></li>
+<li><p><strong>degree</strong> – list that describes the current degree of each satellite within the network</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>a new tree such that edges that can be exchanged to decrease the total edge cost of the tree have been (see
+report or original paper for more details)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dcmst_construction_algorithms.primal_method.modified_prims_algorithm">
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.primal_method.</span></span><span class="sig-name descname"><span class="pre">modified_prims_algorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_satellites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/primal_method.html#modified_prims_algorithm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.primal_method.modified_prims_algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p># Function constructs initial DCMST by greedily adding the shortest edges that connect vertices not currently
+within the tree to vertices already within the tree. However, degree constraints for each node are obeyed. I.e.
+this is the modified version of Prim’s Minimum Spanning Tree Algorithm presented in the original paper on DCMST (
+see report for full reference). Function returns tree and degree of each vertex in the tree.
+:param cost_matrix: costs assigned to each edge within the graph that represents the satellite network
+:param constraints: list that describes the maximum number of ISLs each satellite can establish at a given</p>
+<blockquote>
+<div><p>point in time</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>total_satellites</strong> – the number of satellites within the network</p></li>
+<li><p><strong>initial_node</strong> – the first node added to the DCMST (determined at random)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a degree-constrained minimum spanning tree of the graph</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dcmst_construction_algorithms.primal_method.primal_algorithm">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.primal_method.</span></span><span class="sig-name descname"><span class="pre">primal_algorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_satellites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/primal_method.html#primal_algorithm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.primal_method.primal_algorithm" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.primal_method.</span></span><span class="sig-name descname"><span class="pre">primal_algorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_satellites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/primal_method.html#primal_algorithm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.primal_method.primal_algorithm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function builds DCMST according to Primal Algorithm presented in original paper on DCMSTs (‘Degree-Constrained
 Minimum Spanning Tree’ - Narula and Ho - see report for full citation). See original paper on DCMST and Prim’s
 Algorithm (<a class="reference external" href="https://en.wikipedia.org/wiki/Prim%27s_algorithm">https://en.wikipedia.org/wiki/Prim%27s_algorithm</a>). Tree holds a graphical representation of the network
 topology (1 where an ISL exists between satellites i and j, 0 otherwise). Current ISL number holds the degree of
 each node in the graph - i.e. the number of active ISLs each satellite.
 # possesses
-:param cost_matrix:
-:param constraints:
-:param total_satellites:
-:param initial_node:
-:return:</p>
+:param cost_matrix: costs assigned to each edge within the graph that represents the satellite network
+:param constraints: list that describes the maximum number of ISLs each satellite can establish at a given</p>
+<blockquote>
+<div><p>point in time</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>total_satellites</strong> – the number of satellites within the network</p></li>
+<li><p><strong>initial_node</strong> – the first node added to the DCMST (determined at random)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a degree-constrained minimum spanning tree of the graph</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dcmst_construction_algorithms.primal_method.subtree_builder">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.primal_method.</span></span><span class="sig-name descname"><span class="pre">subtree_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deleted_edge</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/primal_method.html#subtree_builder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.primal_method.subtree_builder" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.primal_method.</span></span><span class="sig-name descname"><span class="pre">subtree_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deleted_edge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/primal_method.html#subtree_builder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.primal_method.subtree_builder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finds the two subtrees created by deleting a given edge from a given degree constrained minimum spanning tree.
-:param tree:
-:param deleted_edge:
-:return:</p>
+:param tree: a degree-constrained minimum spanning tree of the graph
+:param deleted_edge: an edge to be deleted from the tree to determine the two subtrees resulting from the edge</p>
+<blockquote>
+<div><p>deletion</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the two subtrees created by deleting the given edge from the given tree</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

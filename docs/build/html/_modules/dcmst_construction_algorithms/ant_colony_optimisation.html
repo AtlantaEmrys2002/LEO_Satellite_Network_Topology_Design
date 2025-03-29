@@ -34,100 +34,79 @@
 <span></span><span class="c1"># Libraries</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
 <span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">scipy.cluster.hierarchy</span> <span class="kn">import</span> <span class="n">DisjointSet</span>
 
 
-<div class="viewcode-block" id="Ant"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.Ant">[docs]</a><span class="k">class</span> <span class="nc">Ant</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Used to initialise a member of the Ant class in the ACO DCMST construction algorithm.</span>
-<span class="sd">        :param location: node at which ant is currently situated</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">location</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tabu_list</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([])</span>
+<div class="viewcode-block" id="update_edge_pheromone"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.update_edge_pheromone">[docs]</a><span class="k">def</span> <span class="nf">update_edge_pheromone</span><span class="p">(</span><span class="n">edges</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">minPhm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">maxPhm</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Used ACO DCMST construction algorithm to update pheromones of each potential edge in graph.</span>
+<span class="sd">    :param edges: list of edges in graph with their respective values of edge cost, initial pheromone deposit, current</span>
+<span class="sd">     pheromone deposit, and number of ants that have traversed the edge</span>
+<span class="sd">    :param eta: hyperparameter used to determine amount to update edge pheromone</span>
+<span class="sd">    :param minPhm: minimum pheromone that can be on any edge</span>
+<span class="sd">    :param maxPhm: maximum pheromone that can be on any edge</span>
+<span class="sd">    :return: returns list of edges where the pheromone level of each edge has been updated according to set of</span>
+<span class="sd">     conditions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">const</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">eta</span>
 
-<div class="viewcode-block" id="Ant.reset"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.Ant.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Used by ACO DCMST construction algorithm to &quot;reset&quot; an ant for the next iteration of the algorithm.</span>
-<span class="sd">        :param num_sat: the number of satellites within the network</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">coin_flip</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">coin_flip</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_sat</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tabu_list</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div></div>
+    <span class="c1"># phm = (1 - eta) * phm + nVisited * initPhm</span>
+    <span class="n">edges</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">const</span> <span class="o">*</span> <span class="n">edges</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="n">edges</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">]</span> <span class="o">*</span> <span class="n">edges</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
 
+    <span class="c1"># set nVisited to 0</span>
+    <span class="n">edges</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
-<div class="viewcode-block" id="Edge"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.Edge">[docs]</a><span class="k">class</span> <span class="nc">Edge</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_cost</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">min_cost</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">edge_cost</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Used to initialise a member of the Edge class in the ACO DCMST construction algorithm.</span>
-<span class="sd">        :param max_cost: the maximum cost on any edge in the network</span>
-<span class="sd">        :param min_cost: the minimum cost of any edge in the network</span>
-<span class="sd">        :param edge_cost: the cost of the edge</span>
-<span class="sd">        :param u: one of the nodes incident to edge</span>
-<span class="sd">        :param v: one of the nodes incident to edge</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="n">u</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="n">v</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">edge_cost</span> <span class="o">=</span> <span class="n">edge_cost</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">initPhm</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_cost</span> <span class="o">-</span> <span class="n">edge_cost</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">max_cost</span> <span class="o">-</span> <span class="n">min_cost</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initPhm</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nVisited</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
+        <span class="c1"># If pheromones are greater than maximum amount possible on edge, or less than minimum amount possible on edge</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">maxPhm</span><span class="p">:</span>
+            <span class="n">e</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">maxPhm</span> <span class="o">-</span> <span class="n">e</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">minPhm</span><span class="p">:</span>
+            <span class="n">e</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">minPhm</span> <span class="o">-</span> <span class="n">e</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
 
-<div class="viewcode-block" id="Edge.update_pheromone"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.Edge.update_pheromone">[docs]</a>    <span class="k">def</span> <span class="nf">update_pheromone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">minPhm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">maxPhm</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Used by Edge class in ACO DCMST construction algorithm to update pheromones of the edge.</span>
-<span class="sd">        :param eta: used to determine amount to update edge pheromone</span>
-<span class="sd">        :param minPhm: minimum pheromone that can be on any edge</span>
-<span class="sd">        :param maxPhm: maximum pheromone that can be on any edge</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">eta</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nVisited</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">initPhm</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nVisited</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">&gt;</span> <span class="n">maxPhm</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">=</span> <span class="n">maxPhm</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">initPhm</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">&lt;</span> <span class="n">minPhm</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">=</span> <span class="n">minPhm</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">initPhm</span></div>
-
-<div class="viewcode-block" id="Edge.enhance"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.Edge.enhance">[docs]</a>    <span class="k">def</span> <span class="nf">enhance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Used by ACO DCMST construction algorithm to update pheromones of edges found in the best DCMST found (so far) by</span>
-<span class="sd">        the algorithm.</span>
-<span class="sd">        :param gamma: used to determine amount of pheromone with which to update edges in best DCMST discovered</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">*</span> <span class="n">gamma</span></div>
-
-<div class="viewcode-block" id="Edge.restart"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.Edge.restart">[docs]</a>    <span class="k">def</span> <span class="nf">restart</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Used by ACO DCMST construction algorithm to escape local optimum.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phm</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span></div></div>
+    <span class="k">return</span> <span class="n">edges</span></div>
 
 
-<div class="viewcode-block" id="initialise_ants_and_edges"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.initialise_ants_and_edges">[docs]</a><span class="k">def</span> <span class="nf">initialise_ants_and_edges</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Ant</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">Edge</span><span class="p">],</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<div class="viewcode-block" id="min_max"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.min_max">[docs]</a><span class="k">def</span> <span class="nf">min_max</span><span class="p">(</span><span class="n">weights</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Min-max scales array of values to range [0, 1].</span>
+<span class="sd">    :param weights: array of values to be min-max scaled (in this case, pheromone levels for each edge in graph)</span>
+<span class="sd">    :return: min-max scaled values of weights parameter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">weights</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">weights</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">weights</span><span class="p">))</span></div>
+
+
+<span class="c1"># def initialise_ants_and_edges(cost_matrix: np.ndarray, num_sat: int) -&gt; tuple[list[Ant], np.ndarray, float, float]:</span>
+<div class="viewcode-block" id="initialise_ants_and_edges"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.initialise_ants_and_edges">[docs]</a><span class="k">def</span> <span class="nf">initialise_ants_and_edges</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialises ants and edges (they are associated with other values, such as pheromones) for ACO DCMST construction</span>
 <span class="sd">    algorithm.</span>
 <span class="sd">    :param cost_matrix: costs assigned to each edge within the graph that represents the satellite network</span>
 <span class="sd">    :param num_sat: the number of satellites within the network</span>
-<span class="sd">    :return:</span>
+<span class="sd">    :return: the initialised ants and edges (in the correct format), as well as the maximum pheromone level and minimum</span>
+<span class="sd">     pheromone level that may be assigned to any given edge</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># CREATE ANTS #</span>
 
-    <span class="c1"># Initialise an ant at each vertex (cardinality will always be the number of satellites in the network)</span>
-    <span class="n">ants</span> <span class="o">=</span> <span class="p">[</span><span class="n">Ant</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_sat</span><span class="p">)]</span>
+    <span class="c1"># Initialise an ant at each vertex (cardinality will always be the number of satellites in the network) with a tabu</span>
+    <span class="c1"># list of all vertices ant has recently visited</span>
+    <span class="n">ants</span> <span class="o">=</span> <span class="p">[[</span><span class="n">v</span><span class="p">,</span> <span class="n">deque</span><span class="p">([])]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_sat</span><span class="p">)]</span>
 
     <span class="c1"># CREATE EDGES #</span>
 
     <span class="n">max_cost</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">)</span>
     <span class="n">min_cost</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">[</span><span class="n">cost_matrix</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">])</span>
 
+    <span class="c1"># Select all possible edges (remove duplicates, as undirected)</span>
     <span class="n">graph_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">cost_matrix</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-
     <span class="n">graph_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">graph_edges</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-    <span class="n">edges</span> <span class="o">=</span> <span class="p">[</span><span class="n">Edge</span><span class="p">(</span><span class="n">max_cost</span><span class="p">,</span> <span class="n">min_cost</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">[</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">graph_edges</span><span class="p">]</span>
+    <span class="c1"># Each edge in array consists of u, v (the two nodes incident to edge), the edge cost, the initial pheromone deposit</span>
+    <span class="c1"># on the edge, the current pheromone deposit on the edge (same as initial when initialised), and the number of ants</span>
+    <span class="c1"># that have traversed the edge</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cost_matrix</span><span class="p">[</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="p">(</span><span class="n">max_cost</span> <span class="o">-</span> <span class="n">cost_matrix</span><span class="p">[</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span> <span class="o">+</span> <span class="p">(</span><span class="n">max_cost</span> <span class="o">-</span> <span class="n">min_cost</span><span class="p">)</span>
+                       <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="p">(</span><span class="n">max_cost</span> <span class="o">-</span> <span class="n">cost_matrix</span><span class="p">[</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span> <span class="o">+</span> <span class="p">(</span><span class="n">max_cost</span> <span class="o">-</span> <span class="n">min_cost</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">graph_edges</span><span class="p">])</span>
 
     <span class="c1"># Calculate min and max pheromone each edge can have</span>
     <span class="n">maxPhm</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_cost</span> <span class="o">-</span> <span class="n">min_cost</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">max_cost</span> <span class="o">-</span> <span class="n">min_cost</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
@@ -136,7 +115,7 @@
     <span class="k">return</span> <span class="n">ants</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">maxPhm</span><span class="p">,</span> <span class="n">minPhm</span></div>
 
 
-<div class="viewcode-block" id="construct_spanning_tree"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.construct_spanning_tree">[docs]</a><span class="k">def</span> <span class="nf">construct_spanning_tree</span><span class="p">(</span><span class="n">edges</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Edge</span><span class="p">],</span> <span class="n">constraints</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nCandidates</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<div class="viewcode-block" id="modified_kruskal"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.modified_kruskal">[docs]</a><span class="k">def</span> <span class="nf">modified_kruskal</span><span class="p">(</span><span class="n">edges</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nCandidates</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Modified version of Kruskal&#39;s algorithm used to construct a DCMST - used in the ACO algorithm to create a DCMST</span>
 <span class="sd">    based on pheromones laid by ants and edge costs.</span>
@@ -145,14 +124,15 @@
 <span class="sd">     point in time</span>
 <span class="sd">    :param nCandidates: the number of candidate edges to evaluate at a time</span>
 <span class="sd">    :param num_sat: the number of satellites within the network</span>
-<span class="sd">    :return:</span>
+<span class="sd">    :return: a degree-constrained minimum spanning tree of the graph</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="c1"># Initialise spanning tree and degrees of each vertex</span>
     <span class="n">T_n</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">degrees</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_sat</span><span class="p">)])</span>
 
     <span class="c1"># Sort edges in decreasing order according to pheromone level</span>
-    <span class="n">edges</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">phm</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">edges</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">edges</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">])]</span>
 
     <span class="c1"># Select top nCandidates edges from E</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">nCandidates</span><span class="p">:</span>
@@ -161,27 +141,32 @@
         <span class="n">candidate_edges</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>
 
     <span class="c1"># Sort edges according to increasing edge cost</span>
-    <span class="n">candidate_edges</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">edge_cost</span><span class="p">)</span>
+    <span class="n">candidate_edges</span> <span class="o">=</span> <span class="n">candidate_edges</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">candidate_edges</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])]</span>
 
-    <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+    <span class="c1"># Initialise Disjoint set data structure of all nodes</span>
+    <span class="n">disjoint_set</span> <span class="o">=</span> <span class="n">DisjointSet</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_sat</span><span class="p">)))</span>
 
     <span class="n">level_of_candidates</span> <span class="o">=</span> <span class="mi">1</span>
 
-    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">T_n</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">num_sat</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">num_edges_tree</span> <span class="o">=</span> <span class="n">num_sat</span> <span class="o">-</span> <span class="mi">1</span>
 
-        <span class="n">candidate</span> <span class="o">=</span> <span class="n">candidate_edges</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">T_n</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">num_edges_tree</span><span class="p">:</span>
+
+        <span class="n">candidate</span> <span class="o">=</span> <span class="n">candidate_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">candidate_edges</span> <span class="o">=</span> <span class="n">candidate_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+        <span class="n">u</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">candidate</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">candidate</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
         <span class="c1"># Check if degree constraint violated by adding edge to tree</span>
-        <span class="k">if</span> <span class="n">degrees</span><span class="p">[</span><span class="n">candidate</span><span class="o">.</span><span class="n">u</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">constraints</span><span class="p">[</span><span class="n">candidate</span><span class="o">.</span><span class="n">u</span><span class="p">]</span> <span class="ow">and</span> <span class="n">degrees</span><span class="p">[</span><span class="n">candidate</span><span class="o">.</span><span class="n">v</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">constraints</span><span class="p">[</span><span class="n">candidate</span><span class="o">.</span><span class="n">v</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">degrees</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">constraints</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="ow">and</span> <span class="n">degrees</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">constraints</span><span class="p">[</span><span class="n">v</span><span class="p">]:</span>
 
-            <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">candidate</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="n">candidate</span><span class="o">.</span><span class="n">v</span><span class="p">)</span>
-
-            <span class="c1"># Check if cycle created (i.e. no longer a tree if edge added)</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">simple_cycles</span><span class="p">(</span><span class="n">G</span><span class="p">)))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">G</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="n">candidate</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="n">candidate</span><span class="o">.</span><span class="n">v</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">disjoint_set</span><span class="o">.</span><span class="n">connected</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">disjoint_set</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
                 <span class="n">T_n</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">candidate</span><span class="p">)</span>
-                <span class="n">degrees</span><span class="p">[</span><span class="n">candidate</span><span class="o">.</span><span class="n">u</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="n">degrees</span><span class="p">[</span><span class="n">candidate</span><span class="o">.</span><span class="n">v</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">degrees</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">degrees</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">candidate_edges</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># Select next best candidates (if more edges are needed)</span>
@@ -198,127 +183,127 @@
                     <span class="n">candidate_edges</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="n">lowest</span><span class="p">:])</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">candidate_edges</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">edges</span><span class="p">[</span><span class="n">lowest</span><span class="p">:</span><span class="n">highest</span><span class="p">])</span>
+
                 <span class="c1"># Sort C in order of increasing edge cost</span>
-                <span class="n">candidate_edges</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">edge_cost</span><span class="p">)</span>
+                <span class="n">candidate_edges</span> <span class="o">=</span> <span class="n">candidate_edges</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">candidate_edges</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">])]</span>
 
     <span class="k">return</span> <span class="n">T_n</span></div>
 
 
+<div class="viewcode-block" id="move_ant"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.move_ant">[docs]</a><span class="k">def</span> <span class="nf">move_ant</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">edges</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Moves ant through graph, effectively performing the &quot;exploration phase&quot; of the ant. Moves according to set number of</span>
+<span class="sd">    rules - see comments and original paper for more details.</span>
+<span class="sd">    :param a: list of ants</span>
+<span class="sd">    :param edges: edges within the graph</span>
+<span class="sd">    :return: edges within the graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nAttempts</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">moved</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># Move between five vertices or until ant cannot move (which over occurs first).</span>
+    <span class="k">while</span> <span class="n">moved</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">nAttempts</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+
+        <span class="n">v_1</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Select edges incident to v_1</span>
+        <span class="n">potential_edge_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">edges</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">v_1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">edges</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span>
+                                                                                                        <span class="n">v_1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()))</span>
+
+        <span class="n">potential_edges</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="n">potential_edge_indices</span><span class="p">]</span>
+
+        <span class="c1"># Select an edge adjacent to the vertex at which ant is located randomly (but proportional to the</span>
+        <span class="c1"># pheromone on that edge). If no more edges to explore, increase nAttempts</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">potential_edges</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+
+            <span class="n">random_edge</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">potential_edges</span><span class="p">))),</span> <span class="n">min_max</span><span class="p">(</span><span class="n">potential_edges</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">])</span><span class="o">.</span>
+                                         <span class="n">tolist</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># Find neighbouring vertex</span>
+            <span class="k">if</span> <span class="n">potential_edges</span><span class="p">[</span><span class="n">random_edge</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">v_1</span><span class="p">:</span>
+                <span class="n">v_2</span> <span class="o">=</span> <span class="n">potential_edges</span><span class="p">[</span><span class="n">random_edge</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">v_2</span> <span class="o">=</span> <span class="n">potential_edges</span><span class="p">[</span><span class="n">random_edge</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># If ant has not visited that vertex recently, move ant to that vertex</span>
+            <span class="k">if</span> <span class="n">v_2</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v_2</span><span class="p">)</span>
+                <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_2</span>
+                <span class="n">edges</span><span class="p">[</span><span class="n">potential_edge_indices</span><span class="p">[</span><span class="n">random_edge</span><span class="p">],</span> <span class="mi">5</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">moved</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">nAttempts</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nAttempts</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">a</span></div>
 
 
-
-
-
-<span class="c1"># OPTIMISE BY CHANGING SPANNING TREE ALGORITHM - USE MODIFIED PRIM&#39;S INSTEAD OF KRUSKAL</span>
-
-
-
-
-
-
-
-<div class="viewcode-block" id="move_ants"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.move_ants">[docs]</a><span class="k">def</span> <span class="nf">move_ants</span><span class="p">(</span><span class="n">ants</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Ant</span><span class="p">],</span> <span class="n">edges</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Edge</span><span class="p">],</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">update_period</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">minPhm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-              <span class="n">maxPhm</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<div class="viewcode-block" id="move_ants"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.move_ants">[docs]</a><span class="k">def</span> <span class="nf">move_ants</span><span class="p">(</span><span class="n">ants</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">edges</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">update_period</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">minPhm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+              <span class="n">maxPhm</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Moves edges according to given constraints within the graph. Each ant&#39;s position is updated accordingly, as is the</span>
 <span class="sd">    pheromone level of each edge. This is often deemed the &#39;exploration phase&#39; of the algorithm</span>
 <span class="sd">    :param ants: the ants used to explore the graph</span>
 <span class="sd">    :param edges: edges within the graph</span>
 <span class="sd">    :param max_steps: maximum number of edges each ant can traverse</span>
-<span class="sd">    :param update_period:</span>
-<span class="sd">    :param eta:</span>
+<span class="sd">    :param update_period: determines when to update edge pheromones (don&#39;t update every time an ant moves)</span>
+<span class="sd">    :param eta: hyperparameter used to determine amount to update edge pheromone</span>
 <span class="sd">    :param minPhm: minimum pheromone that can be on any edge</span>
 <span class="sd">    :param maxPhm: maximum pheromone that can be on any edge</span>
-<span class="sd">    :return:</span>
+<span class="sd">    :return: returns updated ants (according to position and nodes recently visited) and edges (according to pheromone</span>
+<span class="sd">     levels)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># The ants explore for a given number of steps</span>
     <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_steps</span><span class="p">):</span>
+
         <span class="c1"># Update pheromones of edges after a given number of steps - helps reduce execution time.</span>
         <span class="k">if</span> <span class="n">s</span> <span class="o">%</span> <span class="n">update_period</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
-                <span class="n">e</span><span class="o">.</span><span class="n">update_pheromone</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="n">minPhm</span><span class="p">,</span> <span class="n">maxPhm</span><span class="p">)</span>
+            <span class="n">edges</span> <span class="o">=</span> <span class="n">update_edge_pheromone</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">minPhm</span><span class="p">,</span> <span class="n">maxPhm</span><span class="p">)</span>
 
         <span class="c1"># Move each ant</span>
-        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ants</span><span class="p">:</span>
-
-            <span class="n">nAttempts</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">moved</span> <span class="o">=</span> <span class="kc">False</span>
-
-            <span class="c1"># Move between five vertices or until ant cannot move (which over occurs first).</span>
-            <span class="k">while</span> <span class="n">moved</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">nAttempts</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
-
-                <span class="n">v_1</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">location</span>
-
-                <span class="c1"># Select random edge from edges incident to v_1 with probability proportional to pheromone on edge</span>
-                <span class="n">potential_edges</span> <span class="o">=</span> <span class="p">[[</span><span class="n">edges</span><span class="p">[</span><span class="n">edge</span><span class="p">],</span> <span class="n">edge</span><span class="p">]</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">edges</span><span class="p">))</span> <span class="k">if</span> <span class="n">edges</span><span class="p">[</span><span class="n">edge</span><span class="p">]</span><span class="o">.</span><span class="n">u</span> <span class="o">==</span> <span class="n">v_1</span> <span class="ow">or</span>
-                                   <span class="n">edges</span><span class="p">[</span><span class="n">edge</span><span class="p">]</span><span class="o">.</span><span class="n">v</span> <span class="o">==</span> <span class="n">v_1</span><span class="p">]</span>
-
-                <span class="c1"># Select an edge adjacent to the vertex at which ant is located randomly (but proportional to the</span>
-                <span class="c1"># pheromone on that edge)</span>
-                <span class="n">random_edge</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">([</span><span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">potential_edges</span><span class="p">],</span> <span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">phm</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">potential_edges</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
-
-                <span class="c1"># Find neighbouring vertex</span>
-                <span class="k">if</span> <span class="n">edges</span><span class="p">[</span><span class="n">random_edge</span><span class="p">]</span><span class="o">.</span><span class="n">u</span> <span class="o">==</span> <span class="n">v_1</span><span class="p">:</span>
-                    <span class="n">v_2</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="n">random_edge</span><span class="p">]</span><span class="o">.</span><span class="n">v</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">v_2</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="n">random_edge</span><span class="p">]</span><span class="o">.</span><span class="n">u</span>
-
-                <span class="c1"># If ant has not visited that vertex recently, move ant to that vertex</span>
-                <span class="k">if</span> <span class="n">v_2</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">a</span><span class="o">.</span><span class="n">tabu_list</span><span class="p">:</span>
-                    <span class="n">a</span><span class="o">.</span><span class="n">tabu_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v_2</span><span class="p">)</span>
-                    <span class="n">a</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">v_2</span>
-                    <span class="n">edges</span><span class="p">[</span><span class="n">random_edge</span><span class="p">]</span><span class="o">.</span><span class="n">nVisited</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="n">moved</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">nAttempts</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">ants</span> <span class="o">=</span> <span class="p">[</span><span class="n">move_ant</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">edges</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ants</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">ants</span><span class="p">,</span> <span class="n">edges</span></div>
 
 
-<span class="c1"># def two_edge_replacement(T, num_sat):</span>
-<span class="c1">#     T_n = T</span>
-<span class="c1">#     nTries = 0</span>
-<span class="c1">#     while nTries &lt; num_sat / 2:</span>
-<span class="c1">#         # Select random edge in T_n</span>
-<span class="c1">#         e_1 = random.randint(0, len(T_n))</span>
-<span class="c1">#         e_b = e_1</span>
-<span class="c1">#         c_b = 0</span>
-<span class="c1">#         # for e in T</span>
-<span class="c1">#</span>
-<span class="c1">#</span>
-<span class="c1"># def one_edge_replacement():</span>
-<span class="c1">#     pass</span>
-
-
-<div class="viewcode-block" id="solution_fitness"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.solution_fitness">[docs]</a><span class="k">def</span> <span class="nf">solution_fitness</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+<div class="viewcode-block" id="solution_fitness"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.solution_fitness">[docs]</a><span class="k">def</span> <span class="nf">solution_fitness</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the sum of all edge costs within a given DCMST - used by the ACO DCMST construction algorithm.</span>
-<span class="sd">    :param tree:</span>
-<span class="sd">    :return:</span>
+<span class="sd">    :param tree: a proposed DCMST of the given graph</span>
+<span class="sd">    :return: the fitness of a given proposed DCMST.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">edge</span><span class="o">.</span><span class="n">edge_cost</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">tree</span><span class="p">])</span></div>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tree</span><span class="p">)[:,</span> <span class="mi">2</span><span class="p">])</span></div>
 
 
-<div class="viewcode-block" id="ant_colony"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.ant_colony">[docs]</a><span class="k">def</span> <span class="nf">ant_colony</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span>
-               <span class="n">max_iterations_without_improvement</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2500</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">75</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
-               <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">eta_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span> <span class="n">gamma_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.05</span><span class="p">,</span> <span class="n">R</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
+<div class="viewcode-block" id="ant_colony"><a class="viewcode-back" href="../../dcmst_construction_algorithms.ant_colony_optimisation.html#dcmst_construction_algorithms.ant_colony_optimisation.ant_colony">[docs]</a><span class="k">def</span> <span class="nf">ant_colony</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+               <span class="n">max_iterations_without_improvement</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">25</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">21</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+               <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">eta_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span> <span class="n">gamma_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.05</span><span class="p">,</span> <span class="n">R</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Algorithm that constructs a DCMST using an ant-based algorithm. Adapted from T. N. Bui, X. Deng, and C. M. Zrncic,</span>
-<span class="sd">     “An Improved Ant-Based Algorithm for the Degree-Constrained Minimum Spanning Tree Problem,” IEEE Trans. On Evol.</span>
-<span class="sd">     Computation, vol. 16, no. 2, pp. 266-278, Apr. 2012., doi: 10.1109/TEVC.2011.2125971. Default values for function</span>
-<span class="sd">     recommended by this original paper.</span>
-<span class="sd">    :param cost_matrix:</span>
-<span class="sd">    :param constraints:</span>
-<span class="sd">    :param num_sat:</span>
-<span class="sd">    :param max_iterations:</span>
-<span class="sd">    :param max_iterations_without_improvement:</span>
-<span class="sd">    :param max_steps:</span>
-<span class="sd">    :param eta:</span>
-<span class="sd">    :param gamma:</span>
-<span class="sd">    :param eta_change:</span>
-<span class="sd">    :param gamma_change:</span>
-<span class="sd">    :param R:</span>
-<span class="sd">    :return:</span>
+<span class="sd">    “An Improved Ant-Based Algorithm for the Degree-Constrained Minimum Spanning Tree Problem,” IEEE Trans. On Evol.</span>
+<span class="sd">    Computation, vol. 16, no. 2, pp. 266-278, Apr. 2012., doi: 10.1109/TEVC.2011.2125971. Default values for function</span>
+<span class="sd">    recommended by this original paper.</span>
+<span class="sd">    :param cost_matrix: an adjacency matrix, such that element cost_matrix[i][j] represents the cost of the graph edge</span>
+<span class="sd">     ij</span>
+<span class="sd">    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given</span>
+<span class="sd">     point in time</span>
+<span class="sd">    :param num_sat: the number of satellites within the network</span>
+<span class="sd">    :param max_iterations: the maximum number of iterations performed by the function. Changed paper default from 10000</span>
+<span class="sd">     to 100.</span>
+<span class="sd">    :param max_iterations_without_improvement: the maximum number of iterations performed by the function without any</span>
+<span class="sd">     improvement before the current best topology is returned</span>
+<span class="sd">    :param max_steps: the maximum number of exploration steps performed by each ant per iteration. Changed paper default</span>
+<span class="sd">     from 75 to 21</span>
+<span class="sd">    :param eta: hyperparameter used to determine amount to update edge pheromone</span>
+<span class="sd">    :param gamma: hyperparameter used to &quot;enhance&quot; the edge pheromones of the edges in the best spanning tree found so</span>
+<span class="sd">     far</span>
+<span class="sd">    :param eta_change: hyperparameter that determines the amount to adjust eta by each iteration</span>
+<span class="sd">    :param gamma_change: hyperparameter that determines the amount to adjust gamma by each iteration</span>
+<span class="sd">    :param R: used to prevent algorithm getting stuck in local optima</span>
+<span class="sd">    :return: a DCMST and the degree of each vertex within the tree</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Initialise counters</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
@@ -335,7 +320,7 @@
     <span class="n">ants</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">maxPhm</span><span class="p">,</span> <span class="n">minPhm</span> <span class="o">=</span> <span class="n">initialise_ants_and_edges</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">)</span>
 
     <span class="c1"># Construct spanning tree</span>
-    <span class="n">best_spanning_tree</span> <span class="o">=</span> <span class="n">construct_spanning_tree</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">candidate_set_cardinality</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">)</span>
+    <span class="n">best_spanning_tree</span> <span class="o">=</span> <span class="n">modified_kruskal</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">candidate_set_cardinality</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">)</span>
 
     <span class="c1"># Calculate fitness of spanning tree</span>
     <span class="n">best_fitness</span> <span class="o">=</span> <span class="n">solution_fitness</span><span class="p">(</span><span class="n">best_spanning_tree</span><span class="p">)</span>
@@ -349,13 +334,7 @@
         <span class="n">ants</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="n">move_ants</span><span class="p">(</span><span class="n">ants</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">max_steps</span><span class="p">,</span> <span class="n">update_period</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">minPhm</span><span class="p">,</span> <span class="n">maxPhm</span><span class="p">)</span>
 
         <span class="c1"># Construct new spanning tree based on exploration</span>
-        <span class="n">T</span> <span class="o">=</span> <span class="n">construct_spanning_tree</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">candidate_set_cardinality</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">)</span>
-
-        <span class="c1"># REMOVED AS SIGNIFICANTLY INCREASES RUN TIME - IMPLEMENT!</span>
-
-        <span class="c1"># LOCAL OPTIMISATION #</span>
-        <span class="c1"># T = two_edge_replacement(T)</span>
-        <span class="c1"># T = one_edge_replacement()</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">modified_kruskal</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">candidate_set_cardinality</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">)</span>
 
         <span class="c1"># Compare the fitness of current best solution to new one</span>
         <span class="n">current_solution_fitness</span> <span class="o">=</span> <span class="n">solution_fitness</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
@@ -369,12 +348,13 @@
         <span class="c1"># ENHANCE #</span>
 
         <span class="c1"># Enhance edges (lay pheromones) - update pheromones of all edges in the best solution found so far</span>
+
+        <span class="c1"># Find indices of all edges in best spanning tree and update their pheromone level accordingly</span>
+
         <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">best_spanning_tree</span><span class="p">:</span>
             <span class="c1"># Find edge in main set of edges and update accordingly</span>
-            <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">edges</span><span class="p">)):</span>
-                <span class="k">if</span> <span class="n">edges</span><span class="p">[</span><span class="n">e</span><span class="p">]</span><span class="o">.</span><span class="n">u</span> <span class="o">==</span> <span class="n">edge</span><span class="o">.</span><span class="n">u</span> <span class="ow">and</span> <span class="n">edges</span><span class="p">[</span><span class="n">e</span><span class="p">]</span><span class="o">.</span><span class="n">v</span> <span class="o">==</span> <span class="n">edge</span><span class="o">.</span><span class="n">v</span><span class="p">:</span>
-                    <span class="n">edges</span><span class="p">[</span><span class="n">e</span><span class="p">]</span><span class="o">.</span><span class="n">enhance</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span>
-                    <span class="k">break</span>
+            <span class="n">index_of_edge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">edges</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">edges</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">edges</span><span class="p">[</span><span class="n">index_of_edge</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">*=</span> <span class="n">gamma</span>
 
         <span class="c1"># RESTART #</span>
 
@@ -382,10 +362,10 @@
         <span class="k">if</span> <span class="n">i</span> <span class="o">-</span> <span class="nb">max</span><span class="p">(</span><span class="n">i_best</span><span class="p">,</span> <span class="n">i_restart</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">R</span><span class="p">:</span>
             <span class="n">i_restart</span> <span class="o">=</span> <span class="n">i</span>
             <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">best_spanning_tree</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">edges</span><span class="p">)):</span>
-                    <span class="k">if</span> <span class="n">edges</span><span class="p">[</span><span class="n">e</span><span class="p">]</span><span class="o">.</span><span class="n">u</span> <span class="o">==</span> <span class="n">edge</span><span class="o">.</span><span class="n">u</span> <span class="ow">and</span> <span class="n">edges</span><span class="p">[</span><span class="n">e</span><span class="p">]</span><span class="o">.</span><span class="n">v</span> <span class="o">==</span> <span class="n">edge</span><span class="o">.</span><span class="n">v</span><span class="p">:</span>
-                        <span class="n">edges</span><span class="p">[</span><span class="n">e</span><span class="p">]</span><span class="o">.</span><span class="n">restart</span><span class="p">()</span>
-                        <span class="k">break</span>
+                <span class="c1"># Find edge index</span>
+                <span class="n">index_of_edge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">edges</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">edges</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="c1"># Restart</span>
+                <span class="n">edges</span><span class="p">[</span><span class="n">index_of_edge</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span> <span class="o">*=</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
 
         <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
 
@@ -393,19 +373,21 @@
 
         <span class="c1"># In next iteration, reset ants - approximately half (coin toss) of all ants remain in their current locations</span>
         <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">ants</span><span class="p">:</span>
-            <span class="n">a</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">num_sat</span><span class="p">)</span>
+            <span class="n">coin_flip</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">coin_flip</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+                <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_sat</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
         <span class="c1"># Update gamma and eta</span>
         <span class="n">gamma</span> <span class="o">*=</span> <span class="n">gamma_change</span>
         <span class="n">eta</span> <span class="o">*=</span> <span class="n">eta_change</span>
 
-    <span class="n">edges</span> <span class="o">=</span> <span class="p">[[</span><span class="n">e</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">best_spanning_tree</span><span class="p">]</span>
-
     <span class="n">best_spanning_tree_adjacency</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_sat</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">))</span>
 
-    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">:</span>
-        <span class="n">best_spanning_tree_adjacency</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">best_spanning_tree_adjacency</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">best_spanning_tree</span><span class="p">:</span>
+
+        <span class="n">best_spanning_tree_adjacency</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">best_spanning_tree_adjacency</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="k">return</span> <span class="n">best_spanning_tree_adjacency</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">best_spanning_tree_adjacency</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span></div>
 
@@ -413,6 +395,8 @@
 <span class="c1"># Array of Objects - https://stackoverflow.com/questions/4877624/numpy-array-of-objects</span>
 <span class="c1"># Cycle Detection - https://en.wikipedia.org/wiki/Cycle_(graph_theory)</span>
 <span class="c1"># Deep Copies - https://stackoverflow.com/questions/37593013/deep-copy-of-a-np-array-of-np-array</span>
+<span class="c1"># Kruskal Algorithms - https://en.wikipedia.org/wiki/Kruskal%27s_algorithm#:~:text=Kruskal&#39;s%20algorithm%20finds%20a%20</span>
+<span class="c1"># minimum,will%20not%20form%20a%20cycle.</span>
 <span class="c1"># Searching Numpy Arrays - https://stackoverflow.com/questions/3030480/how-do-i-select-elements-of-an-array-given-</span>
 <span class="c1"># condition</span>
 <span class="c1"># Sorting Objects - https://stackoverflow.com/questions/403421/how-do-i-sort-a-list-of-objects-based-on-an-attribute-of-</span>

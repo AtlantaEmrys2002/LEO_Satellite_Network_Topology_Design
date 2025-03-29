@@ -35,14 +35,14 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 
-<div class="viewcode-block" id="link_churn"><a class="viewcode-back" href="../../metrics.link_churn.html#metrics.link_churn.link_churn">[docs]</a><span class="k">def</span> <span class="nf">link_churn</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">snapshot_num</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">):</span>
+<div class="viewcode-block" id="link_churn"><a class="viewcode-back" href="../../metrics.link_churn.html#metrics.link_churn.link_churn">[docs]</a><span class="k">def</span> <span class="nf">link_churn</span><span class="p">(</span><span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">snapshot_num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates link churn for satellite network over one orbital period (as determined by number of snapshots of network</span>
-<span class="sd">     taken).</span>
-<span class="sd">    :param location:</span>
-<span class="sd">    :param snapshot_num:</span>
-<span class="sd">    :param num_satellites:</span>
-<span class="sd">    :return:</span>
+<span class="sd">    taken).</span>
+<span class="sd">    :param location: location in which the topologies for which to calculate the link churn are situated</span>
+<span class="sd">    :param snapshot_num: the number of snapshots of the network over one orbit for which a topology is constructed</span>
+<span class="sd">    :param num_satellites: the number of satellites within the network</span>
+<span class="sd">    :return: the total number of link churns for the satellite network over one orbital period</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># LOAD INITIAL TOPOLOGY MATRICES #</span>
 

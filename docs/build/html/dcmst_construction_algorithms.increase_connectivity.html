@@ -37,21 +37,23 @@
 <span id="dcmst-construction-algorithms-increase-connectivity-module"></span><h1>dcmst_construction_algorithms.increase_connectivity module<a class="headerlink" href="#module-dcmst_construction_algorithms.increase_connectivity" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="dcmst_construction_algorithms.increase_connectivity.increase_connectivity">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.increase_connectivity.</span></span><span class="sig-name descname"><span class="pre">increase_connectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degree_constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_isl_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_satellites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/increase_connectivity.html#increase_connectivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.increase_connectivity.increase_connectivity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.increase_connectivity.</span></span><span class="sig-name descname"><span class="pre">increase_connectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degree_constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_isl_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_satellites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/increase_connectivity.html#increase_connectivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.increase_connectivity.increase_connectivity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gradually and greedily adds ISLs to graph to increase the connectivity between satellites until no more ISLs can be
 established without breaking constraints.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>tree</strong> – </p></li>
-<li><p><strong>degree_constraints</strong> – </p></li>
-<li><p><strong>current_isl_number</strong> – </p></li>
-<li><p><strong>cost_matrix</strong> – </p></li>
-<li><p><strong>total_satellites</strong> – </p></li>
+<li><p><strong>tree</strong> – a degree-constrained minimum spanning tree of the graph</p></li>
+<li><p><strong>degree_constraints</strong> – list that describes the maximum number of ISLs each satellite can establish at a given
+point in time</p></li>
+<li><p><strong>current_isl_number</strong> – list that describes the current degree of each satellite within the network</p></li>
+<li><p><strong>cost_matrix</strong> – costs assigned to each edge within the graph that represents the satellite network</p></li>
+<li><p><strong>total_satellites</strong> – the number of satellites within the network</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>a network that contains the tree spanning the network, as well as other edges added such that the degree
+constraint of each vertex is not broken</p>
 </dd>
 </dl>
 </dd></dl>

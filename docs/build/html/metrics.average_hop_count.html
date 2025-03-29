@@ -37,13 +37,13 @@
 <span id="metrics-average-hop-count-module"></span><h1>metrics.average_hop_count module<a class="headerlink" href="#module-metrics.average_hop_count" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="metrics.average_hop_count.hop_count">
-<span class="sig-prename descclassname"><span class="pre">metrics.average_hop_count.</span></span><span class="sig-name descname"><span class="pre">hop_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topology_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_satellites</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/metrics/average_hop_count.html#hop_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#metrics.average_hop_count.hop_count" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">metrics.average_hop_count.</span></span><span class="sig-name descname"><span class="pre">hop_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topology_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_satellites</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/metrics/average_hop_count.html#hop_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#metrics.average_hop_count.hop_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the average hop count for a network topology based on calculations of hop count between all satellite
 pairs in the network.
-:param topology_matrix:
-:param distance_matrix:
-:param num_satellites:
-:return:</p>
+:param topology_matrix: an adjacency matrix representing a satellite network topology
+:param distance_matrix: an adjacency matrix where each element represents the distance between a satellite pair
+:param num_satellites: the number of satellites within the network
+:return: the average hop count for the given satellite network</p>
 </dd></dl>
 
 </section>

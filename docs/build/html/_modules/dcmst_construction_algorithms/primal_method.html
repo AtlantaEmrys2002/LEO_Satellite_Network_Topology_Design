@@ -37,12 +37,13 @@
 <span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">csr_array</span>
 
 
-<div class="viewcode-block" id="subtree_builder"><a class="viewcode-back" href="../../dcmst_construction_algorithms.primal_method.html#dcmst_construction_algorithms.primal_method.subtree_builder">[docs]</a><span class="k">def</span> <span class="nf">subtree_builder</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">deleted_edge</span><span class="p">):</span>
+<div class="viewcode-block" id="subtree_builder"><a class="viewcode-back" href="../../dcmst_construction_algorithms.primal_method.html#dcmst_construction_algorithms.primal_method.subtree_builder">[docs]</a><span class="k">def</span> <span class="nf">subtree_builder</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">deleted_edge</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Finds the two subtrees created by deleting a given edge from a given degree constrained minimum spanning tree.</span>
-<span class="sd">    :param tree:</span>
-<span class="sd">    :param deleted_edge:</span>
-<span class="sd">    :return:</span>
+<span class="sd">    :param tree: a degree-constrained minimum spanning tree of the graph</span>
+<span class="sd">    :param deleted_edge: an edge to be deleted from the tree to determine the two subtrees resulting from the edge</span>
+<span class="sd">     deletion</span>
+<span class="sd">    :return: the two subtrees created by deleting the given edge from the given tree</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Edge deleted from tree</span>
     <span class="n">edge</span> <span class="o">=</span> <span class="n">deleted_edge</span>
@@ -73,9 +74,21 @@
     <span class="k">return</span> <span class="n">subtree_i</span><span class="p">,</span> <span class="n">subtree_j</span></div>
 
 
-<span class="c1"># This performs the edge exchange portion of the primal cut algorithm</span>
-<div class="viewcode-block" id="edge_exchange"><a class="viewcode-back" href="../../dcmst_construction_algorithms.primal_method.html#dcmst_construction_algorithms.primal_method.edge_exchange">[docs]</a><span class="k">def</span> <span class="nf">edge_exchange</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">,</span> <span class="n">tree</span><span class="p">,</span> <span class="n">degree</span><span class="p">):</span>
-
+<div class="viewcode-block" id="edge_exchange"><a class="viewcode-back" href="../../dcmst_construction_algorithms.primal_method.html#dcmst_construction_algorithms.primal_method.edge_exchange">[docs]</a><span class="k">def</span> <span class="nf">edge_exchange</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tree</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                  <span class="n">degree</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function performs the edge exchange portion of the primal cut algorithm - edges that can be exchanged with</span>
+<span class="sd">    others to build a more suitable (lower total edge cost) DCMST of the graph are exchanged without disconnecting the</span>
+<span class="sd">    tree or violating degree constraints.</span>
+<span class="sd">    :param cost_matrix: costs assigned to each edge within the graph that represents the satellite network</span>
+<span class="sd">    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given</span>
+<span class="sd">     point in time</span>
+<span class="sd">    :param total_satellites: the number of satellites within the network</span>
+<span class="sd">    :param tree: a degree-constrained minimum spanning tree of the graph</span>
+<span class="sd">    :param degree: list that describes the current degree of each satellite within the network</span>
+<span class="sd">    :return: a new tree such that edges that can be exchanged to decrease the total edge cost of the tree have been (see</span>
+<span class="sd">     report or original paper for more details)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># List edges in the tree</span>
     <span class="n">tree_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">tree</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
 
@@ -96,7 +109,8 @@
         <span class="n">potential_better_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">subtree_i</span><span class="p">,</span> <span class="n">subtree_j</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
         <span class="c1"># Sort (smaller node first) and remove duplicates (undirected graph)</span>
-        <span class="n">potential_better_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">potential_better_edges</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">potential_better_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">potential_better_edges</span><span class="p">)</span>
 
         <span class="c1"># Select all edges with a cost greater than zero</span>
         <span class="n">potential_better_edge_costs</span> <span class="o">=</span> <span class="n">cost_matrix</span><span class="p">[</span><span class="n">potential_better_edges</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">potential_better_edges</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
@@ -167,20 +181,19 @@
     <span class="k">return</span> <span class="n">tree</span><span class="p">,</span> <span class="n">degree</span></div>
 
 
-<span class="c1"># Function constructs initial DCMST by greedily adding the shortest edges that connect vertices not currently within the</span>
-<span class="c1"># tree to vertices already within the tree. Function returns tree and degree of each vertex in the tree.</span>
-<div class="viewcode-block" id="modified_prims_algorithm"><a class="viewcode-back" href="../../dcmst_construction_algorithms.primal_method.html#dcmst_construction_algorithms.primal_method.modified_prims_algorithm">[docs]</a><span class="k">def</span> <span class="nf">modified_prims_algorithm</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">initial_node</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<div class="viewcode-block" id="modified_prims_algorithm"><a class="viewcode-back" href="../../dcmst_construction_algorithms.primal_method.html#dcmst_construction_algorithms.primal_method.modified_prims_algorithm">[docs]</a><span class="k">def</span> <span class="nf">modified_prims_algorithm</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                             <span class="n">initial_node</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    # Function constructs initial DCMST by greedily adding the shortest edges that connect vertices not currently</span>
 <span class="sd">    within the tree to vertices already within the tree. However, degree constraints for each node are obeyed. I.e.</span>
 <span class="sd">    this is the modified version of Prim&#39;s Minimum Spanning Tree Algorithm presented in the original paper on DCMST (</span>
 <span class="sd">    see report for full reference). Function returns tree and degree of each vertex in the tree.</span>
-
-<span class="sd">    :param cost_matrix:</span>
-<span class="sd">    :param constraints:</span>
-<span class="sd">    :param total_satellites:</span>
-<span class="sd">    :param initial_node:</span>
-<span class="sd">    :return:</span>
+<span class="sd">    :param cost_matrix: costs assigned to each edge within the graph that represents the satellite network</span>
+<span class="sd">    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given</span>
+<span class="sd">     point in time</span>
+<span class="sd">    :param total_satellites: the number of satellites within the network</span>
+<span class="sd">    :param initial_node: the first node added to the DCMST (determined at random)</span>
+<span class="sd">    :return: a degree-constrained minimum spanning tree of the graph</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Initialise list of edges</span>
     <span class="n">tree</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">total_satellites</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">))</span>
@@ -251,7 +264,8 @@
     <span class="k">return</span> <span class="n">tree</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">degree</span></div>
 
 
-<div class="viewcode-block" id="primal_algorithm"><a class="viewcode-back" href="../../dcmst_construction_algorithms.primal_method.html#dcmst_construction_algorithms.primal_method.primal_algorithm">[docs]</a><span class="k">def</span> <span class="nf">primal_algorithm</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">initial_node</span><span class="p">):</span>
+<div class="viewcode-block" id="primal_algorithm"><a class="viewcode-back" href="../../dcmst_construction_algorithms.primal_method.html#dcmst_construction_algorithms.primal_method.primal_algorithm">[docs]</a><span class="k">def</span> <span class="nf">primal_algorithm</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">initial_node</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Function builds DCMST according to Primal Algorithm presented in original paper on DCMSTs (&#39;Degree-Constrained</span>
 <span class="sd">    Minimum Spanning Tree&#39; - Narula and Ho - see report for full citation). See original paper on DCMST and Prim&#39;s</span>
@@ -259,15 +273,17 @@
 <span class="sd">    topology (1 where an ISL exists between satellites i and j, 0 otherwise). Current ISL number holds the degree of</span>
 <span class="sd">    each node in the graph - i.e. the number of active ISLs each satellite.</span>
 <span class="sd">    # possesses</span>
-<span class="sd">    :param cost_matrix:</span>
-<span class="sd">    :param constraints:</span>
-<span class="sd">    :param total_satellites:</span>
-<span class="sd">    :param initial_node:</span>
-<span class="sd">    :return:</span>
+<span class="sd">    :param cost_matrix: costs assigned to each edge within the graph that represents the satellite network</span>
+<span class="sd">    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given</span>
+<span class="sd">     point in time</span>
+<span class="sd">    :param total_satellites: the number of satellites within the network</span>
+<span class="sd">    :param initial_node: the first node added to the DCMST (determined at random)</span>
+<span class="sd">    :return: a degree-constrained minimum spanning tree of the graph</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Construct initial DCMST (Degree-Constrained Spanning Tree) using modified version of Prim&#39;s algorithm</span>
     <span class="c1"># (modified so number of edges incident to any given vertex cannot be greater than constraint (maximum degree)</span>
     <span class="c1"># of given vertex)</span>
+
     <span class="n">tree</span><span class="p">,</span> <span class="n">degree</span> <span class="o">=</span> <span class="n">modified_prims_algorithm</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">,</span> <span class="n">initial_node</span><span class="p">)</span>
 
     <span class="c1"># Exchange edges if better edge found according to given conditions</span>

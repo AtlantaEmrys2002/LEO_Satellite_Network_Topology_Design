@@ -36,17 +36,20 @@
 
 
 <span class="c1"># Adds edges (i.e. ISLs) to topology greedily (in order of increasing cost)</span>
-<div class="viewcode-block" id="increase_connectivity"><a class="viewcode-back" href="../../dcmst_construction_algorithms.increase_connectivity.html#dcmst_construction_algorithms.increase_connectivity.increase_connectivity">[docs]</a><span class="k">def</span> <span class="nf">increase_connectivity</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">degree_constraints</span><span class="p">,</span> <span class="n">current_isl_number</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<div class="viewcode-block" id="increase_connectivity"><a class="viewcode-back" href="../../dcmst_construction_algorithms.increase_connectivity.html#dcmst_construction_algorithms.increase_connectivity.increase_connectivity">[docs]</a><span class="k">def</span> <span class="nf">increase_connectivity</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">degree_constraints</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">current_isl_number</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                          <span class="n">cost_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">total_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Gradually and greedily adds ISLs to graph to increase the connectivity between satellites until no more ISLs can be</span>
 <span class="sd">    established without breaking constraints.</span>
 
-<span class="sd">    :param tree:</span>
-<span class="sd">    :param degree_constraints:</span>
-<span class="sd">    :param current_isl_number:</span>
-<span class="sd">    :param cost_matrix:</span>
-<span class="sd">    :param total_satellites:</span>
-<span class="sd">    :return:</span>
+<span class="sd">    :param tree: a degree-constrained minimum spanning tree of the graph</span>
+<span class="sd">    :param degree_constraints: list that describes the maximum number of ISLs each satellite can establish at a given</span>
+<span class="sd">     point in time</span>
+<span class="sd">    :param current_isl_number: list that describes the current degree of each satellite within the network</span>
+<span class="sd">    :param cost_matrix: costs assigned to each edge within the graph that represents the satellite network</span>
+<span class="sd">    :param total_satellites: the number of satellites within the network</span>
+<span class="sd">    :return: a network that contains the tree spanning the network, as well as other edges added such that the degree</span>
+<span class="sd">     constraint of each vertex is not broken</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Ensure all feasible edges (i.e. ISL can be established between satellites) not in tree are considered</span>
     <span class="n">cost_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">tree</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>

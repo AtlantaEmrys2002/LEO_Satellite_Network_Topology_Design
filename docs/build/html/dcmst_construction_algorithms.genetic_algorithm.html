@@ -37,61 +37,103 @@
 <span id="dcmst-construction-algorithms-genetic-algorithm-module"></span><h1>dcmst_construction_algorithms.genetic_algorithm module<a class="headerlink" href="#module-dcmst_construction_algorithms.genetic_algorithm" title="Permalink to this headline">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="dcmst_construction_algorithms.genetic_algorithm.check_degree">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.genetic_algorithm.</span></span><span class="sig-name descname"><span class="pre">check_degree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree_encoding</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/genetic_algorithm.html#check_degree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.genetic_algorithm.check_degree" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.genetic_algorithm.</span></span><span class="sig-name descname"><span class="pre">check_degree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree_encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/genetic_algorithm.html#check_degree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.genetic_algorithm.check_degree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks that all nodes within tree (encoded as a Prufer number) meet degree constraints. The degree of each node in
 the tree is 1 more than the number of times it appears in the Prufer number encoding.
-:param tree_encoding:
-:param constraints:
-:param num_sat:
-:return:</p>
+:param tree_encoding: a Prufer number (encoding) of a tree
+:param constraints: list that describes the maximum number of ISLs each satellite can establish at a given</p>
+<blockquote>
+<div><p>point in time</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>num_sat</strong> – the number of satellites within the network</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>determines if all degree constraints on vertices are met</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dcmst_construction_algorithms.genetic_algorithm.fitness">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.genetic_algorithm.</span></span><span class="sig-name descname"><span class="pre">fitness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chromosome</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/genetic_algorithm.html#fitness"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.genetic_algorithm.fitness" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.genetic_algorithm.</span></span><span class="sig-name descname"><span class="pre">fitness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chromosome</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/genetic_algorithm.html#fitness"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.genetic_algorithm.fitness" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the total sum cost of all edges in a given degree-constrained minimum spanning tree.
-:param chromosome:
-:param cost_matrix:
-:return:</p>
+:param chromosome: a list of possible solutions or “genes” to the DCMST problem
+:param cost_matrix: an adjacency matrix, such that element cost_matrix[i][j] represents the cost of the graph edge</p>
+<blockquote>
+<div><p>ij</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the fitness/suitability of each solution or “gene” within the chromosome, as determined by the total sum
+cost of all edges within the tree (aim to minimise)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dcmst_construction_algorithms.genetic_algorithm.genetic_algorithm">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.genetic_algorithm.</span></span><span class="sig-name descname"><span class="pre">genetic_algorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/genetic_algorithm.html#genetic_algorithm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.genetic_algorithm.genetic_algorithm" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.genetic_algorithm.</span></span><span class="sig-name descname"><span class="pre">genetic_algorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/genetic_algorithm.html#genetic_algorithm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.genetic_algorithm.genetic_algorithm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a degree-constrained minimum spanning tree of the network built using a genetic algorithm presented in
 ‘Comparison of Algorithms for the Degree Constrained Minimum Spanning Tree’. <a class="reference external" href="https://doi.org/10.1023/A:1011977126230">https://doi.org/10.1023/A:1011977126230</a>
-:param cost_matrix:
-:param constraints:
-:param num_sat:
-:param population_size:</p>
+:param cost_matrix: an adjacency matrix, such that element cost_matrix[i][j] represents the cost of the graph edge</p>
+<blockquote>
+<div><p>ij</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>constraints</strong> – list that describes the maximum number of ISLs each satellite can establish at a given
+point in time</p></li>
+<li><p><strong>num_sat</strong> – the number of satellites within the network</p></li>
+<li><p><strong>population_size</strong> – number of solutions generated each iteration of the algorithm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a DCMST and the degree of each vertex within the tree</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dcmst_construction_algorithms.genetic_algorithm.prufer_decode">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.genetic_algorithm.</span></span><span class="sig-name descname"><span class="pre">prufer_decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prufer_number</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/genetic_algorithm.html#prufer_decode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.genetic_algorithm.prufer_decode" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.genetic_algorithm.</span></span><span class="sig-name descname"><span class="pre">prufer_decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prufer_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/genetic_algorithm.html#prufer_decode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.genetic_algorithm.prufer_decode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decodes Prufer number and returns tree encoded in Prufer number as adjacency matrix, as well as the degree of each
 node in the resulting tree.
-:param prufer_number:
-:return:</p>
+:param prufer_number: a Prufer number (encoding) of a tree
+:return: an adjacency matrix representing a spanning tree of the graph, as well as the degree of each vertex within</p>
+<blockquote>
+<div><p>the tree</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dcmst_construction_algorithms.genetic_algorithm.prufer_encode">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.genetic_algorithm.</span></span><span class="sig-name descname"><span class="pre">prufer_encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/genetic_algorithm.html#prufer_encode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.genetic_algorithm.prufer_encode" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.genetic_algorithm.</span></span><span class="sig-name descname"><span class="pre">prufer_encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/genetic_algorithm.html#prufer_encode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.genetic_algorithm.prufer_encode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Encodes tree as its Prufer Number - uses Cayley’s representation (see DCMST comparison paper).
-:param tree:
-:return:</p>
+:param tree: adjacency matrix representing a spanning tree of the graph
+:return: a Prufer number (encoding) of the given tree</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dcmst_construction_algorithms.genetic_algorithm.random_trees">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.genetic_algorithm.</span></span><span class="sig-name descname"><span class="pre">random_trees</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_sat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pop_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/genetic_algorithm.html#random_trees"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.genetic_algorithm.random_trees" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.genetic_algorithm.</span></span><span class="sig-name descname"><span class="pre">random_trees</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pop_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/genetic_algorithm.html#random_trees"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.genetic_algorithm.random_trees" title="Permalink to this definition">¶</a></dt>
 <dd><p>Randomly generates a set number (indicated by population size) of valid degree-constrained spanning trees of
 satellite network.
-:param num_sat:
-:param constraints:
-:param pop_size:
-:return:</p>
+:param num_sat: the number of satellites within the network
+:param constraints: list that describes the maximum number of ISLs each satellite can establish at a given</p>
+<blockquote>
+<div><p>point in time</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pop_size</strong> – number of solutions generated each iteration of the algorithm</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of randomly generated degree constrained minimum spanning trees (encoded as prufer numbers)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

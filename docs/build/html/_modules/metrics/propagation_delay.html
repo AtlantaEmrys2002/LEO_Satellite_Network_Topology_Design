@@ -38,13 +38,14 @@
 <span class="kn">from</span> <span class="nn">scipy.sparse.csgraph</span> <span class="kn">import</span> <span class="n">dijkstra</span>
 
 
-<div class="viewcode-block" id="propagation_delay"><a class="viewcode-back" href="../../metrics.propagation_delay.html#metrics.propagation_delay.propagation_delay">[docs]</a><span class="k">def</span> <span class="nf">propagation_delay</span><span class="p">(</span><span class="n">topology_matrix</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">):</span>
+<div class="viewcode-block" id="propagation_delay"><a class="viewcode-back" href="../../metrics.propagation_delay.html#metrics.propagation_delay.propagation_delay">[docs]</a><span class="k">def</span> <span class="nf">propagation_delay</span><span class="p">(</span><span class="n">topology_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates the max propagation delay and mean propagation delay for a satellite network for all paths between all</span>
 <span class="sd">    satellite pairs within the satellite network.</span>
-<span class="sd">    :param topology_matrix:</span>
-<span class="sd">    :param distance_matrix:</span>
-<span class="sd">    :param num_satellites:</span>
+<span class="sd">    :param topology_matrix: an adjacency matrix representing a satellite network topology</span>
+<span class="sd">    :param distance_matrix: an adjacency matrix where each element represents the distance between a satellite pair</span>
+<span class="sd">    :param num_satellites: the number of satellites in the network</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Calculate distance matrix for dijkstra function, such that only distances between satellites with an active ISL</span>

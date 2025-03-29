@@ -35,82 +35,67 @@
             
   <section id="module-dcmst_construction_algorithms.ant_colony_optimisation">
 <span id="dcmst-construction-algorithms-ant-colony-optimisation-module"></span><h1>dcmst_construction_algorithms.ant_colony_optimisation module<a class="headerlink" href="#module-dcmst_construction_algorithms.ant_colony_optimisation" title="Permalink to this headline">¶</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.Ant">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">Ant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#Ant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.Ant" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.Ant.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#Ant.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.Ant.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Used by ACO DCMST construction algorithm to “reset” an ant for the next iteration of the algorithm.
-:param num_sat: the number of satellites within the network</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.Edge">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">Edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_cost</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_cost</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_cost</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#Edge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.Edge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.Edge.enhance">
-<span class="sig-name descname"><span class="pre">enhance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#Edge.enhance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.Edge.enhance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Used by ACO DCMST construction algorithm to update pheromones of edges found in the best DCMST found (so far) by
-the algorithm.
-:param gamma: used to determine amount of pheromone with which to update edges in best DCMST discovered</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.Edge.restart">
-<span class="sig-name descname"><span class="pre">restart</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#Edge.restart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.Edge.restart" title="Permalink to this definition">¶</a></dt>
-<dd><p>Used by ACO DCMST construction algorithm to escape local optimum.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.Edge.update_pheromone">
-<span class="sig-name descname"><span class="pre">update_pheromone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minPhm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxPhm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#Edge.update_pheromone"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.Edge.update_pheromone" title="Permalink to this definition">¶</a></dt>
-<dd><p>Used by Edge class in ACO DCMST construction algorithm to update pheromones of the edge.
-:param eta: used to determine amount to update edge pheromone
-:param minPhm: minimum pheromone that can be on any edge
-:param maxPhm: maximum pheromone that can be on any edge</p>
-</dd></dl>
-
-</dd></dl>
-
 <dl class="py function">
 <dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.ant_colony">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">ant_colony</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations_without_improvement</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta_change</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_change</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#ant_colony"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.ant_colony" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="simple">
-<dt>Algorithm that constructs a DCMST using an ant-based algorithm. Adapted from T. N. Bui, X. Deng, and C. M. Zrncic,</dt><dd><p>“An Improved Ant-Based Algorithm for the Degree-Constrained Minimum Spanning Tree Problem,” IEEE Trans. On Evol.
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">ant_colony</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations_without_improvement</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">21</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta_change</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma_change</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#ant_colony"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.ant_colony" title="Permalink to this definition">¶</a></dt>
+<dd><p>Algorithm that constructs a DCMST using an ant-based algorithm. Adapted from T. N. Bui, X. Deng, and C. M. Zrncic,
+“An Improved Ant-Based Algorithm for the Degree-Constrained Minimum Spanning Tree Problem,” IEEE Trans. On Evol.
 Computation, vol. 16, no. 2, pp. 266-278, Apr. 2012., doi: 10.1109/TEVC.2011.2125971. Default values for function
-recommended by this original paper.</p>
-</dd>
-</dl>
+recommended by this original paper.
+:param cost_matrix: an adjacency matrix, such that element cost_matrix[i][j] represents the cost of the graph edge</p>
+<blockquote>
+<div><p>ij</p>
+</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cost_matrix</strong> – </p></li>
-<li><p><strong>constraints</strong> – </p></li>
-<li><p><strong>num_sat</strong> – </p></li>
-<li><p><strong>max_iterations</strong> – </p></li>
-<li><p><strong>max_iterations_without_improvement</strong> – </p></li>
-<li><p><strong>max_steps</strong> – </p></li>
-<li><p><strong>eta</strong> – </p></li>
-<li><p><strong>gamma</strong> – </p></li>
-<li><p><strong>eta_change</strong> – </p></li>
-<li><p><strong>gamma_change</strong> – </p></li>
-<li><p><strong>R</strong> – </p></li>
+<li><p><strong>constraints</strong> – list that describes the maximum number of ISLs each satellite can establish at a given
+point in time</p></li>
+<li><p><strong>num_sat</strong> – the number of satellites within the network</p></li>
+<li><p><strong>max_iterations</strong> – the maximum number of iterations performed by the function. Changed paper default from 10000
+to 100.</p></li>
+<li><p><strong>max_iterations_without_improvement</strong> – the maximum number of iterations performed by the function without any
+improvement before the current best topology is returned</p></li>
+<li><p><strong>max_steps</strong> – the maximum number of exploration steps performed by each ant per iteration. Changed paper default
+from 75 to 21</p></li>
+<li><p><strong>eta</strong> – hyperparameter used to determine amount to update edge pheromone</p></li>
+<li><p><strong>gamma</strong> – hyperparameter used to “enhance” the edge pheromones of the edges in the best spanning tree found so
+far</p></li>
+<li><p><strong>eta_change</strong> – hyperparameter that determines the amount to adjust eta by each iteration</p></li>
+<li><p><strong>gamma_change</strong> – hyperparameter that determines the amount to adjust gamma by each iteration</p></li>
+<li><p><strong>R</strong> – used to prevent algorithm getting stuck in local optima</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>a DCMST and the degree of each vertex within the tree</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.construct_spanning_tree">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">construct_spanning_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dcmst_construction_algorithms.ant_colony_optimisation.Edge" title="dcmst_construction_algorithms.ant_colony_optimisation.Edge"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.Edge</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nCandidates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#construct_spanning_tree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.construct_spanning_tree" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.initialise_ants_and_edges">
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">initialise_ants_and_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#initialise_ants_and_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.initialise_ants_and_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialises ants and edges (they are associated with other values, such as pheromones) for ACO DCMST construction
+algorithm.
+:param cost_matrix: costs assigned to each edge within the graph that represents the satellite network
+:param num_sat: the number of satellites within the network
+:return: the initialised ants and edges (in the correct format), as well as the maximum pheromone level and minimum</p>
+<blockquote>
+<div><p>pheromone level that may be assigned to any given edge</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.min_max">
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">min_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#min_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.min_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Min-max scales array of values to range [0, 1].
+:param weights: array of values to be min-max scaled (in this case, pheromone levels for each edge in graph)
+:return: min-max scaled values of weights parameter.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.modified_kruskal">
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">modified_kruskal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nCandidates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#modified_kruskal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.modified_kruskal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Modified version of Kruskal’s algorithm used to construct a DCMST - used in the ACO algorithm to create a DCMST
 based on pheromones laid by ants and edge costs.
 :param edges: edges within the graph
@@ -126,42 +111,68 @@ based on pheromones laid by ants and edge costs.
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>a degree-constrained minimum spanning tree of the graph</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.initialise_ants_and_edges">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">initialise_ants_and_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dcmst_construction_algorithms.ant_colony_optimisation.Ant" title="dcmst_construction_algorithms.ant_colony_optimisation.Ant"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.Ant</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dcmst_construction_algorithms.ant_colony_optimisation.Edge" title="dcmst_construction_algorithms.ant_colony_optimisation.Edge"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.Edge</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#initialise_ants_and_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.initialise_ants_and_edges" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialises ants and edges (they are associated with other values, such as pheromones) for ACO DCMST construction
-algorithm.
-:param cost_matrix: costs assigned to each edge within the graph that represents the satellite network
-:param num_sat: the number of satellites within the network
-:return:</p>
+<dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.move_ant">
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">move_ant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#move_ant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.move_ant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Moves ant through graph, effectively performing the “exploration phase” of the ant. Moves according to set number of
+rules - see comments and original paper for more details.
+:param a: list of ants
+:param edges: edges within the graph
+:return: edges within the graph</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.move_ants">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">move_ants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ants</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dcmst_construction_algorithms.ant_colony_optimisation.Ant" title="dcmst_construction_algorithms.ant_colony_optimisation.Ant"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.Ant</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dcmst_construction_algorithms.ant_colony_optimisation.Edge" title="dcmst_construction_algorithms.ant_colony_optimisation.Edge"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.Edge</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_period</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minPhm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxPhm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#move_ants"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.move_ants" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">move_ants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ants</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_period</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minPhm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxPhm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#move_ants"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.move_ants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Moves edges according to given constraints within the graph. Each ant’s position is updated accordingly, as is the
 pheromone level of each edge. This is often deemed the ‘exploration phase’ of the algorithm
 :param ants: the ants used to explore the graph
 :param edges: edges within the graph
 :param max_steps: maximum number of edges each ant can traverse
-:param update_period:
-:param eta:
+:param update_period: determines when to update edge pheromones (don’t update every time an ant moves)
+:param eta: hyperparameter used to determine amount to update edge pheromone
 :param minPhm: minimum pheromone that can be on any edge
 :param maxPhm: maximum pheromone that can be on any edge
-:return:</p>
+:return: returns updated ants (according to position and nodes recently visited) and edges (according to pheromone</p>
+<blockquote>
+<div><p>levels)</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.solution_fitness">
-<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">solution_fitness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#solution_fitness"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.solution_fitness" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">solution_fitness</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#solution_fitness"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.solution_fitness" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates the sum of all edge costs within a given DCMST - used by the ACO DCMST construction algorithm.
-:param tree:
-:return:</p>
+:param tree: a proposed DCMST of the given graph
+:return: the fitness of a given proposed DCMST.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dcmst_construction_algorithms.ant_colony_optimisation.update_edge_pheromone">
+<span class="sig-prename descclassname"><span class="pre">dcmst_construction_algorithms.ant_colony_optimisation.</span></span><span class="sig-name descname"><span class="pre">update_edge_pheromone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minPhm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxPhm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="_modules/dcmst_construction_algorithms/ant_colony_optimisation.html#update_edge_pheromone"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dcmst_construction_algorithms.ant_colony_optimisation.update_edge_pheromone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used ACO DCMST construction algorithm to update pheromones of each potential edge in graph.
+:param edges: list of edges in graph with their respective values of edge cost, initial pheromone deposit, current</p>
+<blockquote>
+<div><p>pheromone deposit, and number of ants that have traversed the edge</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eta</strong> – hyperparameter used to determine amount to update edge pheromone</p></li>
+<li><p><strong>minPhm</strong> – minimum pheromone that can be on any edge</p></li>
+<li><p><strong>maxPhm</strong> – maximum pheromone that can be on any edge</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>returns list of edges where the pheromone level of each edge has been updated according to set of
+conditions</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
