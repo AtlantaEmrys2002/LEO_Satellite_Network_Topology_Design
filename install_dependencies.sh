@@ -8,6 +8,7 @@ echo "Installing dependencies... "
 echo ""
 
 # Python packages
-pip install astropy certifi ephem networkx numpy nx-parallel pytest scipy sgp4 skyfield sphinx || exit 1
+pip install astropy certifi ephem networkx numpy pytest scipy sgp4 skyfield sphinx || exit 1
+pip install --upgrade scipy  # Ensures scipy.sparse.csr_array installed correctly
 
 echo "Dependencies successfully installed"

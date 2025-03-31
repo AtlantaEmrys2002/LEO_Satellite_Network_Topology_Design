@@ -10,13 +10,35 @@
 # Run in the 'shared' queue
 #SBATCH -p shared
 
-# Change executable permissions of files
-chmod --recursive u+x ../*
+
+#!/bin/bash
+
+# REQUEST RESOURCES:
+# Allocate 1 core
+#SBATCH -c 90
+#SBATCH --mem=5G
+#SBATCH --time=2-0:50:0
+#SBATCH --gres=tmp:5G
+# Run in the 'shared' queue
+#SBATCH -p shared
 
 # Commands to be run:
-module load python/3.12.5
+
+module load python/3.9.9
+
+echo "Loaded python module..."
+
 bash ./../install_dependencies.sh
+
+echo "Installed dependencies..."
+
+chmod --recursive u+x ./../project/*
+
+echo "Modified permissions..."
+
 bash report.sh
+
+echo "DONE"
 
 # References:
 # https://www.durham.ac.uk/research/institutes-and-centres/advanced-research-computing/hamilton-supercomputer/software/
