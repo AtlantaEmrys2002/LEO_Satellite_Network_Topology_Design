@@ -2,25 +2,14 @@
 
 # REQUEST RESOURCES:
 # Allocate 90 cores (approximately, the number of network snapshots for which to build a topology)
-#SBATCH -c 90
+#SBATCH -c 128
 #SBATCH --mem=5G
-# Maximum run time of 2 days, 22 hours
-#SBATCH --time=2-22:0:0
+# Maximum run time of 3 days
+#SBATCH --time=3-0:0:0
 #SBATCH --gres=tmp:5G
 # Run in the 'shared' queue
 #SBATCH -p shared
 
-
-#!/bin/bash
-
-# REQUEST RESOURCES:
-# Allocate 1 core
-#SBATCH -c 90
-#SBATCH --mem=5G
-#SBATCH --time=2-0:50:0
-#SBATCH --gres=tmp:5G
-# Run in the 'shared' queue
-#SBATCH -p shared
 
 # Commands to be run:
 
