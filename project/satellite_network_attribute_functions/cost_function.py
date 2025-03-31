@@ -2,21 +2,24 @@
 import numpy as np
 
 
-def cost_function(visibility, time_visibility, distance, sunlight, alpha: float, beta: float, gamma: float,
-                  total_satellites: int):
+def cost_function(visibility: np.ndarray, time_visibility: np.ndarray, distance: np.ndarray, sunlight: np.ndarray,
+                  alpha: float, beta: float, gamma: float, total_satellites: int) -> np.ndarray:
     """
     Calculates the cost matrix (the weight of each edge in an undirected graph representing a satellite network where
     edges are potential ISLs and nodes are satellites).
 
-    :param visibility:
-    :param time_visibility:
-    :param distance:
-    :param sunlight:
-    :param alpha:
-    :param beta:
-    :param gamma:
-    :param total_satellites:
-    :return:
+    :param visibility: adjacency matrix such that if satellites i and j are visible to one another,
+     visibility[i][j] == 1, else 0
+    :param time_visibility: adjacency matrix such time_visibility[i][j] is equal to the number of future snapshots that
+     i and j will be visible to one another
+    :param distance: an adjacency matrix where each element represents the distance between a satellite pair
+    :param sunlight: an adjacency matrix such that if sunlight[i][j] == 1, either satellite i or satellite j is
+     vulnerable to solar flares
+    :param alpha: a weight applied in the cost function to the time visibility value of edge ij
+    :param beta: a weight applied in the cost function to the physical distance between satellites i and j
+    :param gamma: a weight applied in the cost function to the solar flare vulnerability value of edge ij
+    :param total_satellites: the number of satellites in the network
+    :return: an adjacency matrix such that the value at cost_matrix[i][j] is equal to the cost on edge ij
     """
 
     # Where satellites are not visible to one another, set the cost as infinity (represented by -1), otherwise 0

@@ -8,16 +8,15 @@ ts = load.timescale()
 earth_radius = 6378.135
 
 
-# Calculates a satellite's altitude above Earth given TLES coordinates of satellite
-def satellite_height_above_earth(name, s, t):
+def satellite_height_above_earth(name: str, s: str, t: str) -> float:
     """
     Calculates the height (in km) of a satellite above the Earth's surface, assuming the satellite has an approximately
     circular orbit (eccentricity close to 0).
 
-    :param name:
-    :param s:
-    :param t:
-    :return:
+    :param name: the name of the constellation
+    :param s: the first line of the TLE coordinate format
+    :param t: the second line of the TLE coordinate format
+    :return: the height/altitude (in km) of a satellite above Earth
     """
     # Convert TLES to Geocentric Coordinates
     sample_satellite = EarthSatellite(s, t, name, ts)
@@ -32,14 +31,14 @@ def satellite_height_above_earth(name, s, t):
     return height_above_earth
 
 
-def maximum_communication_distance(data_file: str, num_sat: int):
+def maximum_communication_distance(data_file: str, num_sat: int) -> float:
     """
     Calculates the maximum possible communication distance between two satellites orbiting at the lowest possible orbit
     permitted in the satellite constellation.
 
-    :param data_file:
-    :param num_sat:
-    :return:
+    :param data_file: the location of the file containing satellite descriptions in TLE format
+    :param num_sat: the number of satellites in the network
+    :return: the maximum possible communication distance between two satellites
     """
     # Get sample satellite TLES coordinates to calculate maximum communication distance
     with open(data_file, 'r') as f:

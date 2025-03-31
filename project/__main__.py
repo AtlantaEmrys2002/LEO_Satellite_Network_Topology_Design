@@ -435,7 +435,8 @@ if __name__ == "__main__":
                 if optimisation_method == "random":
 
                     cost_function_optimisation_algorithms.random_search(constellation_name, num_snapshot, 100,
-                                                                        total_sat, satellite_degree_constraints, dcmst, location)
+                                                                        total_sat, satellite_degree_constraints, dcmst,
+                                                                        location)
 
                 # Run evolutionary strategy optimisation method
                 elif optimisation_method == "evolutionary":

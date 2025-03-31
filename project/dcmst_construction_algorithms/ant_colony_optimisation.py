@@ -1,9 +1,11 @@
 # Libraries
 from collections import deque
 import copy
+from numba import njit
 import numpy as np
 import random
 from scipy.cluster.hierarchy import DisjointSet
+import time
 
 
 def update_edge_pheromone(edges: np.ndarray, eta: float, minPhm: float, maxPhm: float) -> np.ndarray:
@@ -157,6 +159,11 @@ def modified_kruskal(edges: np.ndarray, constraints: np.ndarray, nCandidates: in
     return T_n
 
 
+@njit
+def test(edges, v_1):
+    return edges == v_1
+
+
 def move_ant(a: list, edges: np.ndarray) -> list:
     """
     Moves ant through graph, effectively performing the "exploration phase" of the ant. Moves according to set number of
@@ -171,12 +178,17 @@ def move_ant(a: list, edges: np.ndarray) -> list:
     # Move between five vertices or until ant cannot move (which over occurs first).
     while moved is False and nAttempts < 5:
 
+        # start = time.time()
+
         v_1 = a[0]
 
         # Select edges incident to v_1
-        potential_edge_indices = np.concatenate((np.argwhere(edges[:, 0] == v_1).flatten(), np.argwhere(edges[:, 1] ==
-                                                                                                        v_1).flatten()))
+        view = edges.T
 
+        first = view[0] == v_1
+        second = view[1] == v_1
+
+        potential_edge_indices = np.concatenate((np.flatnonzero(first), np.flatnonzero(second)))
         potential_edges = edges[potential_edge_indices]
 
         # Select an edge adjacent to the vertex at which ant is located randomly (but proportional to the
@@ -189,20 +201,24 @@ def move_ant(a: list, edges: np.ndarray) -> list:
 
             # Find neighbouring vertex
             if potential_edges[random_edge, 0] == v_1:
-                v_2 = potential_edges[random_edge][1]
+                v_2 = potential_edges[random_edge, 1]
             else:
-                v_2 = potential_edges[random_edge][0]
+                v_2 = potential_edges[random_edge, 0]
 
             # If ant has not visited that vertex recently, move ant to that vertex
             if v_2 not in a[1]:
                 a[1].append(v_2)
                 a[0] = v_2
+
                 edges[potential_edge_indices[random_edge], 5] += 1
                 moved = True
             else:
                 nAttempts += 1
         else:
             nAttempts += 1
+            break
+
+        # print(tmp, time.time() - start)
 
     return a
 
@@ -245,8 +261,8 @@ def solution_fitness(tree) -> float:
 
 
 def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100,
-               max_iterations_without_improvement: int = 25, max_steps: int = 21, eta: float = 0.5,
-               gamma: float = 1.5, eta_change: float = 0.95, gamma_change: float = 1.05, R: int = 100) \
+               max_iterations_without_improvement: int = 25, max_steps: int = 12, eta: float = 0.5,
+               gamma: float = 1.5, eta_change: float = 0.95, gamma_change: float = 1.05, R: int = 30) \
         -> tuple[np.ndarray, np.ndarray]:
     """
     Algorithm that constructs a DCMST using an ant-based algorithm. Adapted from T. N. Bui, X. Deng, and C. M. Zrncic,
@@ -269,7 +285,7 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
      far
     :param eta_change: hyperparameter that determines the amount to adjust eta by each iteration
     :param gamma_change: hyperparameter that determines the amount to adjust gamma by each iteration
-    :param R: used to prevent algorithm getting stuck in local optima
+    :param R: used to prevent algorithm getting stuck in local optima. Changed from 100 to 30
     :return: a DCMST and the degree of each vertex within the tree
     """
     # Initialise counters
@@ -296,10 +312,10 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
     # have been made in a set number of iterations
     while i < max_iterations and (i - i_best) < max_iterations_without_improvement:
 
+        start = time.time()
+
         # ANT EXPLORATION #
-
         ants, edges = move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm)
-
         # Construct new spanning tree based on exploration
         T = modified_kruskal(edges, constraints, candidate_set_cardinality, num_sat)
 
@@ -348,6 +364,8 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
         # Update gamma and eta
         gamma *= gamma_change
         eta *= eta_change
+
+        print(time.time() - start)
 
     best_spanning_tree_adjacency = np.zeros((num_sat, num_sat))
 

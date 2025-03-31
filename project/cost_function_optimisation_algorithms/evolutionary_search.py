@@ -21,8 +21,8 @@ def in_0_1(parameter_set: list[float]) -> bool:
 
 
 def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: int, degree_constraints: list[int],
-                        dcmst_method: str, output_directory: str, num_iterations: int = 100, mu: int = 2,
-                        pop_size: int = 10, step_size: float = 0.05):
+                        dcmst_method: str, output_directory: str, num_iterations: int = 25, mu: int = 2,
+                        pop_size: int = 4, step_size: float = 0.05):
     """
     Runs an evolutionary search optimisation function (based on evolutionary strategy) to find near-optimal values for
     alpha, beta, and gamma weights (can easily be adapted to include more weights), generates the topologies for
@@ -38,9 +38,9 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
     :param output_directory: directory in which the results of the cost function optimisation/metric evaluation are
      stored
     :param num_iterations: the number of iterations of the evolutionary strategy to execute. Changed default from 1000
-     to 100.
+     to 25.
     :param mu: the number of parents selected every iteration
-    :param pop_size: the size of the population of solutions in the algorithm
+    :param pop_size: the size of the population of solutions in the algorithm. Set to 4.
     :param step_size: the standard deviation of the Gaussian distribution from which solution mutations are selected
     """
 
