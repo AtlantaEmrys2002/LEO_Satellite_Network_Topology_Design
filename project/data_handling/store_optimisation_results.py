@@ -27,6 +27,9 @@ def write_optimisation_results_to_csv(location: str, algorithm: str, results: li
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             for row in results:
-                writer.writerow(row)
+                values = dict(alpha=row[0], beta=row[1], gamma=row[2], mean_latency=row[3], average_hop_count=row[4],
+                              link_churn=row[5])
+
+                writer.writerow(values)
         else:
             raise ValueError("Cannot save optimisation/measurement results for undefined algorithm.")

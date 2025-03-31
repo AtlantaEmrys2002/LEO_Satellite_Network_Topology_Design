@@ -27,6 +27,7 @@ def random_search(constellation_name: str, num_snapshots: int, num_param_sets: i
     :param output_directory: directory in which the results of the cost function optimisation/metric evaluation are
      stored
     """
+
     # Randomly sample sets of parameters (where alpha, beta, and gamma can be random variables in range [0, 1])
     parameter_sets = np.random.rand(num_param_sets, 3)
 
@@ -60,8 +61,8 @@ def random_search(constellation_name: str, num_snapshots: int, num_param_sets: i
         pool.terminate()
 
         # Generate results files (metrics)
-        results.append(list(parameter_sets[t]) + [measure.measure_dynamic(constellation_name, output_directory,
-                                                                          num_sat, num_snapshots)][1:])
+        metrics = [x for x in measure.measure_dynamic(constellation_name, output_directory, num_sat, num_snapshots)[1:]]
+        results.append(list(parameter_sets[t]) + metrics)
 
     # Write Results to CSV Format - this code was adapted from documentation
     write_optimisation_results_to_csv(output_directory, "novel", results)

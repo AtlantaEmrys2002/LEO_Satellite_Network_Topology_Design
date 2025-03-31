@@ -425,7 +425,7 @@ if __name__ == "__main__":
                     optimisation_method = args.optimisation_method
                     # Directory in which to store topologies
                     location = ("./Results/novel/" + optimisation_method + "/" + dcmst + "/" +
-                                constellation_name.lower() + "/")
+                                constellation_name.lower())
                 else:
                     raise ValueError("An optimisation method must be specified.")
 
@@ -434,8 +434,8 @@ if __name__ == "__main__":
                 # Run random search optimisation method
                 if optimisation_method == "random":
 
-                    cost_function_optimisation_algorithms.random_search(constellation_name, num_snapshot, 50, total_sat,
-                                                                        satellite_degree_constraints, dcmst, location)
+                    cost_function_optimisation_algorithms.random_search(constellation_name, num_snapshot, 100,
+                                                                        total_sat, satellite_degree_constraints, dcmst, location)
 
                 # Run evolutionary strategy optimisation method
                 elif optimisation_method == "evolutionary":

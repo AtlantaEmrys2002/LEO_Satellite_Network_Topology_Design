@@ -1,5 +1,6 @@
 # Libraries
 import numpy as np
+import os
 
 
 def link_churn(location: str, snapshot_num: int, num_satellites: int) -> int:
@@ -12,6 +13,14 @@ def link_churn(location: str, snapshot_num: int, num_satellites: int) -> int:
     :return: the total number of link churns for the satellite network over one orbital period
     """
     # LOAD INITIAL TOPOLOGY MATRICES #
+
+    # Check if any ISL topology exists
+    if os.path.isfile(location + "/isls_0.txt") is False:
+        raise ValueError("At least one ISL topology must have been built in order to calculate a network's link churn.")
+
+    # Check if any other ISL topologies exist - if not, ISL topology never changes and, therefore, no link churn occurs
+    if os.path.isfile(location + "/isls_1.txt") is False:
+        return 0
 
     # Read in topology built for given snapshot
     previous_isls = np.loadtxt(location + "/isls_0.txt").astype(int).T

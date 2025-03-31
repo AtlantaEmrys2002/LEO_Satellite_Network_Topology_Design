@@ -2,3 +2,4 @@ algorithm,optimisation_method,dcmst,constellation,alpha,beta,gamma,mean_latency,
 plus_grid,nan,nan,kuiper-630,nan,nan,nan,0.06263151245805107,17.014718614718614,0
 plus_grid,nan,nan,starlink-550,nan,nan,nan,0.09329313564756123,23.514845230574856,0
 plus_grid,nan,nan,telesat-1015,nan,nan,nan,0.0797476328625058,10.0,0
+novel,random,primal,kuiper-630,0.3745401188473625,0.9507143064099162,0.7319939418114051,0.04478569104460474,14.64382330472296,0
