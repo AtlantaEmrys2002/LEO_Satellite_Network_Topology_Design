@@ -1,8 +1,8 @@
 # Libraries
-from project.satellite_topology_construction_algorithms import heuristic_topology_design_algorithm_isls
-from project.data_handling import write_optimisation_results_to_csv
+from satellite_topology_construction_algorithms import heuristic_topology_design_algorithm_isls
+from data_handling import write_optimisation_results_to_csv
 import os
-from project.analysis.measure import measure_dynamic
+from analysis import measure_dynamic
 from multiprocessing import Pool
 import numpy as np
 
