@@ -1,7 +1,6 @@
 # Libraries
 from collections import deque
 import copy
-from numba import njit
 import numpy as np
 import random
 from scipy.cluster.hierarchy import DisjointSet
