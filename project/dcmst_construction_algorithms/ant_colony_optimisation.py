@@ -158,11 +158,6 @@ def modified_kruskal(edges: np.ndarray, constraints: np.ndarray, nCandidates: in
     return T_n
 
 
-@njit
-def test(edges, v_1):
-    return edges == v_1
-
-
 def move_ant(a: list, edges: np.ndarray) -> list:
     """
     Moves ant through graph, effectively performing the "exploration phase" of the ant. Moves according to set number of
