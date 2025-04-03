@@ -2,9 +2,7 @@
 
 from astropy.time import Time
 from astropy import units as u
-import copy
 import matplotlib.pyplot as plt
-# from mayavi import mlab
 import numpy as np
 import os
 import plotly.graph_objects as go
@@ -96,7 +94,6 @@ def generate_Earth():
 
 
 def visualise_static_plotly(location, tle_file, num_snapshot=94, snapshot_interval=60, constellation_name="Kuiper-630"):
-
     # INPUTS #
 
     # Check if any ISL topology exists
@@ -106,18 +103,101 @@ def visualise_static_plotly(location, tle_file, num_snapshot=94, snapshot_interv
     # Read in topology built for given snapshot
     isls = np.loadtxt(location + "/isls_0.txt").astype(int).T
 
-    # CREATE FIGURE #
-    fig = plt.figure()
-    ax = fig.add_subplot(projection='3d')
+    # MODEL EARTH
+
+    x, y, z = generate_Earth()
+
+    fig = go.Figure(data=[go.Scatter3d(x=[], y=[], z=[], marker=dict(color="red", size=2), line=dict(color="red"),
+                                       name=constellation_name),
+                          go.Mesh3d(x=x, y=y, z=z, color='lightblue', opacity=1.0, alphahull=0, name="Earth")])
+
+    # Format figure
+    fig.update_layout(paper_bgcolor="black", title_font_color="white", font_color="white")
+
+    # GET SATELLITE DESCRIPTIONS #
+
+    # Get TLEs-formatted data
+    tles_data = read_file(tle_file)
+
+    # Convert TLES data to Skyfield EarthSatellite objects - used to convert satellite positions to geocentric
+    # coordinates - all measurements in km
+    earth_satellite_objects = [EarthSatellite(satellite_i[1], satellite_i[2], satellite_i[0], ts) for satellite_i in
+                               tles_data]
+
+    # TIMES #
+
+    # Calculate times at which satellite positions observed
+    snapshot_times = [snapshot_time_stamp(snapshot_interval * k) for k in range(num_snapshot)]
+
+    frames = []
+
+    time_value = 0
+
+    for k in snapshot_times:
+
+        # Positions of satellites at each snapshot time
+        sats = np.asarray([i.at(k).position.km for i in earth_satellite_objects]).tolist()
+
+        # Calculate the isl positions
+        isl_a = [sats[int(isls[0, link])] for link in range(len(isls[0]))]
+        isl_b = [sats[int(isls[1, link])] for link in range(len(isls[0]))]
+
+        links = []
+
+        for x in range(len(isls[0])):
+            links.append(isl_a[x])
+            links.append(isl_b[x])
+            links.append([None, None, None])
+
+        links = np.asarray(links[:-1]).T
+
+        # Draw links
+        satellites = go.Scatter3d(x=links[0], y=links[1], z=links[2])
+
+        frames.append(go.Frame(data=[satellites], traces=[0], name=str(time_value)))
+
+        time_value += snapshot_interval
+
+    fig.frames = frames
+
+    fig.update_layout(title=constellation_name, title_font_color='white',
+                      scene=dict(xaxis=dict(visible=False), yaxis=dict(visible=False), zaxis=dict(visible=False)),
+                      updatemenus=[
+                          {
+                              "buttons": [{"args": [None, {"frame": {"duration": 300, "redraw": True}}],
+                                           "label": "Play", "method": "animate", },
+                                          {"args": [[None], {"frame": {"duration": 0, "redraw": False},
+                                                             "mode": "immediate", "transition": {"duration": 0}, }, ],
+                                           "label": "Pause", "method": "animate", }, ],
+                              "type": "buttons",
+                          }
+                      ],
+                      sliders=[{"steps": [{"args": [[f.name], {"frame": {"duration": 0, "redraw": True},
+                                                               "mode": "immediate", }, ],
+                                           "label": f.name, "method": "animate", }
+                                          for f in frames], }])
+
+    fig.show()
+
+
+def visualise_static_plotly_slide(location, tle_file, num_snapshot=94, snapshot_interval=60,
+                                  constellation_name="Kuiper-630"):
+    # INPUTS #
+
+    # Check if any ISL topology exists
+    if os.path.isfile(location + "/isls_0.txt") is False:
+        raise ValueError("At least one ISL topology must have been built in order to calculate a network's link churn.")
+
+    # Read in topology built for given snapshot
+    isls = np.loadtxt(location + "/isls_0.txt").astype(int).T
 
     # MODEL EARTH
 
     x, y, z = generate_Earth()
 
-    fig = go.Figure(data=[go.Scatter3d(x=[], y=[], z=[], marker=dict(color="red", size=2)),
-                          go.Mesh3d(x=x, y=y, z=z, color='lightblue', opacity=1.0, alphahull=0, name="Earth")])
+    fig = go.Figure()
 
-    # fig.add_traces = go.Scatter3d(x=[], y=[], z=[])
+    fig.add_trace(go.Mesh3d(x=x, y=y, z=z, color='lightblue', opacity=1.0, alphahull=0, name="Earth", visible=True))
 
     # Format figure
     fig.update_layout(paper_bgcolor="black", title_font_color="white")
@@ -137,23 +217,14 @@ def visualise_static_plotly(location, tle_file, num_snapshot=94, snapshot_interv
     # Calculate times at which satellite positions observed
     snapshot_times = [snapshot_time_stamp(snapshot_interval * k) for k in range(num_snapshot)]
 
-    frames = []
-
     for k in snapshot_times:
 
         # Positions of satellites at each snapshot time
-        sats = np.asarray([i.at(k).position.km for i in earth_satellite_objects]).T.tolist()
-
-        # satellites = go.Scatter3d(x=sats[0], y=sats[1], z=sats[2], mode='markers',
-        #                           name=constellation_name)
-        #
-        # satellites.update(marker_size=2)
-
-        sats = np.asarray(sats).T
+        sats = np.asarray([i.at(k).position.km for i in earth_satellite_objects]).tolist()
 
         # Calculate the isl positions
-        isl_a = [sats[int(isls[0, link])].tolist() for link in range(len(isls[0]))]
-        isl_b = [sats[int(isls[1, link])].tolist() for link in range(len(isls[0]))]
+        isl_a = [sats[int(isls[0, link])] for link in range(len(isls[0]))]
+        isl_b = [sats[int(isls[1, link])] for link in range(len(isls[0]))]
 
         links = []
 
@@ -162,25 +233,46 @@ def visualise_static_plotly(location, tle_file, num_snapshot=94, snapshot_interv
             links.append(isl_b[x])
             links.append([None, None, None])
 
-        links = links[:-1]
+        links = np.asarray(links[:-1]).T
 
-        links = np.asarray(links).T
+        # Draw links
+        satellites = go.Scatter3d(x=links[0], y=links[1], z=links[2], visible=False, marker=dict(color="red", size=2),
+                                  line=dict(color="red"), name=constellation_name)
 
-        satellites = go.Scatter3d(x=links[0], y=links[1], z=links[2], line=dict(color='red'), name=constellation_name)
+        fig.add_trace(satellites)
 
-        # satellites.update(marker_size=2)
+    fig.update_layout(title=constellation_name, title_font_color='white', scene=dict(xaxis=dict(visible=False),
+                                                                                     yaxis=dict(visible=False),
+                                                                                     zaxis=dict(visible=False)))
 
-        # frames.append(go.Frame(data=[satellites], traces=[0], name=f'frame{k}'))
-        frames.append(go.Frame(data=[satellites], traces=[0], name=f'frame{k}'))
+    fig.data[1].visible = True
 
-    fig.update(frames=frames)
+    steps = []
+    for i in range(1, len(fig.data)):
+        step = dict(
+            # method="update",
+            method="update",
+            args=[{"visible": [False] * len(fig.data)},
+                  {"title": "Slider switched to step: " + str(i)}],  # layout attribute
+        )
+        step["args"][0]["visible"][0] = True  # Toggle i'th trace to "visible"
+        step["args"][0]["visible"][i] = True  # Toggle i'th trace to "visible"
+        steps.append(step)
 
-    fig.update_layout(title=constellation_name, updatemenus=[dict(type="buttons", buttons=[dict(label="Play",
-                                                                                                method="animate",
-                                                                                                args=[None])])],
-                      scene=dict(xaxis=dict(visible=False), yaxis=dict(visible=False), zaxis=dict(visible=False)))
+    sliders = [dict(
+        active=0,
+        currentvalue={"prefix": "Frequency: "},
+        pad={"t": 50},
+        steps=steps,
+    )]
+
+    fig.update_layout(
+        sliders=sliders,
+    )
 
     fig.show()
 
 
+# Run visualisation function
+# visualise_static_plotly_slide("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 94, 60, "Kuiper-630")
 visualise_static_plotly("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 94, 60, "Kuiper-630")
