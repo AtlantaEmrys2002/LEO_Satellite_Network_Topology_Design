@@ -55,6 +55,7 @@ To run a
 To recreate the results in the project's final report, please ```cd project``` and run ```bash report.sh```. Please note that this script 
 takes significant execution time. However, a large proportion of this code is automatically parallelised -  if you have 
 access to a significant number of CPU cores, this code will run significantly faster over several days. To generate an overview of the results
-of ```report.sh```, run ```results.sh``` to build a csv file.
+of ```report.sh```, run ```results.sh``` to build a csv file. To build the visualisations of the networks (demonstrating the physical nature of the network over time), 
+please run ```bash visualise.sh``` to build and display all topologies.
 
 **This work has made use of the Hamilton HPC Service of Durham University.**
