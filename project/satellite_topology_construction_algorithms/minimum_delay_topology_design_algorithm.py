@@ -24,7 +24,7 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
     for k in range(num_snapshots):
 
         # Define output filename
-        output_filename = './Results/mdtd/' + constellation_name # + "/isls_" + str(k) + ".txt"
+        output_filename = './Results/mdtd/' + constellation_name.lower() # + "/isls_" + str(k) + ".txt"
 
         # Initialise new topology
         new_topology = np.zeros((num_satellites, num_satellites))

@@ -124,9 +124,8 @@ def plot_polygon(poly):
     return x, y, z
 
 
-def visualise_static(location, tle_file, num_snapshot=94, snapshot_interval=60, constellation_name="Kuiper-630",
-                     topology_type="static"):
-
+def visualise(location, tle_file, num_snapshot=94, snapshot_interval=60, constellation_name="Kuiper-630",
+              topology_type="static", topology_method="plus_grid"):
     # INPUTS #
 
     # # Check if any ISL topology exists
@@ -192,6 +191,8 @@ def visualise_static(location, tle_file, num_snapshot=94, snapshot_interval=60, 
 
     time_value = 0
 
+    counter = 0
+
     for k in snapshot_times:
 
         # Positions of satellites at each snapshot time
@@ -210,12 +211,12 @@ def visualise_static(location, tle_file, num_snapshot=94, snapshot_interval=60, 
         else:
 
             # Check if any ISL topology exists
-            if os.path.isfile(location + "/isls_" + str(k) + ".txt") is False:
+            if os.path.isfile(location + "/isls_" + str(counter) + ".txt") is False:
                 raise ValueError(
-                    "At least one ISL topology must have been built in order to calculate a network's link churn.")
+                    "That topology does not exist.")
 
             # Read in topology built for given snapshot
-            isls = np.loadtxt(location + "/isls_" + str(k) + ".txt").astype(int).T
+            isls = np.loadtxt(location + "/isls_" + str(counter) + ".txt").astype(int).T
 
         # Calculate the isl positions
         isl_a = [sats[int(isls[0, link])] for link in range(len(isls[0]))]
@@ -236,6 +237,7 @@ def visualise_static(location, tle_file, num_snapshot=94, snapshot_interval=60, 
         frames.append(go.Frame(data=[satellites], traces=[0], name=str(time_value) + 's'))
 
         time_value += snapshot_interval
+        counter += 1
 
     fig.frames = frames
 
@@ -267,7 +269,7 @@ def visualise_static(location, tle_file, num_snapshot=94, snapshot_interval=60, 
         except OSError:
             print("Directory to store visualisations could not be created.")
 
-    fig.write_html("Results/visualisation" + "/" + constellation_name.lower() + "_plus_grid" + ".html")
+    fig.write_html("Results/visualisation" + "/" + constellation_name.lower() + "_" + topology_method + ".html")
 
     fig.show()
 
@@ -281,9 +283,34 @@ def visualise_static(location, tle_file, num_snapshot=94, snapshot_interval=60, 
     os.remove('./analysis/ne_110m_admin_0_countries.VERSION.txt')
 
 
-
-
 # RUN VISUALISATION CODE #
 
 # Run visualisation function
-visualise_static("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 94, 60, "Kuiper-630")
+
+print("Building visualisations of static topologies... ", end='\r')
+
+visualise("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
+                 60, "Kuiper-630", topology_method="plus_grid")
+
+
+visualise("./Results/plus_grid/starlink-550", "starlink-constellation_tles.txt.tmp", 90,
+                 60, "Starlink-550", topology_method="plus_grid")
+visualise("./Results/plus_grid/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
+                 60, "Telesat-1015", topology_method="plus_grid")
+
+print("Completed")
+
+print("Building visualisations of dynamic topologies... ", end='\r')
+
+# MDTD Benchmark
+
+visualise("./Results/mdtd/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
+          60, "Kuiper-630", topology_type="dynamic", topology_method="mdtd")
+
+visualise("./Results/mdtd/starlink-550", "starlink-constellation_tles.txt.tmp", 90,
+          60, "Starlink-550", topology_type="dynamic", topology_method="mdtd")
+
+visualise("./Results/mdtd/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
+          60, "Telesat-1015", topology_type="dynamic", topology_method="mdtd")
+
+print("Completed")
