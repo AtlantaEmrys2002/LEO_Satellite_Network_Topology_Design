@@ -8,7 +8,7 @@ echo "Installing dependencies... "
 echo ""
 
 # Python packages
-pip install astropy certifi configobj ephem matplotlib networkx numpy plotly pytest scipy sgp4 skyfield sphinx || exit 1
+pip install astropy certifi configobj ephem geopandas matplotlib networkx numpy plotly pytest scipy sgp4 skyfield sphinx || exit 1
 pip install --upgrade scipy  # Ensures scipy.sparse.csr_array installed correctly
 pip install --upgrade certifi
 

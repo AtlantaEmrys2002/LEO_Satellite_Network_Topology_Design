@@ -6,6 +6,7 @@ import networkx as nx
 import numpy as np
 from scipy.sparse import csr_array
 from scipy.sparse.csgraph import dijkstra, reconstruct_path
+import time
 import warnings
 
 
@@ -22,6 +23,12 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
 
     # Generates topology for each snapshot
     for k in range(num_snapshots):
+
+        start = time.time()
+
+        print('\n')
+
+        print("Snapshot " + str(k) + ": ", end='\r')
 
         # Define output filename
         output_filename = constellation_name + "_isls" + str(k) + ".txt"
@@ -114,3 +121,5 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
                 data_handling.write_topology_to_file(output_filename, new_topology, method)
             else:
                 data_handling.write_topology_to_file(output_filename, former_topology, method)
+
+        print("Completed in " + str(time.time() - start))
