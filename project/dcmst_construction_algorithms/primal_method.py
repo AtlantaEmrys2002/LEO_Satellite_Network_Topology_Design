@@ -2,6 +2,7 @@
 import numpy as np
 from scipy.sparse.csgraph import connected_components
 from scipy.sparse import csr_array
+import time
 
 
 def subtree_builder(tree: np.ndarray, deleted_edge: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
