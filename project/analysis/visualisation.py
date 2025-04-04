@@ -15,12 +15,6 @@ ts = load.timescale()
 # Global variable
 radius_of_earth = 6378.135
 
-# Used to download dataset for Earth surface texture
-if os.path.isfile("ne_110m_admin_0_countries.shp") is False:
-    # Data File
-    with zipfile.ZipFile("./analysis/archive.zip", 'r') as zip_ref:
-        zip_ref.extractall("./analysis")
-
 
 def read_file(file_name):
     """
@@ -87,37 +81,6 @@ def snapshot_time_stamp(time_stamp):
     return ts.tdb(2000, 1, 1, hours, minutes, seconds)
 
 
-# def generate_Earth():
-#     d = np.pi / 32
-#
-#     radius_of_earth = 6378.135
-#
-#     theta, phi = np.mgrid[0:np.pi + d:d, 0:2 * np.pi:d]
-#
-#     # Convert to Cartesian coordinates
-#     x = radius_of_earth * np.sin(theta) * np.cos(phi)
-#     y = radius_of_earth * np.sin(theta) * np.sin(phi)
-#     z = radius_of_earth * np.cos(theta)
-#     points = np.vstack([x.ravel(), y.ravel(), z.ravel()])
-#
-#     return points
-
-
-# def sphere(size, texture):
-#     N_lat = int(texture.shape[0])
-#     N_lon = int(texture.shape[1])
-#     theta = np.linspace(0, 2 * np.pi, N_lat)
-#     phi = np.linspace(0, np.pi, N_lon)
-#
-#     # Set up coordinates for points on the sphere
-#     x0 = size * np.outer(np.cos(theta), np.sin(phi))
-#     y0 = size * np.outer(np.sin(theta), np.sin(phi))
-#     z0 = size * np.outer(np.ones(N_lat), np.cos(phi))
-#
-#     # Set up trace
-#     return x0, y0, z0
-
-
 def plot_back(fig):
     """back half of sphere"""
     clor = f'rgb(220, 220, 220)'
@@ -128,8 +91,7 @@ def plot_back(fig):
     y_dir = np.outer(R * np.sin(u_angle), R * np.sin(v_angle))
     z_dir = np.outer(R * np.ones(u_angle.shape[0]), R * np.cos(v_angle))
     fig.add_surface(z=z_dir, x=x_dir, y=y_dir, colorscale=[[0, clor], [1, clor]], opacity=1.0, showlegend=False,
-                    lighting=dict(
-                        diffuse=0.1), name="Earth")
+                    lighting=dict(diffuse=0.1), name="Earth")
 
 
 def plot_front(fig):
@@ -162,7 +124,9 @@ def plot_polygon(poly):
     return x, y, z
 
 
-def visualise_static_plotly(location, tle_file, num_snapshot=94, snapshot_interval=60, constellation_name="Kuiper-630"):
+def visualise_static(location, tle_file, num_snapshot=94, snapshot_interval=60, constellation_name="Kuiper-630",
+                     topology_type="static"):
+    
     # INPUTS #
 
     # Check if any ISL topology exists
@@ -174,21 +138,14 @@ def visualise_static_plotly(location, tle_file, num_snapshot=94, snapshot_interv
 
     # MODEL EARTH
 
-    # x, y, z = generate_Earth()
-    #
-    # # texture = np.asarray(Image.open('./analysis/world_map.jpg')).T
-    #
-    # # x, y, z = sphere(6378.135, texture)
-    #
-    # # earth = go.Mesh3d(x=x, y=y, z=z, color='lightblue', opacity=1.0, alphahull=0, name="Earth")
-    # # earth = go.Surface(x=x, y=y, z=z, name="Earth", surfacecolor=texture)
-    #
-    # # fig = go.Figure(data=[go.Scatter3d(x=[], y=[], z=[], marker=dict(color="red", size=2), line=dict(color="red"),
-    # #                                    name=constellation_name),
-    # #                       earth])
-
     fig = go.Figure(data=[go.Scatter3d(x=[], y=[], z=[], marker=dict(color="red", size=2), line=dict(color="red"),
                                        name=constellation_name)])
+
+    # Used to download dataset for Earth surface texture
+    if os.path.isfile("ne_110m_admin_0_countries.shp") is False:
+        # Data File
+        with zipfile.ZipFile("./analysis/archive.zip", 'r') as zip_ref:
+            zip_ref.extractall("./analysis")
 
     gdf = gpd.read_file("./analysis/ne_110m_admin_0_countries.shp")
     plot_front(fig)
@@ -196,22 +153,23 @@ def visualise_static_plotly(location, tle_file, num_snapshot=94, snapshot_interv
 
     for i in gdf.index:
 
-        polys = gdf.loc[i].geometry  # Polygons or MultiPolygons
+        polys = gdf.loc[i].geometry
 
         if polys.geom_type == 'Polygon':
             x, y, z = plot_polygon(polys)
-            fig.add_trace(go.Scatter3d(x=x, y=y, z=z, mode='lines', line=dict(color=f'rgb(0, 0,0)'), showlegend=False, name="Earth"))
+            fig.add_trace(go.Scatter3d(x=x, y=y, z=z, mode='lines', line=dict(color=f'rgb(0, 0,0)'), showlegend=False,
+                                       name="Earth"))
 
         elif polys.geom_type == 'MultiPolygon':
 
             for poly in polys.geoms:
                 x, y, z = plot_polygon(poly)
                 fig.add_trace(
-                    go.Scatter3d(x=x, y=y, z=z, mode='lines', line=dict(color=f'rgb(0, 0,0)'), showlegend=False, name="Earth"))
+                    go.Scatter3d(x=x, y=y, z=z, mode='lines', line=dict(color=f'rgb(0, 0,0)'), showlegend=False,
+                                 name="Earth"))
 
+    # FORMAT FIGURE #
     fig.layout.template = "plotly"
-
-    # Format figure
     fig.update_layout(paper_bgcolor="black", title_font_color="white", font_color="white")
 
     # GET SATELLITE DESCRIPTIONS #
@@ -260,6 +218,8 @@ def visualise_static_plotly(location, tle_file, num_snapshot=94, snapshot_interv
 
     fig.frames = frames
 
+    # SLIDER AND ANIMATION #
+
     fig.update_layout(title=constellation_name,
                       scene=dict(xaxis=dict(visible=False), yaxis=dict(visible=False), zaxis=dict(visible=False)),
                       updatemenus=[
@@ -290,6 +250,15 @@ def visualise_static_plotly(location, tle_file, num_snapshot=94, snapshot_interv
 
     fig.show()
 
+    # REMOVE TEXTURE FILES #
+    os.remove('./analysis/ne_110m_admin_0_countries.cpg')
+    os.remove('./analysis/ne_110m_admin_0_countries.dbf')
+    os.remove('./analysis/ne_110m_admin_0_countries.prj')
+    os.remove('./analysis/ne_110m_admin_0_countries.README.html')
+    os.remove('./analysis/ne_110m_admin_0_countries.shp')
+    os.remove('./analysis/ne_110m_admin_0_countries.shx')
+    os.remove('./analysis/ne_110m_admin_0_countries.VERSION.txt')
+
 
 # Run visualisation function
-# visualise_static_plotly("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 94, 60, "Kuiper-630")
+visualise_static("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 94, 60, "Kuiper-630")
