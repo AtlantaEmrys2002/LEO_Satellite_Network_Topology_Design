@@ -126,15 +126,15 @@ def plot_polygon(poly):
 
 def visualise_static(location, tle_file, num_snapshot=94, snapshot_interval=60, constellation_name="Kuiper-630",
                      topology_type="static"):
-    
+
     # INPUTS #
 
-    # Check if any ISL topology exists
-    if os.path.isfile(location + "/isls_0.txt") is False:
-        raise ValueError("At least one ISL topology must have been built in order to calculate a network's link churn.")
-
-    # Read in topology built for given snapshot
-    isls = np.loadtxt(location + "/isls_0.txt").astype(int).T
+    # # Check if any ISL topology exists
+    # if os.path.isfile(location + "/isls_0.txt") is False:
+    #     raise ValueError("At least one ISL topology must have been built in order to calculate a network's link churn.")
+    #
+    # # Read in topology built for given snapshot
+    # isls = np.loadtxt(location + "/isls_0.txt").astype(int).T
 
     # MODEL EARTH
 
@@ -147,6 +147,7 @@ def visualise_static(location, tle_file, num_snapshot=94, snapshot_interval=60, 
         with zipfile.ZipFile("./analysis/archive.zip", 'r') as zip_ref:
             zip_ref.extractall("./analysis")
 
+    # Read in texture file
     gdf = gpd.read_file("./analysis/ne_110m_admin_0_countries.shp")
     plot_front(fig)
     plot_back(fig)
@@ -195,6 +196,26 @@ def visualise_static(location, tle_file, num_snapshot=94, snapshot_interval=60, 
 
         # Positions of satellites at each snapshot time
         sats = np.asarray([i.at(k).position.km for i in earth_satellite_objects]).tolist()
+
+        if topology_type == 'static':
+
+            # Check if any ISL topology exists
+            if os.path.isfile(location + "/isls_0.txt") is False:
+                raise ValueError(
+                    "At least one ISL topology must have been built in order to calculate a network's link churn.")
+
+            # Read in topology built for given snapshot
+            isls = np.loadtxt(location + "/isls_0.txt").astype(int).T
+
+        else:
+
+            # Check if any ISL topology exists
+            if os.path.isfile(location + "/isls_" + str(k) + ".txt") is False:
+                raise ValueError(
+                    "At least one ISL topology must have been built in order to calculate a network's link churn.")
+
+            # Read in topology built for given snapshot
+            isls = np.loadtxt(location + "/isls_" + str(k) + ".txt").astype(int).T
 
         # Calculate the isl positions
         isl_a = [sats[int(isls[0, link])] for link in range(len(isls[0]))]
@@ -246,7 +267,7 @@ def visualise_static(location, tle_file, num_snapshot=94, snapshot_interval=60, 
         except OSError:
             print("Directory to store visualisations could not be created.")
 
-    fig.write_html("Results/visualisation" + "/" + constellation_name + "_plus_grid" + ".html")
+    fig.write_html("Results/visualisation" + "/" + constellation_name.lower() + "_plus_grid" + ".html")
 
     fig.show()
 
@@ -259,6 +280,10 @@ def visualise_static(location, tle_file, num_snapshot=94, snapshot_interval=60, 
     os.remove('./analysis/ne_110m_admin_0_countries.shx')
     os.remove('./analysis/ne_110m_admin_0_countries.VERSION.txt')
 
+
+
+
+# RUN VISUALISATION CODE #
 
 # Run visualisation function
 visualise_static("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 94, 60, "Kuiper-630")
