@@ -287,30 +287,30 @@ def visualise(location, tle_file, num_snapshot=94, snapshot_interval=60, constel
 
 # Run visualisation function
 
-print("Building visualisations of static topologies... ", end='\r')
-
-visualise("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
-                 60, "Kuiper-630", topology_method="plus_grid")
-
-
-visualise("./Results/plus_grid/starlink-550", "starlink-constellation_tles.txt.tmp", 90,
-                 60, "Starlink-550", topology_method="plus_grid")
-visualise("./Results/plus_grid/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
-                 60, "Telesat-1015", topology_method="plus_grid")
-
-print("Completed")
-
-print("Building visualisations of dynamic topologies... ", end='\r')
-
-# MDTD Benchmark
-
-visualise("./Results/mdtd/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
-          60, "Kuiper-630", topology_type="dynamic", topology_method="mdtd")
-
-visualise("./Results/mdtd/starlink-550", "starlink-constellation_tles.txt.tmp", 90,
-          60, "Starlink-550", topology_type="dynamic", topology_method="mdtd")
-
-visualise("./Results/mdtd/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
-          60, "Telesat-1015", topology_type="dynamic", topology_method="mdtd")
-
-print("Completed")
+# print("Building visualisations of static topologies... ", end='\r')
+#
+# visualise("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
+#                  60, "Kuiper-630", topology_method="plus_grid")
+#
+#
+# visualise("./Results/plus_grid/starlink-550", "starlink-constellation_tles.txt.tmp", 90,
+#                  60, "Starlink-550", topology_method="plus_grid")
+# visualise("./Results/plus_grid/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
+#                  60, "Telesat-1015", topology_method="plus_grid")
+#
+# print("Completed")
+#
+# print("Building visualisations of dynamic topologies... ", end='\r')
+#
+# # MDTD Benchmark
+#
+# visualise("./Results/mdtd/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
+#           60, "Kuiper-630", topology_type="dynamic", topology_method="mdtd")
+#
+# visualise("./Results/mdtd/starlink-550", "starlink-constellation_tles.txt.tmp", 90,
+#           60, "Starlink-550", topology_type="dynamic", topology_method="mdtd")
+#
+# visualise("./Results/mdtd/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
+#           60, "Telesat-1015", topology_type="dynamic", topology_method="mdtd")
+#
+# print("Completed")

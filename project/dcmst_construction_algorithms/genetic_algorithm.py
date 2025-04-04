@@ -80,6 +80,44 @@ def prufer_decode(prufer_number: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return tree.astype(np.int32), np.sum(tree, axis=1).astype(np.int32)
 
 
+def fitness(prufer_number: np.ndarray, cost_matrix: np.ndarray) -> float:
+    """
+    Calculates the total sum cost of all edges in a given degree-constrained minimum spanning tree.
+    :param cost_matrix: an adjacency matrix, such that element cost_matrix[i][j] represents the cost of the graph edge
+     ij
+    :param prufer_number: a Prufer number (encoding) of a tree
+    :return: the fitness/suitability of each solution or "gene" within the chromosome, as determined by the total sum
+     cost of all edges within the tree (aim to minimise)
+    """
+    # Tree will have 2 more nodes than length of list
+    num_sat = len(prufer_number) + 2
+
+    # Stores degree of each vertex
+    degree = np.ones(num_sat, dtype=np.int32)
+
+    np.add.at(degree, prufer_number, 1)
+
+    total_cost = 0
+
+    for i in prufer_number:
+
+        j = np.nonzero(degree == 1)[0][0]
+
+        total_cost += cost_matrix[i, j]
+
+        degree[i] -= 1
+        degree[j] -= 1
+
+    # Final two nodes in tree (not already included)
+    degrees_of_1 = np.argwhere(degree == 1)
+    u, v = degrees_of_1[0], degrees_of_1[1]
+
+    total_cost += cost_matrix[u, v]
+
+    # Return total cost of all edges in tree
+    return total_cost
+
+
 def check_degree(tree_encoding: np.ndarray, constraints: np.ndarray, num_sat: int) -> bool:
     """
     Checks that all nodes within tree (encoded as a Prufer number) meet degree constraints. The degree of each node in
@@ -95,30 +133,6 @@ def check_degree(tree_encoding: np.ndarray, constraints: np.ndarray, num_sat: in
     comparison = degrees <= constraints
 
     return np.array_equal(np.full_like(constraints, True), comparison)
-
-
-def fitness(chromosome: np.ndarray, cost_matrix: np.ndarray) -> float:
-    """
-    Calculates the total sum cost of all edges in a given degree-constrained minimum spanning tree.
-    :param chromosome: a list of possible solutions or "genes" to the DCMST problem
-    :param cost_matrix: an adjacency matrix, such that element cost_matrix[i][j] represents the cost of the graph edge
-     ij
-    :return: the fitness/suitability of each solution or "gene" within the chromosome, as determined by the total sum
-     cost of all edges within the tree (aim to minimise)
-    """
-    # Decode tree from Prufer number to adjacency matrix
-    tree, _ = prufer_decode(chromosome)
-
-    # Select all edges in the tree
-    edges = np.argwhere(tree > 0)
-
-    # Sort (smaller node first) and remove duplicates (undirected graph)
-    edges = np.unique(np.sort(edges), axis=0)
-
-    # Find costs associated with those edges and sum together
-    total_cost = np.sum(np.asarray([cost_matrix[edge[0], edge[1]] for edge in edges]))
-
-    return total_cost
 
 
 def random_trees(num_sat: int, constraints: np.ndarray, pop_size: int) -> list:
@@ -158,6 +172,7 @@ def genetic_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, num_sat:
     :param population_size: number of solutions generated each iteration of the algorithm
     :return: a DCMST and the degree of each vertex within the tree
     """
+
     # CALCULATE TERMINATION CONDITION #
     # Justification in original paper - larger degree constraints makes problem significantly easier. However, larger
     # problems in general are harder to solve
@@ -230,6 +245,7 @@ def genetic_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, num_sat:
             child_2_check = check_degree(child_2, constraints, num_sat)
 
             if child_1_check is True and child_2_check is True:
+
                 fitness_child_1 = fitness(child_1, cost_matrix)
                 fitness_child_2 = fitness(child_2, cost_matrix)
 
@@ -314,6 +330,8 @@ def genetic_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, num_sat:
 
     # Find the best solution and return corresponding DCMST with degree of each node
     pos = np.argmin(np.asarray(fitness_values))
+
+    # print(time.time() - start)
 
     return prufer_decode(chromosomes[pos])
 
