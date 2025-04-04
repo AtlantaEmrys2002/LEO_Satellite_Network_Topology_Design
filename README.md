@@ -14,6 +14,8 @@ Inter-Satellite Link Topologies for Satellite Megaconstellations* at Durham Univ
 
 Dependencies for this package include the Python libraries: `astropy`, `certifi`, `ephem`, `networkx`, `numpy`, `nx-parallel`, `pytest`, `scipy`, `sgp4`, `skyfield`, and `sphinx`. 
 
+```astropy``` ```certifi``` ```configobj``` ```ephem``` ```geopandas``` ```matplotlib``` ```networkx``` ```numpy``` ```plotly``` ```pytest``` ```scipy``` ```sgp4``` ```skyfield``` ```sphinx```
+
 To install all dependencies automatically, run ```bash install_dependencies.sh```.
 
 ## Modules and Functionality
@@ -22,7 +24,8 @@ This package involves numerous functions that are grouped as follows:
 
 - `analysis` - this module provides function that allow the user to evaluate (and record results of such evaluation) 
 topologies according to various metrics. Furthermore, the topologies analysed can be built with various methods, such 
-as various DCMST construction methods.
+as various DCMST construction methods. This module also provides a visualisation function that allows user to view their
+topology and simulate satellites moving around the Earth.
 - `cost_function_optimisation_algorithms` - this module provides different methods for optimising the cost function 
 weights of the novel algorithm proposed in the final paper. These methods include a randomised search, evolutionary 
 strategy search, and a machine learning-based search. 
@@ -46,6 +49,8 @@ line by line comments within each function. Each module has been formatted accor
 ## Tutorial and Documentation
 
 Documentation of each function within this Python package can be found [here](docs). 
+
+To run a 
 
 ## Recreating Report
 

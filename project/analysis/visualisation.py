@@ -292,4 +292,4 @@ def visualise_static_plotly(location, tle_file, num_snapshot=94, snapshot_interv
 
 
 # Run visualisation function
-visualise_static_plotly("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 94, 60, "Kuiper-630")
+# visualise_static_plotly("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 94, 60, "Kuiper-630")

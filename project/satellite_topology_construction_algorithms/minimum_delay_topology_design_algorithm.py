@@ -6,7 +6,6 @@ import networkx as nx
 import numpy as np
 from scipy.sparse import csr_array
 from scipy.sparse.csgraph import dijkstra, reconstruct_path
-import time
 import warnings
 
 
@@ -24,14 +23,8 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
     # Generates topology for each snapshot
     for k in range(num_snapshots):
 
-        start = time.time()
-
-        print('\n')
-
-        print("Snapshot " + str(k) + ": ", end='\r')
-
         # Define output filename
-        output_filename = constellation_name + "_isls" + str(k) + ".txt"
+        output_filename = './Results/mdtd/' + constellation_name # + "/isls_" + str(k) + ".txt"
 
         # Initialise new topology
         new_topology = np.zeros((num_satellites, num_satellites))
@@ -70,6 +63,8 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
         # Attempt to delete edges to prevent violation of degree constraint
         for v in range(num_satellites):
 
+            # start_v = time.time()
+
             if G.degree[v] > constraints[v]:
 
                 # Find all links where v is endpoint
@@ -77,21 +72,26 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
 
                 # Find associated costs AND only keeps edges were u greater than v (otherwise those edges will have
                 # already been considered)
+
                 links = np.array([[distance_matrix[v, u[1]], v, u[1]] for u in connected_satellites])
 
                 # Sort according to distance (cost) in decreasing order
-                links = np.flip(links[links[:, 0].argsort()], 0)
+                links = np.flip(links[links[:, 0].argsort()], 0).astype(int)
 
                 # In decreasing order, check if deleting component leads to disconnected graph
 
                 for link in links:
 
-                    a = int(link[1])
-                    b = int(link[2])
+                    a = link[1]
+                    b = link[2]
 
                     G.remove_edge(a, b)
 
-                    if nx.is_connected(G) is False:
+                    # if nx.is_connected(G) is False:
+                    #     G.add_edge(a, b, weight=link[0])
+
+                    # if nx.number_connected_components(G) > 1:
+                    if nx.has_path(G, a, b) is False:
                         G.add_edge(a, b, weight=link[0])
 
         new_topology = nx.to_numpy_array(G)
@@ -108,7 +108,7 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
             previous_propagation_delay = current_prop_delay
 
             # Write topology to file
-            data_handling.write_topology_to_file(output_filename, new_topology, method)
+            data_handling.write_topology_to_file(output_filename, new_topology, k)
 
         else:
             _, current_prop_delay = propagation_delay(new_topology, distance_matrix, num_satellites)
@@ -118,8 +118,6 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
             if current_prop_delay < constant * previous_propagation_delay:
                 former_topology = new_topology
                 previous_propagation_delay = current_prop_delay
-                data_handling.write_topology_to_file(output_filename, new_topology, method)
+                data_handling.write_topology_to_file(output_filename, new_topology, k)
             else:
-                data_handling.write_topology_to_file(output_filename, former_topology, method)
-
-        print("Completed in " + str(time.time() - start))
+                data_handling.write_topology_to_file(output_filename, former_topology, k)

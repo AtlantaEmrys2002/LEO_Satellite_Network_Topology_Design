@@ -319,7 +319,6 @@ if __name__ == "__main__":
         # GENERATES TOPOLOGY USING BENCHMARK MDTD ALGORITHM
 
         # Benchmark MDTD Design
-        # if topology == "mdtd":
         if topology == "mdtd":
 
             # Directory in which to store topologies
