@@ -172,8 +172,6 @@ def move_ant(a: list, edges: np.ndarray) -> list:
     # Move between five vertices or until ant cannot move (which over occurs first).
     while moved is False and nAttempts < 5:
 
-        # start = time.time()
-
         v_1 = a[0]
 
         # Select edges incident to v_1
@@ -183,6 +181,7 @@ def move_ant(a: list, edges: np.ndarray) -> list:
         second = view[1] == v_1
 
         potential_edge_indices = np.concatenate((np.flatnonzero(first), np.flatnonzero(second)))
+
         potential_edges = edges[potential_edge_indices]
 
         # Select an edge adjacent to the vertex at which ant is located randomly (but proportional to the
@@ -212,8 +211,6 @@ def move_ant(a: list, edges: np.ndarray) -> list:
             nAttempts += 1
             break
 
-        # print(tmp, time.time() - start)
-
     return a
 
 
@@ -232,6 +229,9 @@ def move_ants(ants: list, edges: np.ndarray, max_steps: int, update_period: floa
     :return: returns updated ants (according to position and nodes recently visited) and edges (according to pheromone
      levels)
     """
+
+    start = time.time()
+
     # The ants explore for a given number of steps
     for s in range(max_steps):
 
@@ -241,6 +241,8 @@ def move_ants(ants: list, edges: np.ndarray, max_steps: int, update_period: floa
 
         # Move each ant
         ants = [move_ant(a, edges) for a in ants]
+
+    print(time.time() - start)
 
     return ants, edges
 
@@ -282,6 +284,9 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
     :param R: used to prevent algorithm getting stuck in local optima. Changed from 100 to 30
     :return: a DCMST and the degree of each vertex within the tree
     """
+
+    print("ACO")
+
     # Initialise counters
     i = 1
     i_best = 0
@@ -306,10 +311,13 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
     # have been made in a set number of iterations
     while i < max_iterations and (i - i_best) < max_iterations_without_improvement:
 
-        start = time.time()
+        # start = time.time()
 
         # ANT EXPLORATION #
         ants, edges = move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm)
+
+        # percent = time.time() - start
+
         # Construct new spanning tree based on exploration
         T = modified_kruskal(edges, constraints, candidate_set_cardinality, num_sat)
 
@@ -359,7 +367,7 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
         gamma *= gamma_change
         eta *= eta_change
 
-        print(time.time() - start)
+        # print((percent/(time.time() - start)) * 100)
 
     best_spanning_tree_adjacency = np.zeros((num_sat, num_sat))
 
@@ -367,6 +375,8 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
 
         best_spanning_tree_adjacency[int(edge[0]), int(edge[1])] = 1
         best_spanning_tree_adjacency[int(edge[1]), int(edge[0])] = 1
+
+    print("DONE")
 
     return best_spanning_tree_adjacency, np.sum(best_spanning_tree_adjacency, axis=1).astype(np.int32)
 
