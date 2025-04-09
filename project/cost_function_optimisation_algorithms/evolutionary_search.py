@@ -21,7 +21,7 @@ def in_0_1(parameter_set: list[float]) -> bool:
 
 
 def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: int, degree_constraints: list[int],
-                        dcmst_method: str, output_directory: str, num_iterations: int = 25, mu: int = 2,
+                        dcmst_method: str, output_directory: str, num_iterations: int = 13, mu: int = 2,
                         pop_size: int = 4, step_size: float = 0.05):
     """
     Runs an evolutionary search optimisation function (based on evolutionary strategy) to find near-optimal values for
@@ -171,7 +171,7 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
 
         # Prepare for next iteration
         candidates = children
-        fitness = child_fitness
+        fitness = np.asarray(child_fitness)
 
         # Move to next iteration
         current_iteration += 1
