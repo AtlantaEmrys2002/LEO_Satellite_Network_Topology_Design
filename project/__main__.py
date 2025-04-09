@@ -433,7 +433,7 @@ if __name__ == "__main__":
                 # Run random search optimisation method
                 if optimisation_method == "random":
 
-                    cost_function_optimisation_algorithms.random_search(constellation_name, num_snapshot, 100,
+                    cost_function_optimisation_algorithms.random_search(constellation_name, num_snapshot, 50,
                                                                         total_sat, satellite_degree_constraints, dcmst,
                                                                         location)
 
@@ -469,6 +469,7 @@ if __name__ == "__main__":
 # order
 # Argsort Error - https://stackoverflow.com/questions/53923914/weird-wrong-outpout-of-np-argsort
 # Asserting Numpy Equality - https://stackoverflow.com/questions/3302949/best-way-to-assert-for-numpy-array-equality
+# Argwhere Inefficiency - https://stackoverflow.com/questions/63333733/inefficiency-of-numpy-argwhere
 # BFS - https://stackoverflow.com/questions/59805631/algorithm-for-finding-graph-connectivity
 # Building Project Documentation - https://medium.com/@pratikdomadiya123/build-project-documentation-quickly-with-the-
 # sphinx-python-2a9732b66594
@@ -478,6 +479,7 @@ if __name__ == "__main__":
 # Combinations of Arrays - https://stackoverflow.com/questions/1208118/using-numpy-to-build-an-array-of-all-combinations
 # -of-two-arrays
 # Common Elements of Numpy Array - https://stackoverflow.com/questions/44265572/find-common-elements-in-2d-numpy-arrays
+# Concatenation - https://stackoverflow.com/questions/9236926/concatenating-two-one-dimensional-numpy-arrays
 # Conditional List Comprehension - https://stackoverflow.com/questions/4260280/if-else-in-a-list-comprehension
 # Connected Components - https://stackoverflow.com/questions/59347143/connected-components-from-an-adjacency-matrix-
 # using-numpy-or-scipy
@@ -508,6 +510,10 @@ if __name__ == "__main__":
 # Importing - https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
 # Import Error - https://stackoverflow.com/questions/338768/python-error-importerror-no-module-named
 # __init__ Files - https://stackoverflow.com/questions/448271/what-is-init-py-for
+# Indices Speed-Up - https://stackoverflow.com/questions/60339863/fastest-way-to-get-indices-of-a-np-array-that-meet-my-
+# criteria
+# Indexing Numpy.Where - https://stackoverflow.com/questions/74126454/how-to-get-only-the-index-in-numpy-where-instead-
+# of-a-tuple
 # Internal Imports - https://www.reddit.com/r/learnpython/comments/yusnr0/python_modulespackages_internal_imports/
 # Intersecting Arrays - https://stackoverflow.com/questions/25220975/find-the-non-intersecting-values-of-two-arrays
 # Iterating over Numpy Columns - https://stackoverflow.com/questions/10148818/numpy-how-to-iterate-over-columns-of-array
@@ -528,6 +534,8 @@ if __name__ == "__main__":
 # properly_in/
 # Multiprocessing Imap - https://stackoverflow.com/questions/19063238/in-what-situation-do-we-need-to-use-
 # multiprocessing-pool-imap-unordered
+# Multiprocessing in Python - https://medium.com/@aruns89/multiprocessing-in-python-a-guide-to-using-multiple-cpu-cores-
+# f2b3c1bcc83a#:~:text=The%20%60multiprocessing%60%20module%20in%20Python,efficiency%20of%20multi%2Dcore%20systems.
 # Multiplying Numpy Array with Scalar - https://stackoverflow.com/questions/53485221/numpy-multiply-array-with-scalar
 # Multiprocessing Pool Errors - https://stackoverflow.com/questions/41169146/python-multiprocessing-pool-map-seems-to-
 # not-call-function-at-all
@@ -567,6 +575,7 @@ if __name__ == "__main__":
 # properly
 # Scaling vs Normalisation - https://www.kaggle.com/code/alexisbcook/scaling-and-normalization
 # SciPy Documentation - https://docs.scipy.org/doc/scipy/reference/index.html
+# Searching Rows - https://stackoverflow.com/questions/18927475/numpy-array-get-row-index-searching-by-a-row
 # Selecting Columns - https://stackoverflow.com/questions/22927181/selecting-specific-rows-and-columns-from-numpy-array
 # Selecting Numpy Rows - https://stackoverflow.com/questions/58079075/numpy-select-rows-based-on-condition
 # Selecting Rows - https://stackoverflow.com/questions/73733370/select-rows-of-numpy-array-based-on-column-values

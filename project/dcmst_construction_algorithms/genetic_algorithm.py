@@ -345,6 +345,9 @@ def genetic_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, num_sat:
 # Crossover in Evolutionary Algorithms - https://en.wikipedia.org/wiki/Crossover_(evolutionary_algorithm)
 # Depth Error in numpy - https://stackoverflow.com/questions/15923081/what-does-valueerror-object-too-deep-for-desired-
 # array-mean-and-how-to-fix-it
+# Disconnecting Edges - https://stackoverflow.com/questions/71133140/design-a-ove-algorithm-for-determining-at-what-
+# point-a-graph-becomes-disconne
+# Finding bridges of graph - https://math.stackexchange.com/questions/3965493/determine-if-edge-is-a-bridge-in-a-graph
 # First occurrences - https://stackoverflow.com/questions/432112/is-there-a-numpy-function-to-return-the-first-index-of-
 # something-in-an-array
 # Generating Random Pairs - https://stackoverflow.com/questions/30890434/how-to-generate-random-pairs-of-numbers-in-

@@ -1,3 +1,15 @@
+
+
+
+# INCIDENT EDGES DICTIONARY - REGENERATE AFTER SORT
+# https://www.reddit.com/r/learnpython/comments/yo8az5/faster_then_npwhere/
+
+
+
+
+
+
+
 # Libraries
 from collections import deque
 import copy
@@ -381,20 +393,36 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
     return best_spanning_tree_adjacency, np.sum(best_spanning_tree_adjacency, axis=1).astype(np.int32)
 
 # References
+# Accelerating Masking - https://stackoverflow.com/questions/64109948/how-to-accelerate-numpy-array-masking
 # Array of Objects - https://stackoverflow.com/questions/4877624/numpy-array-of-objects
 # Column to Zero - https://stackoverflow.com/questions/37251992/set-a-column-in-numpy-array-to-zero
+# Converting Tuples - https://stackoverflow.com/questions/47389447/how-convert-a-list-of-tuples-to-a-numpy-array-of-
+# tuples
 # Cycle Detection - https://en.wikipedia.org/wiki/Cycle_(graph_theory)
 # Deep Copies - https://stackoverflow.com/questions/37593013/deep-copy-of-a-np-array-of-np-array
 # Disjoint-set Data Structure - https://en.wikipedia.org/wiki/Disjoint-set_data_structure
 # Extracting Rows - https://stackoverflow.com/questions/61025485/numpy-array-how-to-extract-whole-rows-based-on-values-
 # in-a-column
+# Faster Indexing - https://stackoverflow.com/questions/74482961/faster-numpy-array-indexing-when-using-condition-numpy-
+# where
+# Incident Edges - https://stackoverflow.com/questions/72134948/how-to-find-the-list-of-edges-incident-to-a-particular-
+# vertex
+# Incident Edges Networkx - https://stackoverflow.com/questions/33078907/get-all-edges-linked-to-a-given-node-in-a-
+# networkx-graph
 # Kruskal Algorithms - https://en.wikipedia.org/wiki/Kruskal%27s_algorithm#:~:text=Kruskal's%20algorithm%20finds%20a%20
 # minimum,will%20not%20form%20a%20cycle.
+# List Operations - https://stackoverflow.com/questions/2703310/list-comprehension-map-and-numpy-vectorize-performance
+# Map Efficiency - https://stackoverflow.com/questions/35215161/most-efficient-way-to-map-function-over-numpy-array
 # Matching Rows - https://stackoverflow.com/questions/25823608/find-matching-rows-in-2-dimensional-numpy-array
 # Min-Max Normalisation - https://stackoverflow.com/questions/48178884/min-max-normalisation-of-a-numpy-array
+# Numpy Equality - https://stackoverflow.com/questions/56449784/is-np-array-num-comparison-very-slow-can-multiprocessing
+# -be-used-to-accelera
 # Numpy to Tuples - https://stackoverflow.com/questions/10016352/convert-numpy-array-to-tuple
 # Row Search - https://stackoverflow.com/questions/14766194/testing-whether-a-numpy-array-contains-a-given-row
 # Searching Numpy Arrays - https://stackoverflow.com/questions/3030480/how-do-i-select-elements-of-an-array-given-
 # condition
 # Sorting Objects - https://stackoverflow.com/questions/403421/how-do-i-sort-a-list-of-objects-based-on-an-attribute-of-
 # the-objects
+# Sorting on Multiple Columns - https://stackoverflow.com/questions/29352511/numpy-sort-ndarray-on-multiple-columns
+# Specific Columns - https://stackoverflow.com/questions/8386675/extracting-specific-columns-in-numpy-array
+# Speed-Up Numpy - https://stackoverflow.com/questions/77990840/how-to-speed-up-loops-of-numpy-array-calculations

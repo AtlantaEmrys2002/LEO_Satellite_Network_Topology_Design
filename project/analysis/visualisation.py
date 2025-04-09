@@ -9,6 +9,12 @@ import plotly.graph_objects as go
 from skyfield.api import EarthSatellite, load
 import zipfile
 
+# Please note that these tutorials/sources were heavily utilised in the construction of this visualisation feature
+# Dataset from Kaggle - https://www.kaggle.com/datasets/poznyakovskiy/natural-earth-1110m-countries (used for texturing)
+# Texture Application - https://community.plotly.com/t/applying-full-color-image-texture-to-create-an-interactive-earth-
+# globe/60166
+# Texture Application - https://community.plotly.com/t/create-earth-sphere-with-all-countries-in-plotly/79284
+
 # Global Timescale (used for determining how to calculate time with Skyfield functions)
 ts = load.timescale()
 
@@ -82,7 +88,7 @@ def snapshot_time_stamp(time_stamp):
 
 
 def plot_back(fig):
-    """back half of sphere"""
+    """Sourced from here: https://community.plotly.com/t/create-earth-sphere-with-all-countries-in-plotly/79284"""
     clor = f'rgb(220, 220, 220)'
     R = np.sqrt(6368.134)
     u_angle = np.linspace(0, np.pi, 25)
@@ -95,7 +101,7 @@ def plot_back(fig):
 
 
 def plot_front(fig):
-    """front half of sphere"""
+    """Sourced from here: https://community.plotly.com/t/create-earth-sphere-with-all-countries-in-plotly/79284"""
     clor = f'rgb(220, 220, 220)'
     R = np.sqrt(radius_of_earth)
     u_angle = np.linspace(-np.pi, 0, 25)
@@ -109,6 +115,11 @@ def plot_front(fig):
 
 
 def plot_polygon(poly):
+    """
+    Sourced from here: https://community.plotly.com/t/create-earth-sphere-with-all-countries-in-plotly/79284
+    :param poly:
+    :return:
+    """
     xy_coords = poly.exterior.coords.xy
     lon = np.array(xy_coords[0])
     lat = np.array(xy_coords[1])
@@ -130,7 +141,8 @@ def visualise(location, tle_file, num_snapshot=94, snapshot_interval=60, constel
 
     # # Check if any ISL topology exists
     # if os.path.isfile(location + "/isls_0.txt") is False:
-    #     raise ValueError("At least one ISL topology must have been built in order to calculate a network's link churn.")
+    #     raise ValueError("At least one ISL topology must have been built in order to calculate a network's "
+    #                      "link churn.")
     #
     # # Read in topology built for given snapshot
     # isls = np.loadtxt(location + "/isls_0.txt").astype(int).T
@@ -314,3 +326,41 @@ def visualise(location, tle_file, num_snapshot=94, snapshot_interval=60, constel
 #           60, "Telesat-1015", topology_type="dynamic", topology_method="mdtd")
 #
 # print("Completed")
+
+# References
+# Animation of 3d Plots - https://stackoverflow.com/questions/68100031/animated-3d-surface-plots-with-plotly
+# Animation of 3d Scatter - https://community.plotly.com/t/3d-scatter-animation/46368
+# Animating Traces - https://community.plotly.com/t/how-to-simultaneously-animate-multiple-traces-of-the-same-figure/
+# 64541
+# Callback to Frames - https://community.plotly.com/t/dash-animated-3d-graph-with-callback-to-change-animation-frames/
+# 46939
+# Complex Animations in Plotly - https://community.plotly.com/t/how-to-use-plotly-python-for-complex-3d-animations/32983
+# Cylindrical Maps - https://stackoverflow.com/questions/17365364/plotting-cylindrical-map-data-over-a-3d-sphere
+# Downloading from Kaggle - https://ravi-chan.medium.com/how-to-download-any-data-set-from-kaggle-7e2adc152d7f
+# Overview - https://medium.com/@alexeyyurasov/3d-modeling-with-python-c21296756db2
+# Matplotlib Opacity - https://stackoverflow.com/questions/15794499/how-can-i-plot-a-graph-on-an-opaque-surface-in-
+# matplotlib
+# Matplotlib Option - https://jakevdp.github.io/PythonDataScienceHandbook/04.12-three-dimensional-plotting.html
+# Plotting Orbits with Matplotlib - https://plainenglish.io/blog/plot-satellites-real-time-orbits-with-python-s-
+# matplotlib
+# Plotly Background Colour - https://community.plotly.com/t/how-can-i-change-the-background-color/39007
+# Plotly Documentation - https://plotly.com/graphing-libraries/
+# Plotly Recommendation - https://stackoverflow.com/questions/31768031/plotting-points-on-the-surface-of-a-sphere
+# Plotly Removing Axes - https://community.plotly.com/t/how-to-remove-axis-planes-in-plotly-graph-objects-figure/67375
+# Getting Started with Plotly - https://plotly.com/python/getting-started/#overview
+# Plotting 3D Lines - https://stackoverflow.com/questions/60153352/plotting-multiple-3d-lines-in-one-figure-using-plotly
+# Plotting 3D Spheres - https://stackoverflow.com/questions/70977042/how-to-plot-spheres-in-3d-with-plotly-or-another-
+# library
+# Plotting on Mesh - https://stackoverflow.com/questions/72650425/python-plotly-scatter-plot-on-3d-mesh
+# S3DLib Documentation - https://s3dlib.org/examples/animations/anim_bases.html
+# 3D Plotly - https://plotly.com/python/3d-scatter-plots/
+# Plotly Documentation - https://plotly.com/python/animations/
+# Plotting 3D Spheres in General - https://stackoverflow.com/questions/70977042/how-to-plot-spheres-in-3d-with-plotly-or
+# -another-library
+# 3D Spheres Plotly - https://stackoverflow.com/questions/70977042/how-to-plot-spheres-in-3d-with-plotly-or-another-
+# library
+# Satellite Visualisation - https://medium.com/spatial-data-science/8-essential-python-libraries-for-satellite-data-
+# visualization-in-geospatial-analysis-ed757d4964f1
+# Select Elements from Numpy Array - https://www.quora.com/How-do-I-select-elements-from-a-NumPy-array-in-Python
+# Trace Labels - https://community.plotly.com/t/add-trace-s-name-in-legend-with-plotly-express-when-color-is-not-
+# specified/27634

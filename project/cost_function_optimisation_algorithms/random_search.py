@@ -48,6 +48,8 @@ def random_search(constellation_name: str, num_snapshots: int, num_param_sets: i
     # save recorded metrics
     for t in range(num_param_sets):
 
+        print("Set Number: " + str(t))
+
         # Generate arguments for functions - results file path will already exist
 
         snapshot_arguments = [[constellation_name, num_sat, num_snapshots, degree_constraints, s, parameter_sets[t],
