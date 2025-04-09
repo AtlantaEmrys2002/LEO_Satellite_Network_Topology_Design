@@ -70,6 +70,18 @@ echo ""
 echo -n "Kuiper Novel Algorithm Topology (Primal with Random Search): "
 python __main__.py --tles kuiper-constellation_tles.txt.tmp --constellation Kuiper-630 --m 34 --n 34 --i 51.9 --rev 14.8 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method random
 
+
+
+
+
+exit 1
+
+
+
+
+
+
+
 # Evol Strategy Search Optimisation
 
 #echo -n "Kuiper Novel Algorithm Topology (ACO with Evolutionary Strategy Search): "
@@ -93,8 +105,8 @@ echo -n "Starlink Novel Algorithm Topology: "
 #echo -n "Starlink Novel Algorithm Topology (GA with Random Search): "
 #python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method random
 #
-echo -n "Starlink Novel Algorithm Topology (Primal with Random Search): "
-python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method random
+#echo -n "Starlink Novel Algorithm Topology (Primal with Random Search): "
+#python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method random
 
 # Evolutionary Strategy Search Optimisation
 
@@ -119,8 +131,8 @@ echo -n "Telesat Novel Algorithm Topology: "
 #echo -n "Telesat Novel Algorithm Topology (GA with Random Search): "
 #python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method random
 #
-echo -n "Telesat Novel Algorithm Topology (Primal with Random Search): "
-python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method random
+#echo -n "Telesat Novel Algorithm Topology (Primal with Random Search): "
+#python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method random
 
 # Evolutionary Strategy Search Optimisation
 
