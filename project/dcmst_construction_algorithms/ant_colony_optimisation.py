@@ -1,22 +1,9 @@
-
-
-
-# INCIDENT EDGES DICTIONARY - REGENERATE AFTER SORT
-# https://www.reddit.com/r/learnpython/comments/yo8az5/faster_then_npwhere/
-
-
-
-
-
-
-
 # Libraries
 from collections import deque
 import copy
 import numpy as np
 import random
 from scipy.cluster.hierarchy import DisjointSet
-import time
 
 
 def update_edge_pheromone(edges: np.ndarray, eta: float, minPhm: float, maxPhm: float) -> np.ndarray:
@@ -95,7 +82,8 @@ def initialise_ants_and_edges(cost_matrix: np.ndarray, num_sat: int) -> tuple[li
     return ants, edges, maxPhm, minPhm
 
 
-def modified_kruskal(edges: np.ndarray, constraints: np.ndarray, nCandidates: int, num_sat: int) -> list[np.ndarray]:
+def modified_kruskal(edges: np.ndarray, constraints: np.ndarray, nCandidates: int, num_sat: int) -> (
+        tuple)[list[np.ndarray], dict]:
     """
     Modified version of Kruskal's algorithm used to construct a DCMST - used in the ACO algorithm to create a DCMST
     based on pheromones laid by ants and edge costs.
@@ -104,7 +92,8 @@ def modified_kruskal(edges: np.ndarray, constraints: np.ndarray, nCandidates: in
      point in time
     :param nCandidates: the number of candidate edges to evaluate at a time
     :param num_sat: the number of satellites within the network
-    :return: a degree-constrained minimum spanning tree of the graph
+    :return: a degree-constrained minimum spanning tree of the graph and a dict of the indices of incident edges for
+    each vertex
     """
 
     # Initialise spanning tree and degrees of each vertex
@@ -178,6 +167,7 @@ def move_ant(a: list, edges: np.ndarray, in_edges: dict) -> list:
     rules - see comments and original paper for more details.
     :param a: list of ants
     :param edges: edges within the graph
+    :param in_edges: dictionary of vertices and the indices of the edges incident to them
     :return: edges within the graph
     """
     nAttempts = 0
@@ -189,20 +179,6 @@ def move_ant(a: list, edges: np.ndarray, in_edges: dict) -> list:
         v_1 = a[0]
 
         # Select edges incident to v_1
-        # view = edges.T
-        #
-        # first = view[0] == v_1
-        # second = view[1] == v_1
-        #
-        # potential_edge_indices = np.concatenate((np.flatnonzero(first), np.flatnonzero(second)))
-
-        # if v_1 == 0:
-        #     print(first)
-        #     potential_edge_indices_0 = potential_edge_indices
-        #     potential_edge_indices_2 = in_edges.get(str(v_1))
-        #     print(potential_edge_indices_0, potential_edge_indices_2)
-
-        # potential_edge_indices = in_edges.get(str(v_1))
         potential_edge_indices = in_edges[str(int(v_1))]
 
         # print(np.array_equal(potential_edge_indices, potential_edge_indices_2))
@@ -269,6 +245,7 @@ def move_ants(ants: list, edges: np.ndarray, max_steps: int, update_period: floa
     :param eta: hyperparameter used to determine amount to update edge pheromone
     :param minPhm: minimum pheromone that can be on any edge
     :param maxPhm: maximum pheromone that can be on any edge
+    :param in_edges: dictionary of vertices and the indices of the edges incident to them
     :return: returns updated ants (according to position and nodes recently visited) and edges (according to pheromone
      levels)
     """
@@ -347,14 +324,10 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
     # Continues iteratively improving DCMST until either the maximum number of iterations exceeded or no improvements
     # have been made in a set number of iterations
 
-    start = time.time()
-
     while i < max_iterations and (i - i_best) < max_iterations_without_improvement:
 
         # ANT EXPLORATION #
         ants, edges = move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm, in_edges)
-
-        # percent = time.time() - start
 
         # Construct new spanning tree based on exploration
         T, in_edges = modified_kruskal(edges, constraints, candidate_set_cardinality, num_sat)
@@ -405,17 +378,12 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
         gamma *= gamma_change
         eta *= eta_change
 
-        # print((percent/(time.time() - start)) * 100)
-
     best_spanning_tree_adjacency = np.zeros((num_sat, num_sat))
 
     for edge in best_spanning_tree:
 
         best_spanning_tree_adjacency[int(edge[0]), int(edge[1])] = 1
         best_spanning_tree_adjacency[int(edge[1]), int(edge[0])] = 1
-
-    print(time.time() - start)
-    print("DONE")
 
     return best_spanning_tree_adjacency, np.sum(best_spanning_tree_adjacency, axis=1).astype(np.int32)
 
@@ -446,6 +414,7 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
 # Numpy Equality - https://stackoverflow.com/questions/56449784/is-np-array-num-comparison-very-slow-can-multiprocessing
 # -be-used-to-accelera
 # Numpy to Tuples - https://stackoverflow.com/questions/10016352/convert-numpy-array-to-tuple
+# Numpy Where - https://www.reddit.com/r/learnpython/comments/yo8az5/faster_then_npwhere/
 # Row Search - https://stackoverflow.com/questions/14766194/testing-whether-a-numpy-array-contains-a-given-row
 # Searching Numpy Arrays - https://stackoverflow.com/questions/3030480/how-do-i-select-elements-of-an-array-given-
 # condition

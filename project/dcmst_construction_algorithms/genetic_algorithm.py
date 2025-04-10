@@ -11,6 +11,7 @@ def prufer_encode(tree: np.ndarray) -> np.ndarray:
     :param tree: adjacency matrix representing a spanning tree of the graph
     :return: a Prufer number (encoding) of the given tree
     """
+
     # Will store Prufer encoding
     P = []
 
@@ -89,6 +90,7 @@ def fitness(prufer_number: np.ndarray, cost_matrix: np.ndarray) -> float:
     :return: the fitness/suitability of each solution or "gene" within the chromosome, as determined by the total sum
      cost of all edges within the tree (aim to minimise)
     """
+
     # Tree will have 2 more nodes than length of list
     num_sat = len(prufer_number) + 2
 
@@ -101,7 +103,7 @@ def fitness(prufer_number: np.ndarray, cost_matrix: np.ndarray) -> float:
 
     for i in prufer_number:
 
-        j = np.nonzero(degree == 1)[0][0]
+        j = np.argmax(degree == 1)
 
         total_cost += cost_matrix[i, j]
 
@@ -160,7 +162,7 @@ def random_trees(num_sat: int, constraints: np.ndarray, pop_size: int) -> list:
     return random_chromosomes
 
 
-def genetic_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, num_sat: int, population_size=20):
+def genetic_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, num_sat: int, population_size=10):
     """
     Returns a degree-constrained minimum spanning tree of the network built using a genetic algorithm presented in
     'Comparison of Algorithms for the Degree Constrained Minimum Spanning Tree'. https://doi.org/10.1023/A:1011977126230
@@ -169,7 +171,7 @@ def genetic_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, num_sat:
     :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given
      point in time
     :param num_sat: the number of satellites within the network
-    :param population_size: number of solutions generated each iteration of the algorithm
+    :param population_size: number of solutions generated each iteration of the algorithm. Changed from 20 to 10.
     :return: a DCMST and the degree of each vertex within the tree
     """
 
@@ -177,7 +179,8 @@ def genetic_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, num_sat:
     # Justification in original paper - larger degree constraints makes problem significantly easier. However, larger
     # problems in general are harder to solve
     # termination_condition = (50 * num_sat) / (np.sum(constraints) / num_sat)
-    termination_condition = (20 * num_sat) / (np.sum(constraints) / num_sat)
+    # termination_condition = (20 * num_sat) / (np.sum(constraints) / num_sat)
+    termination_condition = (10 * num_sat) / (np.sum(constraints) / num_sat)
 
     # Initialise counter for number of iterations
     iteration_count = 0
@@ -330,8 +333,6 @@ def genetic_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, num_sat:
 
     # Find the best solution and return corresponding DCMST with degree of each node
     pos = np.argmin(np.asarray(fitness_values))
-
-    # print(time.time() - start)
 
     return prufer_decode(chromosomes[pos])
 
