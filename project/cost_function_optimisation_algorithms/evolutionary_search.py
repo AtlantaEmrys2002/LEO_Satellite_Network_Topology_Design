@@ -21,7 +21,7 @@ def in_0_1(parameter_set: list[float]) -> bool:
 
 
 def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: int, degree_constraints: list[int],
-                        dcmst_method: str, output_directory: str, num_iterations: int = 13, mu: int = 2,
+                        dcmst_method: str, output_directory: str, num_iterations: int = 12, mu: int = 1,
                         pop_size: int = 4, step_size: float = 0.05):
     """
     Runs an evolutionary search optimisation function (based on evolutionary strategy) to find near-optimal values for
@@ -44,7 +44,7 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
     :param step_size: the standard deviation of the Gaussian distribution from which solution mutations are selected
     """
 
-    # N.B. lambda / mu should have no remainder
+    # N.B. lambda / mu should have no remainder - changed mu to 1 and num_it to 12
 
     # Temporary to store results before they are written to files
     results = []

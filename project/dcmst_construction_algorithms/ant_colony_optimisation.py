@@ -167,10 +167,12 @@ def modified_kruskal(edges: np.ndarray, constraints: np.ndarray, nCandidates: in
                 # Sort C in order of increasing edge cost
                 candidate_edges = candidate_edges[np.argsort(candidate_edges[:, 2])]
 
-    return T_n
+    in_edges = incident_edges(edges, num_sat)
+
+    return T_n, in_edges
 
 
-def move_ant(a: list, edges: np.ndarray) -> list:
+def move_ant(a: list, edges: np.ndarray, in_edges: dict) -> list:
     """
     Moves ant through graph, effectively performing the "exploration phase" of the ant. Moves according to set number of
     rules - see comments and original paper for more details.
@@ -187,12 +189,23 @@ def move_ant(a: list, edges: np.ndarray) -> list:
         v_1 = a[0]
 
         # Select edges incident to v_1
-        view = edges.T
+        # view = edges.T
+        #
+        # first = view[0] == v_1
+        # second = view[1] == v_1
+        #
+        # potential_edge_indices = np.concatenate((np.flatnonzero(first), np.flatnonzero(second)))
 
-        first = view[0] == v_1
-        second = view[1] == v_1
+        # if v_1 == 0:
+        #     print(first)
+        #     potential_edge_indices_0 = potential_edge_indices
+        #     potential_edge_indices_2 = in_edges.get(str(v_1))
+        #     print(potential_edge_indices_0, potential_edge_indices_2)
 
-        potential_edge_indices = np.concatenate((np.flatnonzero(first), np.flatnonzero(second)))
+        # potential_edge_indices = in_edges.get(str(v_1))
+        potential_edge_indices = in_edges[str(int(v_1))]
+
+        # print(np.array_equal(potential_edge_indices, potential_edge_indices_2))
 
         potential_edges = edges[potential_edge_indices]
 
@@ -226,8 +239,26 @@ def move_ant(a: list, edges: np.ndarray) -> list:
     return a
 
 
+def incident_edges(edges, num_sat):
+
+    incident = dict()
+
+    view = edges.T
+
+    for v in range(num_sat):
+
+        first = view[0] == v
+        second = view[1] == v
+
+        potential_edge_indices = np.concatenate((np.flatnonzero(first), np.flatnonzero(second)))
+
+        incident.update({str(v): potential_edge_indices})
+
+    return incident
+
+
 def move_ants(ants: list, edges: np.ndarray, max_steps: int, update_period: float, eta: float, minPhm: float,
-              maxPhm: float) -> tuple[list, np.ndarray]:
+              maxPhm: float, in_edges: dict) -> tuple[list, np.ndarray]:
     """
     Moves edges according to given constraints within the graph. Each ant's position is updated accordingly, as is the
     pheromone level of each edge. This is often deemed the 'exploration phase' of the algorithm
@@ -242,8 +273,6 @@ def move_ants(ants: list, edges: np.ndarray, max_steps: int, update_period: floa
      levels)
     """
 
-    start = time.time()
-
     # The ants explore for a given number of steps
     for s in range(max_steps):
 
@@ -252,9 +281,7 @@ def move_ants(ants: list, edges: np.ndarray, max_steps: int, update_period: floa
             edges = update_edge_pheromone(edges, eta, minPhm, maxPhm)
 
         # Move each ant
-        ants = [move_ant(a, edges) for a in ants]
-
-    print(time.time() - start)
+        ants = [move_ant(a, edges, in_edges) for a in ants]
 
     return ants, edges
 
@@ -297,8 +324,6 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
     :return: a DCMST and the degree of each vertex within the tree
     """
 
-    print("ACO")
-
     # Initialise counters
     i = 1
     i_best = 0
@@ -314,24 +339,25 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
     ants, edges, maxPhm, minPhm = initialise_ants_and_edges(cost_matrix, num_sat)
 
     # Construct spanning tree
-    best_spanning_tree = modified_kruskal(edges, constraints, candidate_set_cardinality, num_sat)
+    best_spanning_tree, in_edges = modified_kruskal(edges, constraints, candidate_set_cardinality, num_sat)
 
     # Calculate fitness of spanning tree
     best_fitness = solution_fitness(best_spanning_tree)
 
     # Continues iteratively improving DCMST until either the maximum number of iterations exceeded or no improvements
     # have been made in a set number of iterations
+
+    start = time.time()
+
     while i < max_iterations and (i - i_best) < max_iterations_without_improvement:
 
-        # start = time.time()
-
         # ANT EXPLORATION #
-        ants, edges = move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm)
+        ants, edges = move_ants(ants, edges, max_steps, update_period, eta, minPhm, maxPhm, in_edges)
 
         # percent = time.time() - start
 
         # Construct new spanning tree based on exploration
-        T = modified_kruskal(edges, constraints, candidate_set_cardinality, num_sat)
+        T, in_edges = modified_kruskal(edges, constraints, candidate_set_cardinality, num_sat)
 
         # Compare the fitness of current best solution to new one
         current_solution_fitness = solution_fitness(T)
@@ -388,6 +414,7 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
         best_spanning_tree_adjacency[int(edge[0]), int(edge[1])] = 1
         best_spanning_tree_adjacency[int(edge[1]), int(edge[0])] = 1
 
+    print(time.time() - start)
     print("DONE")
 
     return best_spanning_tree_adjacency, np.sum(best_spanning_tree_adjacency, axis=1).astype(np.int32)
@@ -400,6 +427,7 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
 # tuples
 # Cycle Detection - https://en.wikipedia.org/wiki/Cycle_(graph_theory)
 # Deep Copies - https://stackoverflow.com/questions/37593013/deep-copy-of-a-np-array-of-np-array
+# Dictionaries - https://stackoverflow.com/questions/8424942/creating-a-new-dictionary-in-python
 # Disjoint-set Data Structure - https://en.wikipedia.org/wiki/Disjoint-set_data_structure
 # Extracting Rows - https://stackoverflow.com/questions/61025485/numpy-array-how-to-extract-whole-rows-based-on-values-
 # in-a-column

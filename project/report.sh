@@ -61,9 +61,9 @@ echo ""
 
 # Random Search Optimisation
 
-#echo -n "Kuiper Novel Algorithm Topology (ACO with Random Search): "
-#python __main__.py --tles kuiper-constellation_tles.txt.tmp --constellation Kuiper-630 --m 34 --n 34 --i 51.9 --rev 14.8 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method random
-#
+echo -n "Kuiper Novel Algorithm Topology (ACO with Random Search): "
+python __main__.py --tles kuiper-constellation_tles.txt.tmp --constellation Kuiper-630 --m 34 --n 34 --i 51.9 --rev 14.8 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method random
+
 #echo -n "Kuiper Novel Algorithm Topology (GA with Random Search): "
 #python __main__.py --tles kuiper-constellation_tles.txt.tmp --constellation Kuiper-630 --m 34 --n 34 --i 51.9 --rev 14.8 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method random
 #
