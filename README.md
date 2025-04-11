@@ -16,6 +16,8 @@ Dependencies for this package include the Python libraries: ```astropy``` ```cer
 
 To install all dependencies automatically, run ```bash install_dependencies.sh```.
 
+Please note that you may have to `brew install proj` to ensure `pip install geopandas` is successful.
+
 ## Modules and Functionality
 
 This package involves numerous functions that are grouped as follows:
