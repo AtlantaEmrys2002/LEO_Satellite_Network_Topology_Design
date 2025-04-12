@@ -49,8 +49,8 @@ line by line comments within each function. Each module has been formatted accor
 
 ## Tutorial and Documentation
 
-Documentation of each function within this Python package can be found [here](docs). Should documentation need to be 
-"re-generated", please consult 
+Documentation of each function within this Python package can be found [here](docs). Should Sphinx documentation need to
+be "re-generated", please consult 
 [this link](https://medium.com/@pratikdomadiya123/build-project-documentation-quickly-with-the-sphinx-python-2a9732b66594). 
 
 To build topologies for other networks, the package is run `python __main__py` (when situated in the `project` 
