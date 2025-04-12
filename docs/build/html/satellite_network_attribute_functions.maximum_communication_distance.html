@@ -1,18 +1,17 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>satellite_network_attribute_functions.maximum_communication_distance module &#8212; LEO_Satellite_Network_Topology_Design 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=8d563738"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="satellite_network_attribute_functions.maximum_transmission_distance module" href="satellite_network_attribute_functions.maximum_transmission_distance.html" />
@@ -20,8 +19,9 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -34,40 +34,40 @@
           <div class="body" role="main">
             
   <section id="module-satellite_network_attribute_functions.maximum_communication_distance">
-<span id="satellite-network-attribute-functions-maximum-communication-distance-module"></span><h1>satellite_network_attribute_functions.maximum_communication_distance module<a class="headerlink" href="#module-satellite_network_attribute_functions.maximum_communication_distance" title="Permalink to this headline">¶</a></h1>
+<span id="satellite-network-attribute-functions-maximum-communication-distance-module"></span><h1>satellite_network_attribute_functions.maximum_communication_distance module<a class="headerlink" href="#module-satellite_network_attribute_functions.maximum_communication_distance" title="Link to this heading">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="satellite_network_attribute_functions.maximum_communication_distance.maximum_communication_distance">
-<span class="sig-prename descclassname"><span class="pre">satellite_network_attribute_functions.maximum_communication_distance.</span></span><span class="sig-name descname"><span class="pre">maximum_communication_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/satellite_network_attribute_functions/maximum_communication_distance.html#maximum_communication_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#satellite_network_attribute_functions.maximum_communication_distance.maximum_communication_distance" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">satellite_network_attribute_functions.maximum_communication_distance.</span></span><span class="sig-name descname"><span class="pre">maximum_communication_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/satellite_network_attribute_functions/maximum_communication_distance.html#maximum_communication_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#satellite_network_attribute_functions.maximum_communication_distance.maximum_communication_distance" title="Link to this definition">¶</a></dt>
 <dd><p>Calculates the maximum possible communication distance between two satellites orbiting at the lowest possible orbit
 permitted in the satellite constellation.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data_file</strong> – </p></li>
-<li><p><strong>num_sat</strong> – </p></li>
+<li><p><strong>data_file</strong> – the location of the file containing satellite descriptions in TLE format</p></li>
+<li><p><strong>num_sat</strong> – the number of satellites in the network</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the maximum possible communication distance between two satellites</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="satellite_network_attribute_functions.maximum_communication_distance.satellite_height_above_earth">
-<span class="sig-prename descclassname"><span class="pre">satellite_network_attribute_functions.maximum_communication_distance.</span></span><span class="sig-name descname"><span class="pre">satellite_height_above_earth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/satellite_network_attribute_functions/maximum_communication_distance.html#satellite_height_above_earth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#satellite_network_attribute_functions.maximum_communication_distance.satellite_height_above_earth" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">satellite_network_attribute_functions.maximum_communication_distance.</span></span><span class="sig-name descname"><span class="pre">satellite_height_above_earth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="_modules/satellite_network_attribute_functions/maximum_communication_distance.html#satellite_height_above_earth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#satellite_network_attribute_functions.maximum_communication_distance.satellite_height_above_earth" title="Link to this definition">¶</a></dt>
 <dd><p>Calculates the height (in km) of a satellite above the Earth’s surface, assuming the satellite has an approximately
 circular orbit (eccentricity close to 0).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> – </p></li>
-<li><p><strong>s</strong> – </p></li>
-<li><p><strong>t</strong> – </p></li>
+<li><p><strong>name</strong> – the name of the constellation</p></li>
+<li><p><strong>s</strong> – the first line of the TLE coordinate format</p></li>
+<li><p><strong>t</strong> – the second line of the TLE coordinate format</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the height/altitude (in km) of a satellite above Earth</p>
 </dd>
 </dl>
 </dd></dl>
@@ -79,7 +79,7 @@ circular orbit (eccentricity close to 0).</p>
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h1 class="logo"><a href="index.html">LEO_Satellite_Network_Topology_Design</a></h1>
 
@@ -90,7 +90,16 @@ circular orbit (eccentricity close to 0).</p>
 
 
 
-<h3>Navigation</h3>
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">project</a><ul class="current">
@@ -118,16 +127,6 @@ circular orbit (eccentricity close to 0).</p>
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
 
 
 
@@ -141,11 +140,11 @@ circular orbit (eccentricity close to 0).</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2025, Millicent Riordan.
+      &#169;2025, Millicent Riordan.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |
       <a href="_sources/satellite_network_attribute_functions.maximum_communication_distance.rst.txt"

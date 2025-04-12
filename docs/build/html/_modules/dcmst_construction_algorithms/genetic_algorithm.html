@@ -1,24 +1,24 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>dcmst_construction_algorithms.genetic_algorithm &#8212; LEO_Satellite_Network_Topology_Design 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/doctools.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
   <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -32,18 +32,21 @@
             
   <h1>Source code for dcmst_construction_algorithms.genetic_algorithm</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Libraries</span>
-<span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
 
-<div class="viewcode-block" id="prufer_encode"><a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.prufer_encode">[docs]</a><span class="k">def</span> <span class="nf">prufer_encode</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="prufer_encode">
+<a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.prufer_encode">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prufer_encode</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Encodes tree as its Prufer Number - uses Cayley&#39;s representation (see DCMST comparison paper).</span>
 <span class="sd">    :param tree: adjacency matrix representing a spanning tree of the graph</span>
 <span class="sd">    :return: a Prufer number (encoding) of the given tree</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="c1"># Will store Prufer encoding</span>
     <span class="n">P</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -73,7 +76,10 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="prufer_decode"><a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.prufer_decode">[docs]</a><span class="k">def</span> <span class="nf">prufer_decode</span><span class="p">(</span><span class="n">prufer_number</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+
+<div class="viewcode-block" id="prufer_decode">
+<a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.prufer_decode">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prufer_decode</span><span class="p">(</span><span class="n">prufer_number</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Decodes Prufer number and returns tree encoded in Prufer number as adjacency matrix, as well as the degree of each</span>
 <span class="sd">    node in the resulting tree.</span>
@@ -113,7 +119,52 @@
     <span class="k">return</span> <span class="n">tree</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="check_degree"><a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.check_degree">[docs]</a><span class="k">def</span> <span class="nf">check_degree</span><span class="p">(</span><span class="n">tree_encoding</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+
+<div class="viewcode-block" id="fitness">
+<a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.fitness">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fitness</span><span class="p">(</span><span class="n">prufer_number</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the total sum cost of all edges in a given degree-constrained minimum spanning tree.</span>
+<span class="sd">    :param cost_matrix: an adjacency matrix, such that element cost_matrix[i][j] represents the cost of the graph edge</span>
+<span class="sd">     ij</span>
+<span class="sd">    :param prufer_number: a Prufer number (encoding) of a tree</span>
+<span class="sd">    :return: the fitness/suitability of each solution or &quot;gene&quot; within the chromosome, as determined by the total sum</span>
+<span class="sd">     cost of all edges within the tree (aim to minimise)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Tree will have 2 more nodes than length of list</span>
+    <span class="n">num_sat</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prufer_number</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span>
+
+    <span class="c1"># Stores degree of each vertex</span>
+    <span class="n">degree</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_sat</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+    <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">degree</span><span class="p">,</span> <span class="n">prufer_number</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">total_cost</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">prufer_number</span><span class="p">:</span>
+
+        <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">degree</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">total_cost</span> <span class="o">+=</span> <span class="n">cost_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
+
+        <span class="n">degree</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">degree</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+
+    <span class="c1"># Final two nodes in tree (not already included)</span>
+    <span class="n">degrees_of_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">degree</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">degrees_of_1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">degrees_of_1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">total_cost</span> <span class="o">+=</span> <span class="n">cost_matrix</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span>
+
+    <span class="c1"># Return total cost of all edges in tree</span>
+    <span class="k">return</span> <span class="n">total_cost</span></div>
+
+
+
+<div class="viewcode-block" id="check_degree">
+<a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.check_degree">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_degree</span><span class="p">(</span><span class="n">tree_encoding</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Checks that all nodes within tree (encoded as a Prufer number) meet degree constraints. The degree of each node in</span>
 <span class="sd">    the tree is 1 more than the number of times it appears in the Prufer number encoding.</span>
@@ -130,31 +181,10 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span> <span class="n">comparison</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="fitness"><a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.fitness">[docs]</a><span class="k">def</span> <span class="nf">fitness</span><span class="p">(</span><span class="n">chromosome</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates the total sum cost of all edges in a given degree-constrained minimum spanning tree.</span>
-<span class="sd">    :param chromosome: a list of possible solutions or &quot;genes&quot; to the DCMST problem</span>
-<span class="sd">    :param cost_matrix: an adjacency matrix, such that element cost_matrix[i][j] represents the cost of the graph edge</span>
-<span class="sd">     ij</span>
-<span class="sd">    :return: the fitness/suitability of each solution or &quot;gene&quot; within the chromosome, as determined by the total sum</span>
-<span class="sd">     cost of all edges within the tree (aim to minimise)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Decode tree from Prufer number to adjacency matrix</span>
-    <span class="n">tree</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">prufer_decode</span><span class="p">(</span><span class="n">chromosome</span><span class="p">)</span>
 
-    <span class="c1"># Select all edges in the tree</span>
-    <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">tree</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
-
-    <span class="c1"># Sort (smaller node first) and remove duplicates (undirected graph)</span>
-    <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">edges</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-    <span class="c1"># Find costs associated with those edges and sum together</span>
-    <span class="n">total_cost</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">cost_matrix</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">]))</span>
-
-    <span class="k">return</span> <span class="n">total_cost</span></div>
-
-
-<div class="viewcode-block" id="random_trees"><a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.random_trees">[docs]</a><span class="k">def</span> <span class="nf">random_trees</span><span class="p">(</span><span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pop_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<div class="viewcode-block" id="random_trees">
+<a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.random_trees">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">random_trees</span><span class="p">(</span><span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pop_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Randomly generates a set number (indicated by population size) of valid degree-constrained spanning trees of</span>
 <span class="sd">    satellite network.</span>
@@ -179,7 +209,10 @@
     <span class="k">return</span> <span class="n">random_chromosomes</span></div>
 
 
-<div class="viewcode-block" id="genetic_algorithm"><a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.genetic_algorithm">[docs]</a><span class="k">def</span> <span class="nf">genetic_algorithm</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">population_size</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+
+<div class="viewcode-block" id="genetic_algorithm">
+<a class="viewcode-back" href="../../dcmst_construction_algorithms.genetic_algorithm.html#dcmst_construction_algorithms.genetic_algorithm.genetic_algorithm">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">genetic_algorithm</span><span class="p">(</span><span class="n">cost_matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">population_size</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns a degree-constrained minimum spanning tree of the network built using a genetic algorithm presented in</span>
 <span class="sd">    &#39;Comparison of Algorithms for the Degree Constrained Minimum Spanning Tree&#39;. https://doi.org/10.1023/A:1011977126230</span>
@@ -188,14 +221,16 @@
 <span class="sd">    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given</span>
 <span class="sd">     point in time</span>
 <span class="sd">    :param num_sat: the number of satellites within the network</span>
-<span class="sd">    :param population_size: number of solutions generated each iteration of the algorithm</span>
+<span class="sd">    :param population_size: number of solutions generated each iteration of the algorithm. Changed from default 50.</span>
 <span class="sd">    :return: a DCMST and the degree of each vertex within the tree</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="c1"># CALCULATE TERMINATION CONDITION #</span>
     <span class="c1"># Justification in original paper - larger degree constraints makes problem significantly easier. However, larger</span>
     <span class="c1"># problems in general are harder to solve</span>
     <span class="c1"># termination_condition = (50 * num_sat) / (np.sum(constraints) / num_sat)</span>
-    <span class="n">termination_condition</span> <span class="o">=</span> <span class="p">(</span><span class="mi">20</span> <span class="o">*</span> <span class="n">num_sat</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_sat</span><span class="p">)</span>
+    <span class="c1"># termination_condition = (20 * num_sat) / (np.sum(constraints) / num_sat)</span>
+    <span class="n">termination_condition</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">num_sat</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_sat</span><span class="p">)</span>
 
     <span class="c1"># Initialise counter for number of iterations</span>
     <span class="n">iteration_count</span> <span class="o">=</span> <span class="mi">0</span>
@@ -263,6 +298,7 @@
             <span class="n">child_2_check</span> <span class="o">=</span> <span class="n">check_degree</span><span class="p">(</span><span class="n">child_2</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">child_1_check</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">child_2_check</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+
                 <span class="n">fitness_child_1</span> <span class="o">=</span> <span class="n">fitness</span><span class="p">(</span><span class="n">child_1</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">)</span>
                 <span class="n">fitness_child_2</span> <span class="o">=</span> <span class="n">fitness</span><span class="p">(</span><span class="n">child_2</span><span class="p">,</span> <span class="n">cost_matrix</span><span class="p">)</span>
 
@@ -351,6 +387,7 @@
     <span class="k">return</span> <span class="n">prufer_decode</span><span class="p">(</span><span class="n">chromosomes</span><span class="p">[</span><span class="n">pos</span><span class="p">])</span></div>
 
 
+
 <span class="c1"># References</span>
 <span class="c1"># Adding 1 to Specific Indices - https://stackoverflow.com/questions/66315038/add-1-to-numpy-array-from-a-list-of-</span>
 <span class="c1"># indices</span>
@@ -360,6 +397,9 @@
 <span class="c1"># Crossover in Evolutionary Algorithms - https://en.wikipedia.org/wiki/Crossover_(evolutionary_algorithm)</span>
 <span class="c1"># Depth Error in numpy - https://stackoverflow.com/questions/15923081/what-does-valueerror-object-too-deep-for-desired-</span>
 <span class="c1"># array-mean-and-how-to-fix-it</span>
+<span class="c1"># Disconnecting Edges - https://stackoverflow.com/questions/71133140/design-a-ove-algorithm-for-determining-at-what-</span>
+<span class="c1"># point-a-graph-becomes-disconne</span>
+<span class="c1"># Finding bridges of graph - https://math.stackexchange.com/questions/3965493/determine-if-edge-is-a-bridge-in-a-graph</span>
 <span class="c1"># First occurrences - https://stackoverflow.com/questions/432112/is-there-a-numpy-function-to-return-the-first-index-of-</span>
 <span class="c1"># something-in-an-array</span>
 <span class="c1"># Generating Random Pairs - https://stackoverflow.com/questions/30890434/how-to-generate-random-pairs-of-numbers-in-</span>
@@ -376,7 +416,7 @@
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
 <h1 class="logo"><a href="../../index.html">LEO_Satellite_Network_Topology_Design</a></h1>
 
@@ -387,7 +427,16 @@
 
 
 
-<h3>Navigation</h3>
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules.html">project</a></li>
@@ -402,16 +451,6 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
 
 
 
@@ -425,11 +464,11 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2025, Millicent Riordan.
+      &#169;2025, Millicent Riordan.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
     </div>
 
