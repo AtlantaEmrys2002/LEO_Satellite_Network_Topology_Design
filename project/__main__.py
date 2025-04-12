@@ -65,7 +65,7 @@ if __name__ == "__main__":
     parser.add_argument("--optimise", type=str, help="determines if cost function weights should be "
                                                      "optimised and/or metrics returned", required=True)
     parser.add_argument("--topology", type=str, help="determines method with which to construct topology "
-                                                     "for network (options: 'plus-grid', 'x-grid', 'mdtd', 'novel')",
+                                                     "for network (options: 'plus-grid', 'mdtd', 'novel')",
                         required=True)
     parser.add_argument("--isl_terminals", type=int, nargs="+", help="specify as an int or list of ints "
                                                                      "the number of terminals each satellite in the "

@@ -40,8 +40,9 @@ satellite network, such as the average hop count, propagation delay, and link ch
 the visibility between pairs of satellites, the cost function used by the novel algorithm, and whether satellites are 
 more vulnerable to solar flares.
 - `satellite_topology_construction_algorithms` - this module provides various functions for constructing topologies of 
-given satellite networks. As well as the novel algorithm proposed in the report, +Grid and MDTD topology construction algorithms are provided
-- `tests` - this module provides unit and integration tests for all the modules listed above.
+given satellite networks. As well as the novel algorithm proposed in the report, +Grid and MDTD topology construction 
+algorithms are provided
+- `tests` - this module provides unit and integration tests for all the modules listed above. Works well with `pytest`.
 
 More information about the purpose of each function is provided in the documentation of this project, as well as the 
 line by line comments within each function. Each module has been formatted according to PEP-8 standards.
@@ -50,7 +51,42 @@ line by line comments within each function. Each module has been formatted accor
 
 Documentation of each function within this Python package can be found [here](docs). 
 
-To run a 
+To build topologies for other networks, the package is run `python __main__py` (when situated in the `project` 
+directory) with the following arguments:
+
+1. `tles_file_name` - the name of the file containing a two-line element set (TLE) description of each satellite within
+the given mega-constellation.
+2. `constellation` - the name of the satellite mega-constellation, e.g. Starlink-550.
+3. `m` - the number of orbits in the mega-constellation.
+4. `n` - the number of satellites per orbit in the mega-constellation.
+5. `i` - the inclination degree of orbits.
+6. `rev` - the mean motion revolutions per day for a satellite within the constellation.
+7. `multi` - Boolean indicating whether there are multiple shells within the constellation (i.e. if satellites within 
+the same mega-constellation orbit at different altitudes). The +Grid algorithm will produce unexpected results if 
+`multi` set to True
+8. `optimise` - Boolean indicating whether experiments should be conducted optimising the cost function (used to weight
+potential ISL connections). Only utilised with `novel` topology construction algorithm.
+9. `topology` - the name of the algorithm that should be used to construct a topology. Options are `plus-grid` (+Grid -
+standard mesh topology and, currently, the only topology design deployed in real-world mega-constellations), `mdtd` 
+(Minimum Delay Topology Design), and `novel` (algorithm designed and proposed in this paper).
+10. `isl_terminals` - list (heterogeneous hardware) or integer (homogeneous hardware) indicating the number of ISL 
+terminals per satellite within the mega-constellation.
+11. `snapshot_interval` - the number of seconds between each snapshot of the satellite mega-constellation for which a 
+topology is built.
+12. `dcmst` - if the `novel` algorithm is utilised to construct a topology, this argument indicates the 
+Degree-Constrained Minimum Spanning Tree algorithm with which to construct a DCMST - options include `primal`, `aco` 
+(Ant Colony Optimisation), and `ga` (Genetic Algorithm).
+13. `optimisation_method` - if the `novel` algorithm is utilised to construct a topology and the user wishes to optimise
+the cost function (i.e. `optimise` is `True`), the user can specify `random` (random parameter sets) or `evolutionary` 
+(evolutionary search) as the optimisation method.
+
+Example:
+
+`python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 
+15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco 
+--optimisation_method random`
+
+Please see report for full citations/references of papers that algorithms are sourced from.
 
 ## Recreating Report
 
@@ -59,5 +95,3 @@ takes significant execution time. However, a large proportion of this code is au
 access to a significant number of CPU cores, this code will run significantly faster over several days. To generate an overview of the results
 of ```report.sh```, run ```results.sh``` to build a csv file. To build the visualisations of the networks (demonstrating the physical nature of the network over time), 
 please run ```bash visualise.sh``` to build and display all topologies.
-
-**This work has made use of the Hamilton HPC Service of Durham University.**
