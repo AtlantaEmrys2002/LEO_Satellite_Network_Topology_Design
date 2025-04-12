@@ -101,3 +101,10 @@ takes significant execution time. However, a large proportion of this code is au
 access to a significant number of CPU cores, this code will run significantly faster over several days. To generate an overview of the results
 of ```report.sh```, run ```results.sh``` to build a csv file. To build the visualisations of the networks (demonstrating the physical nature of the network over time), 
 please run ```bash visualise.sh``` to build and display all topologies.
+
+## Acknowledgements
+
+Please note that certain functions within this code (within the `data_handling` functions and the `plus_grid` function) 
+are taken and/or adapted from [Hypatia software code](https://github.com/snkas/hypatia). All code not written 
+by this author is clearly cited/referenced with the appropriate licenses displayed in the relevant files. Otherwise,
+all code has been created, tested, and documented by this author.
