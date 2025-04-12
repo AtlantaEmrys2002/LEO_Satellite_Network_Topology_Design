@@ -1,10 +1,3 @@
-#TODO
-# Find maximum transmission dist for Starlink, Kuiper and telesat - 27000 paper sets at 5014 km - also mentioned in code
-# EXPERIMENT WITH INCREASE CONNECTIVITY FUNC - IN FREE OPTICAL SPACE NETWORKS PAPER (BROADBAND NOT SATELLITE), THEY
-# CONNECT LARGEST COST EDGES - REDUCES GRAPH DIAMETER AT EXPENSE OF ENERGY EFFICIENCY
-# When make modifications to documentation: look at this first: https://medium.com/@pratikdomadiya123/build-project-docu
-# mentation-quickly-with-the-sphinx-python-2a9732b66594
-
 # Libraries
 import argparse
 from multiprocessing import Pool
@@ -329,7 +322,7 @@ if __name__ == "__main__":
 
             # Build topologies for satellite network
             minimum_delay_topology_design_algorithm(constellation_name, num_snapshot, total_sat,
-                                                    satellite_degree_constraints, topology)
+                                                    satellite_degree_constraints)
 
             print("MDTD Topology Build Completed")
 
@@ -469,7 +462,7 @@ if __name__ == "__main__":
 # order
 # Argsort Error - https://stackoverflow.com/questions/53923914/weird-wrong-outpout-of-np-argsort
 # Asserting Numpy Equality - https://stackoverflow.com/questions/3302949/best-way-to-assert-for-numpy-array-equality
-# Argwhere Inefficiency - https://stackoverflow.com/questions/63333733/inefficiency-of-numpy-argwhere
+# argwhere Inefficiency - https://stackoverflow.com/questions/63333733/inefficiency-of-numpy-argwhere
 # BFS - https://stackoverflow.com/questions/59805631/algorithm-for-finding-graph-connectivity
 # Building Project Documentation - https://medium.com/@pratikdomadiya123/build-project-documentation-quickly-with-the-
 # sphinx-python-2a9732b66594

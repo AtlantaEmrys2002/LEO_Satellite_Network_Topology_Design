@@ -171,7 +171,7 @@ def genetic_algorithm(cost_matrix: np.ndarray, constraints: np.ndarray, num_sat:
     :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given
      point in time
     :param num_sat: the number of satellites within the network
-    :param population_size: number of solutions generated each iteration of the algorithm. Changed from 20 to 10.
+    :param population_size: number of solutions generated each iteration of the algorithm. Changed from default 50.
     :return: a DCMST and the degree of each vertex within the tree
     """
 

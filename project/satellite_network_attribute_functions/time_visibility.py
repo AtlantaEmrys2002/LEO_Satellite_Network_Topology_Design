@@ -2,15 +2,12 @@
 import numpy as np
 
 
-# Calculates the number of future snapshots (from the current snapshot[0]) that each snapshot will remain visible
-# (WARNING: shuffle order of visibility matrices if going from snapshot other than 0, e.g. snapshot 4). ID is the
-# current snapshot for which a topology is being built
 def time_visibility_function(snapshot_num: int, total_satellites: int, initial_id_num: int, constellation_name: str):
     """
     For a given snapshot, calculates how long each pair of satellites within the network will remain visible to one
     another (in terms of number of future snapshots).
 
-    :param snapshot_num:
+    :param snapshot_num: the number of satellites within the network
     :param total_satellites:
     :param initial_id_num:
     :param constellation_name:

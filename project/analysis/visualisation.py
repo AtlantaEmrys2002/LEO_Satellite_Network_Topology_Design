@@ -22,13 +22,14 @@ ts = load.timescale()
 radius_of_earth = 6378.135
 
 
-def read_file(file_name):
+def read_file(file_name: str):
     """
     Stores raw TLE data rather than convert it to pyephem format. Please note that this function is adapted from Hypatia
-     (read_tles.py in the satgenpy module)
+    (read_tles.py in the satgenpy module). This is a copy of a function (the original is in the data_handling
+    directory).
 
-    :param file_name:
-    :return:
+    :param file_name: name of TLEs file in which description of each satellite in mega-constellation situated.
+    :return: TLEs data
     """
     tles_data = []
     with open(file_name, 'r') as f:
@@ -65,13 +66,13 @@ def read_file(file_name):
     return tles_data
 
 
-def snapshot_time_stamp(time_stamp):
+def snapshot_time_stamp(time_stamp: float) -> Time:
     """
     Given time in orbit (based on snapshot number) in seconds, this function converts the time to TDB time format.
     Calculates a satellite's position in orbit (as time since it passed a given point) and reformats for satellite.
     Assumes 60 minutes in an hour and 60 seconds in a minute (i.e. no leap seconds), etc.
     :param time_stamp:
-    :return:
+    :return: formatted timestamp (TDB)
     """
     hours = 0
     minutes = 0
@@ -135,16 +136,29 @@ def plot_polygon(poly):
     return x, y, z
 
 
-def visualise(location, tle_file, num_snapshot=94, snapshot_interval=60, constellation_name="Kuiper-630",
-              topology_type="static", topology_method="plus_grid"):
+def visualise(location: str, tle_file: str, num_snapshot: int = 94, snapshot_interval: float = 60,
+              constellation_name: str = "Kuiper-630", topology_type: str = "static",
+              topology_method: str = "plus_grid"):
+    """
+    Used to visualise constellations (based on topologies constructed by algorithms).
+    :param location: location of ISL topology files within file system.
+    :param tle_file: the name of the file that stores the TLE descriptions of each satellite within the
+     mega-constellation.
+    :param num_snapshot: the number of snapshots of the network over one orbit for which a topology is constructed
+    :param snapshot_interval: the time (in seconds) between snapshots
+    :param constellation_name: name of satellite network constellation, e.g. Starlink-550
+    :param topology_type: 'static' or 'dynamic' - indicates whether satellite topology evolves over time (i.e. ISLs
+     connect and disconnect over the course of one orbit)
+    :param topology_method: the algorithm with which the topology was constructed (plus_grid, mdtd, or novel)
+    """
     # INPUTS #
 
-    # # Check if any ISL topology exists
-    # if os.path.isfile(location + "/isls_0.txt") is False:
-    #     raise ValueError("At least one ISL topology must have been built in order to calculate a network's "
-    #                      "link churn.")
-    #
-    # # Read in topology built for given snapshot
+    # Check if any ISL topology exists
+    if os.path.isfile(location + "/isls_0.txt") is False:
+        raise ValueError("At least one ISL topology must have been built in order to calculate a network's "
+                         "link churn.")
+
+    # Read in topology built for given snapshot
     # isls = np.loadtxt(location + "/isls_0.txt").astype(int).T
 
     # MODEL EARTH

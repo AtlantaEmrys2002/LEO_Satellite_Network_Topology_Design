@@ -6,13 +6,13 @@ from skyfield.api import load
 ts = load.timescale()
 
 
-def snapshot_time_stamp(time_stamp):
+def snapshot_time_stamp(time_stamp: float):
     """
     Given time in orbit (based on snapshot number) in seconds, this function converts the time to TDB time format.
     Calculates a satellite's position in orbit (as time since it passed a given point) and reformats for satellite.
     Assumes 60 minutes in an hour and 60 seconds in a minute (i.e. no leap seconds), etc.
     :param time_stamp:
-    :return:
+    :return: TDB format time stamp
     """
     hours = 0
     minutes = 0

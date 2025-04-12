@@ -2,7 +2,7 @@
 import ephem
 
 
-def orbital_period_calculation(satellite_description, num_sat: int):
+def orbital_period_calculation(satellite_description, num_sat: int) -> float:
     """
     Calculates (using mean motion) the orbital period of a satellite. Mean motion has units in revolutions per day. Uses
      astropy assumption that 1 day == 86400 seconds. Returns the maximum orbital period of any satellite in the network
@@ -10,7 +10,7 @@ def orbital_period_calculation(satellite_description, num_sat: int):
 
     :param satellite_description:
     :param num_sat:
-    :return:
+    :return: the maximum length (in seconds) of an orbital period of any satellite within the mega-constellation.
     """
     # For one satellite
     if isinstance(satellite_description, ephem.EarthSatellite):

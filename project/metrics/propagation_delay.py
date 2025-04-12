@@ -13,7 +13,7 @@ def propagation_delay(topology_matrix: np.ndarray, distance_matrix: np.ndarray, 
     :param topology_matrix: an adjacency matrix representing a satellite network topology
     :param distance_matrix: an adjacency matrix where each element represents the distance between a satellite pair
     :param num_satellites: the number of satellites in the network
-    :return:
+    :return: the average propagation delay for all shortest paths between satellite pairs
     """
     # Calculate distance matrix for dijkstra function, such that only distances between satellites with an active ISL
     # are included

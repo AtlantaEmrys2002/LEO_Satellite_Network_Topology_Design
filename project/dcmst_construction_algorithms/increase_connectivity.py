@@ -2,7 +2,6 @@
 import numpy as np
 
 
-# Adds edges (i.e. ISLs) to topology greedily (in order of increasing cost)
 def increase_connectivity(tree: np.ndarray, degree_constraints: np.ndarray, current_isl_number: np.ndarray,
                           cost_matrix: np.ndarray, total_satellites: int) -> np.ndarray:
     """

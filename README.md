@@ -49,7 +49,9 @@ line by line comments within each function. Each module has been formatted accor
 
 ## Tutorial and Documentation
 
-Documentation of each function within this Python package can be found [here](docs). 
+Documentation of each function within this Python package can be found [here](docs). Should documentation need to be 
+"re-generated", please consult 
+[this link](https://medium.com/@pratikdomadiya123/build-project-documentation-quickly-with-the-sphinx-python-2a9732b66594). 
 
 To build topologies for other networks, the package is run `python __main__py` (when situated in the `project` 
 directory) with the following arguments:
@@ -79,6 +81,10 @@ Degree-Constrained Minimum Spanning Tree algorithm with which to construct a DCM
 13. `optimisation_method` - if the `novel` algorithm is utilised to construct a topology and the user wishes to optimise
 the cost function (i.e. `optimise` is `True`), the user can specify `random` (random parameter sets) or `evolutionary` 
 (evolutionary search) as the optimisation method.
+
+To visualise resulting topologies, use the `visualise.sh` script (make sure to pass the correct constellations to the 
+`visualise()` function) - see [here](project/analysis/visualisation.py) for more information on using the visualise 
+function.
 
 Example:
 

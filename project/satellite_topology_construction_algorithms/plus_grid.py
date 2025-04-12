@@ -22,9 +22,11 @@
 
 def generate_plus_grid_isls(output_filename_isls, n_orbits, n_sats_per_orbit, isl_shift, idx_offset=0):
     """
-    Generate plus grid ISL file. This code (from Hypatia) generates a +Grid topology for a given satellite network (it assumes that each satellite has 4 ISL terminals).
-
-    :param output_filename_isls     Output filename
+    Generate plus grid ISL file. This code (from Hypatia - please see report for full citation) generates a +Grid
+    topology for a given satellite network (it assumes that each satellite has 4 ISL terminals and orbits at the same
+    altitude). This algorithm does not work for multi-shell constellations. Sourced from here:
+    https://github.com/snkas/hypatia.
+    :param output_filename_isls:     Output filename
     :param n_orbits:                Number of orbits
     :param n_sats_per_orbit:        Number of satellites per orbit
     :param isl_shift:               ISL shift between orbits (e.g., if satellite id in orbit is X,

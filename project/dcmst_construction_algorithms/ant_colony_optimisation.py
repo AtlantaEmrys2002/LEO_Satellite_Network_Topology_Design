@@ -215,19 +215,30 @@ def move_ant(a: list, edges: np.ndarray, in_edges: dict) -> list:
     return a
 
 
-def incident_edges(edges, num_sat):
+def incident_edges(edges: np.ndarray, num_sat: int) -> dict:
+    """
+    Creates a dictionary, such that the key is the satellite/vertex and the values are the indices (within the edges
+    array of all edges incident to the vertex).
+    :param edges: edges within the graph
+    :param num_sat: the number of satellites within the network
+    :return: dictionary of vertices and the indices of their incident edges
+    """
 
+    # Initialise dictionary
     incident = dict()
 
     view = edges.T
 
     for v in range(num_sat):
 
+        # Find all edges where one vertex is equal to currently analysed vertex
         first = view[0] == v
         second = view[1] == v
 
+        # Store indices of relevant edges
         potential_edge_indices = np.concatenate((np.flatnonzero(first), np.flatnonzero(second)))
 
+        # Add vertex and indices as key-value pair to dictionary
         incident.update({str(v): potential_edge_indices})
 
     return incident
@@ -286,12 +297,11 @@ def ant_colony(cost_matrix, constraints, num_sat: int, max_iterations: int = 100
     :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given
      point in time
     :param num_sat: the number of satellites within the network
-    :param max_iterations: the maximum number of iterations performed by the function. Changed paper default from 10000
-     to 100.
+    :param max_iterations: the maximum number of iterations performed by the function. Changed paper default from 10000.
     :param max_iterations_without_improvement: the maximum number of iterations performed by the function without any
      improvement before the current best topology is returned
     :param max_steps: the maximum number of exploration steps performed by each ant per iteration. Changed paper default
-     from 75 to 21
+     from 75.
     :param eta: hyperparameter used to determine amount to update edge pheromone
     :param gamma: hyperparameter used to "enhance" the edge pheromones of the edges in the best spanning tree found so
      far

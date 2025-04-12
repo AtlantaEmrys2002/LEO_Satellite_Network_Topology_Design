@@ -4,13 +4,23 @@ import dcmst_construction_algorithms as topology_build
 import numpy as np
 import random
 import satellite_network_attribute_functions as satnet
-import time
 
 
-# Returns heuristic approximation of degree constrained minimum spanning tree of network, using primal-cut branch
-# algorithm (see paper for references)
-def dcmst(cost_matrix, constraints, total_satellites, method):
-
+def dcmst(cost_matrix: np.ndarray, constraints: np.ndarray, total_satellites: int, method: str) -> (
+        tuple)[np.ndarray, np.ndarray]:
+    """
+    Returns heuristically constructed degree constrained minimum spanning tree of network, using primal-cut branch
+    algorith, ant colony optimisation algorithm, or genetic algorithm.
+    :param cost_matrix: an adjacency matrix, such that element cost_matrix[i][j] represents the cost of the graph edge
+     ij
+    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given
+     point in time
+    :param total_satellites: the number of satellites within the network
+    :param method: the method with which to construct the initial degree-constrained minimum spanning tree (either
+     'primal', 'aco', or 'ga')
+    :return: a DCMST constructed by the appropriate algorithm and the degree of each node in the graph (i.e. the number
+     of active ISLs of each satellite in the constellation)
+    """
     if method == "primal":
 
         # Construct DCMST according to Primal Algorithm (see function file for more details)
@@ -32,9 +42,18 @@ def dcmst(cost_matrix, constraints, total_satellites, method):
     return tree, degree
 
 
-# Builds ISL topology for a single snapshot
-def heuristic_topology_design_algorithm_isls(arguments):
-
+def heuristic_topology_design_algorithm_isls(arguments: list):
+    """
+    Builds ISL topology for a single snapshot utilising a variation of the novel algorithm proposed by this research
+    project.
+    :param arguments: arguments to be passed to novel topology construction algorithm, which include the name of the
+     mega-constellation, number of satellites within the constellation, the number of snapshots over an orbital period
+     for which a topology is constructed, the number of ISL terminals for each satellite, the ID number of the snapshot
+     for which a topology is constructed, the cost function coefficients (alpha, beta, and gamma), the name of the files
+     in which the resulting topologies are saved, and the DCMST construction method (primal, ACO, or GA) utilised during
+     the algorithm.
+    :return:
+    """
     (constellation_name, total_satellites, num_snapshot, degree_constraints, snapshot_id, params,
      output_filename_location, method) = arguments
 

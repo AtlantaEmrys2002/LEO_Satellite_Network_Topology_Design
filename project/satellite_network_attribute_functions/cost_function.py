@@ -10,8 +10,8 @@ def cost_function(visibility: np.ndarray, time_visibility: np.ndarray, distance:
 
     :param visibility: adjacency matrix such that if satellites i and j are visible to one another,
      visibility[i][j] == 1, else 0
-    :param time_visibility: adjacency matrix such time_visibility[i][j] is equal to the number of future snapshots that
-     i and j will be visible to one another
+    :param time_visibility: adjacency matrix such that time_visibility[i][j] is equal to the number of future snapshots
+     that i and j will be visible to one another
     :param distance: an adjacency matrix where each element represents the distance between a satellite pair
     :param sunlight: an adjacency matrix such that if sunlight[i][j] == 1, either satellite i or satellite j is
      vulnerable to solar flares

@@ -9,9 +9,19 @@ from scipy.sparse.csgraph import dijkstra, reconstruct_path
 import warnings
 
 
-def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, num_satellites, constraints, method,
-                                            constant=1.0):
-
+def minimum_delay_topology_design_algorithm(constellation_name: str, num_snapshots: int, num_satellites: int,
+                                            constraints: np.ndarray, constant: float = 1.0):
+    """
+    Satellite ISL topology construction method (originally presented in paper by Lang et al. (found here:
+    https://link.springer.com/chapter/10.1007/978-981-15-3442-3_8).
+    :param constellation_name: name of satellite network constellation, e.g. Starlink-550
+    :param num_snapshots: the number of snapshots of the network over one orbit for which a topology is constructed
+    :param num_satellites: the number of satellites within the network
+    :param constraints: list that describes the maximum number of ISLs each satellite can establish at a given
+     point in time
+    :param constant: factor by which subsequent topology's propagation delay must be quicker for subsequent topology to
+     replace current topology (see paper for full explanation)
+    """
     # N.B. constant set to 1 as default like original paper - 'A Novel Topology Design Method for Multi-layered Optical
     # Satellite Networks' (see report for full reference)
 
@@ -24,7 +34,7 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
     for k in range(num_snapshots):
 
         # Define output filename
-        output_filename = './Results/mdtd/' + constellation_name.lower() # + "/isls_" + str(k) + ".txt"
+        output_filename = './Results/mdtd/' + constellation_name.lower()
 
         # Initialise new topology
         new_topology = np.zeros((num_satellites, num_satellites))
@@ -63,8 +73,6 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
         # Attempt to delete edges to prevent violation of degree constraint
         for v in range(num_satellites):
 
-            # start_v = time.time()
-
             if G.degree[v] > constraints[v]:
 
                 # Find all links where v is endpoint
@@ -87,10 +95,6 @@ def minimum_delay_topology_design_algorithm(constellation_name, num_snapshots, n
 
                     G.remove_edge(a, b)
 
-                    # if nx.is_connected(G) is False:
-                    #     G.add_edge(a, b, weight=link[0])
-
-                    # if nx.number_connected_components(G) > 1:
                     if nx.has_path(G, a, b) is False:
                         G.add_edge(a, b, weight=link[0])
 

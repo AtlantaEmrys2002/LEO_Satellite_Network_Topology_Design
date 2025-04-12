@@ -15,13 +15,13 @@ class TestDataHandlingFunctions(unittest.TestCase):
         test_topology = np.array([[0, 1, 0, 1], [1, 0, 1, 1], [0, 1, 0, 0], [1, 1, 0, 0]])
 
         project.data_handling.write_topology_to_file('test_topology_save.txt', test_topology,
-                                                     'novel')
+                                                     0)
 
         # Check file exists
-        self.assertTrue(os.path.isfile('./novel/isl_topologies/test_topology_save.txt'))
+        self.assertTrue(os.path.isfile('./isl_topologies/test_topology_save.txt'))
 
         # Read in topology file
-        topology_isls = np.loadtxt('./novel/isl_topologies/test_topology_save.txt').astype(int).T
+        topology_isls = np.loadtxt('./isl_topologies/test_topology_save.txt').astype(int).T
 
         # Recreate topology matrix for ISLs
         topology_matrix = np.zeros((4, 4))
