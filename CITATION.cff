@@ -1,0 +1,9 @@
+cff-version: 1.0.0
+message: "If you reference this software, please cite it as below."
+authors:
+    - family-names: "Millicent"
+      given-names: "Riordan"
+title: "Designing High-Performance Inter-Satellite Link Topologies for Satellite Megaconstellations Software"
+version: 1.0.0
+date-released: 2025-05-01
+url: "https://github.com/AtlantaEmrys2002/LEO_Satellite_Network_Topology_Design"

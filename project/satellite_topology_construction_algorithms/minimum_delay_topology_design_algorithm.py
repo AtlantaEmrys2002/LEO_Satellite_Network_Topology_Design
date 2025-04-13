@@ -28,7 +28,9 @@ def minimum_delay_topology_design_algorithm(constellation_name: str, num_snapsho
     # Stores previous snapshot's topology and average propagation delay
     # N.B. Cannot parallelise this function, as relies on results of previous topology calculations
     former_topology = 0
-    previous_propagation_delay = 0
+
+    # Set to value that is guaranteed to be larger than initial propagation delay
+    previous_propagation_delay = 1000000
 
     # Generates topology for each snapshot
     for k in range(num_snapshots):
