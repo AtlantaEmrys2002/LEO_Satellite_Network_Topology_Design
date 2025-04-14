@@ -119,9 +119,9 @@ python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Tel
 #
 ## Random Search Optimisation
 #
-#echo -n "Telesat Novel Algorithm Topology (ACO with Random Search): "
-#python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method random
-##
+echo -n "Telesat Novel Algorithm Topology (ACO with Random Search): "
+python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method random
+#
 ##echo -n "Telesat Novel Algorithm Topology (GA with Random Search): "
 ##python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method random
 ##

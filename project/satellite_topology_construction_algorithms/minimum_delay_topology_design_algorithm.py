@@ -35,6 +35,8 @@ def minimum_delay_topology_design_algorithm(constellation_name: str, num_snapsho
     # Generates topology for each snapshot
     for k in range(num_snapshots):
 
+        print("Snapshot: " + str(k))
+
         # Define output filename
         output_filename = './Results/mdtd/' + constellation_name.lower()
 
