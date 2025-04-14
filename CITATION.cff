@@ -1,8 +1,8 @@
 cff-version: 1.0.0
 message: "If you reference this software, please cite it as below."
 authors:
-    - family-names: "Millicent"
-      given-names: "Riordan"
+    - family-names: "Riordan"
+      given-names: "Millicent"
 title: "Designing High-Performance Inter-Satellite Link Topologies for Satellite Megaconstellations Software"
 version: 1.0.0
 date-released: 2025-05-01
