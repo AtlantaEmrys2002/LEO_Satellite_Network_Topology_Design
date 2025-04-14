@@ -21,7 +21,7 @@ def in_0_1(parameter_set: list[float]) -> bool:
 
 
 def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: int, degree_constraints: list[int],
-                        dcmst_method: str, output_directory: str, num_iterations: int = 12, mu: int = 1,
+                        dcmst_method: str, output_directory: str, num_iterations: int = 12, mu: int = 4,
                         pop_size: int = 4, step_size: float = 0.05):
     """
     Runs an evolutionary search optimisation function (based on evolutionary strategy) to find near-optimal values for
@@ -98,19 +98,23 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
     # For a set number of iterations, evolve solutions
     while current_iteration < num_iterations:
 
+        print("Iteration: " + str(current_iteration))
+
         # SELECT PARENTS #
 
         # Select parents (truncation selection - select subset of the best solutions as parents) - divide the number of
         # parents to select between three metrics
 
+        constant = 1
+
         # Best solutions in terms of propagation delay
-        parents_1 = np.argsort(fitness.T[0])[:mu//3]
+        parents_1 = np.argsort(fitness.T[0])[:mu//constant]
 
         # Best solutions in terms of hop count
-        parents_2 = np.argsort(fitness.T[1])[:mu//3]
+        parents_2 = np.argsort(fitness.T[1])[:mu//constant]
 
         # Best solutions in terms of link churn
-        parents_3 = np.argsort(fitness.T[2])[:mu//3]
+        parents_3 = np.argsort(fitness.T[2])[:mu//constant]
 
         # Define parents
         parents = np.concatenate((np.concatenate((parents_1, parents_2), axis=0), parents_3), axis=0)

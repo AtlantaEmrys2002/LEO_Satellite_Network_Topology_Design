@@ -13,7 +13,7 @@ from analysis import measure
 import cost_function_optimisation_algorithms
 import data_handling
 import satellite_network_attribute_functions as satnet
-from satellite_topology_construction_algorithms import (heuristic_topology_design_algorithm_isls, plus_grid,
+from satellite_topology_construction_algorithms import (heuristic_topology_design_algorithm_isls, plus_grid, x_grid,
                                                         minimum_delay_topology_design_algorithm)
 
 # Global Timescale (used for determining how to calculate time with Skyfield functions)
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     parser.add_argument("--optimise", type=str, help="determines if cost function weights should be "
                                                      "optimised and/or metrics returned", required=True)
     parser.add_argument("--topology", type=str, help="determines method with which to construct topology "
-                                                     "for network (options: 'plus-grid', 'mdtd', 'novel')",
+                                                     "for network (options: 'plus-grid', 'x-grid', 'mdtd', 'novel')",
                         required=True)
     parser.add_argument("--isl_terminals", type=int, nargs="+", help="specify as an int or list of ints "
                                                                      "the number of terminals each satellite in the "
@@ -278,7 +278,38 @@ if __name__ == "__main__":
 
     elif topology == "x-grid":
 
-        print("NEEDS IMPLEMENTING")
+        # Build topology with provided parameters
+
+        # Location to store ISL topology
+        if optimise is False:
+            location = "./x_grid/" + constellation_name.lower()
+        else:
+            location = "./Results/x_grid/" + constellation_name.lower()
+
+        # Check directory for resulting topology exists
+        if os.path.isdir(location) is False:
+            try:
+                os.makedirs(location)
+            except OSError:
+                print("Directory to store x grid (xGrid) topology could not be created.")
+
+        # Use Hypatia implementation to create +Grid topology
+        x_grid.generate_x_grid_isls(location + "/isls_0.txt", num_orbits, num_sats_per_orbit, isl_shift=0, idx_offset=0)
+
+        print("xGrid Topology Build Completed")
+
+        # Return metrics if optimise is true (so topology can be evaluated)
+        if optimise is True:
+            print("Evaluating... ", end='\r', flush=True)
+
+            # Calculate metrics for topology
+            max_pd, mean_pd, av_hop_count, link_churn = measure.measure_static(constellation_name, location +
+                                                                               "/isls_0.txt", total_sat)
+
+            data_handling.write_optimisation_results_to_csv(location, "static", [max_pd, mean_pd,
+                                                                                 av_hop_count, link_churn])
+
+            print("+Grid Evaluation Completed")
 
     else:
 

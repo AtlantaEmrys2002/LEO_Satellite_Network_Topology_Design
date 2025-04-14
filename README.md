@@ -12,7 +12,7 @@ Inter-Satellite Link Topologies for Satellite Megaconstellations* at Durham Univ
 
 ### Python Dependencies
 
-Dependencies for this package include the Python libraries: ```astropy``` ```certifi``` ```configobj``` ```ephem``` ```geopandas``` ```matplotlib``` ```networkx``` ```numpy``` ```plotly``` ```pytest``` ```scipy``` ```sgp4``` ```skyfield```, and ```sphinx```
+Dependencies for this package include the Python libraries: ```astropy``` ```certifi``` ```configobj``` ```ephem``` ```geopandas``` ```matplotlib``` ```networkx``` ```numpy``` ```plotly``` ```pytest``` ```scipy``` ```sgp4``` ```skyfield```, and ```sphinx```.
 
 To install all dependencies automatically, run ```bash install_dependencies.sh```.
 
@@ -40,8 +40,8 @@ satellite network, such as the average hop count, propagation delay, and link ch
 the visibility between pairs of satellites, the cost function used by the novel algorithm, and whether satellites are 
 more vulnerable to solar flares.
 - `satellite_topology_construction_algorithms` - this module provides various functions for constructing topologies of 
-given satellite networks. As well as the novel algorithm proposed in the report, +Grid and MDTD topology construction 
-algorithms are provided
+given satellite networks. As well as the novel algorithm proposed in the report, +Grid, xGrid, and MDTD topology 
+- construction algorithms are provided
 - `tests` - this module provides unit and integration tests for all the modules listed above. Works well with `pytest`.
 
 More information about the purpose of each function is provided in the documentation of this project, as well as the 
@@ -69,8 +69,8 @@ the same mega-constellation orbit at different altitudes). The +Grid algorithm w
 8. `optimise` - Boolean indicating whether experiments should be conducted optimising the cost function (used to weight
 potential ISL connections). Only utilised with `novel` topology construction algorithm.
 9. `topology` - the name of the algorithm that should be used to construct a topology. Options are `plus-grid` (+Grid -
-standard mesh topology and, currently, the only topology design deployed in real-world mega-constellations), `mdtd` 
-(Minimum Delay Topology Design), and `novel` (algorithm designed and proposed in this paper).
+standard mesh topology and, currently, the only topology design deployed in real-world mega-constellations), `x-grid`,
+`mdtd` (Minimum Delay Topology Design), and `novel` (algorithm designed and proposed in this paper).
 10. `isl_terminals` - list (heterogeneous hardware) or integer (homogeneous hardware) indicating the number of ISL 
 terminals per satellite within the mega-constellation.
 11. `snapshot_interval` - the number of seconds between each snapshot of the satellite mega-constellation for which a 
