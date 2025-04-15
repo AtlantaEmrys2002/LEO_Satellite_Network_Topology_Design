@@ -11,7 +11,7 @@ def build_results_overview():
     results = []
 
     # for each algorithm
-    for algorithm in ['plus_grid', 'mdtd', 'novel']:
+    for algorithm in ['plus_grid', 'x_grid', 'mdtd', 'novel']:
 
         # benchmarks
         if algorithm != 'novel':
