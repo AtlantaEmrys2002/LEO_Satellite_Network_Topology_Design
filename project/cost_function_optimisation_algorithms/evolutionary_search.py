@@ -1,5 +1,6 @@
 # Libraries
 from satellite_topology_construction_algorithms import heuristic_topology_design_algorithm_isls
+import copy
 from data_handling import write_optimisation_results_to_csv
 import os
 from analysis import measure_dynamic
@@ -21,8 +22,8 @@ def in_0_1(parameter_set: list[float]) -> bool:
 
 
 def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: int, degree_constraints: list[int],
-                        dcmst_method: str, output_directory: str, num_iterations: int = 12, mu: int = 4,
-                        pop_size: int = 4, step_size: float = 0.05):
+                        dcmst_method: str, output_directory: str, num_iterations: int = 9, mu: int = 3,
+                        pop_size: int = 6, step_size: float = 0.05):
     """
     Runs an evolutionary search optimisation function (based on evolutionary strategy) to find near-optimal values for
     alpha, beta, and gamma weights (can easily be adapted to include more weights), generates the topologies for
@@ -49,6 +50,8 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
     # Temporary to store results before they are written to files
     results = []
 
+    snapshot_count = 0
+
     if os.path.isdir(output_directory) is False:
 
         # Create directory in which to store evolutionary optimisation search results
@@ -69,6 +72,8 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
 
     # Evaluate fitness of individuals within initial population
     for c in range(pop_size):
+
+        print("Snapshot " + str(snapshot_count))
 
         # Generate arguments for topology build
         snapshot_arguments = [(constellation_name, num_sat, num_snapshots,
@@ -95,17 +100,17 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
         # Add values to results array
         results.append([candidates[c][0], candidates[c][1], candidates[c][2], mean_delay, hop_count, link_churn])
 
+        snapshot_count += 1
+
     # For a set number of iterations, evolve solutions
     while current_iteration < num_iterations:
-
-        print("Iteration: " + str(current_iteration))
 
         # SELECT PARENTS #
 
         # Select parents (truncation selection - select subset of the best solutions as parents) - divide the number of
         # parents to select between three metrics
 
-        constant = 1
+        constant = 3
 
         # Best solutions in terms of propagation delay
         parents_1 = np.argsort(fitness.T[0])[:mu//constant]
@@ -117,7 +122,9 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
         parents_3 = np.argsort(fitness.T[2])[:mu//constant]
 
         # Define parents
-        parents = np.concatenate((np.concatenate((parents_1, parents_2), axis=0), parents_3), axis=0)
+        # parents = np.concatenate((np.concatenate((parents_1, parents_2), axis=0), parents_3), axis=0)
+        parents = candidates[np.concatenate((np.concatenate((parents_1, parents_2), axis=0),
+                                             parents_3), axis=0)]
 
         # CREATE CHILDREN #
 
@@ -138,12 +145,16 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
                         children.append(child)
                         break
 
+        # print("NUMBER OF CHILDREN " + str(len(children)))
+
         # EVALUATE CHILDREN #
 
         # Calculate fitness from topology of each child
         child_fitness = []
 
         for child in children:
+
+            print("Snapshot: " + str(snapshot_count))
 
             # BUILD TOPOLOGY WITH CHILD VALUES #
 
@@ -166,15 +177,23 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
 
             child_fitness.append([mean_delay, hop_count, link_churn])
 
+            snapshot_count += 1
+
         # Evaluate fitness of individuals within initial population
 
-        for c in range(len(child_fitness)):
+        # for c in range(len(child_fitness)):
+        #     # Add values to results array
+        #     results.append([candidates[c][0], candidates[c][1], candidates[c][2], child_fitness[c][0],
+        #                     child_fitness[c][1], child_fitness[c][2]])
+
+        # for c in range(len(child_fitness)):
+        for c in range(len(children)):
             # Add values to results array
-            results.append([candidates[c][0], candidates[c][1], candidates[c][2], child_fitness[c][0],
+            results.append([children[c][0], children[c][1], children[c][2], child_fitness[c][0],
                             child_fitness[c][1], child_fitness[c][2]])
 
         # Prepare for next iteration
-        candidates = children
+        candidates = np.array(copy.deepcopy(children))
         fitness = np.asarray(child_fitness)
 
         # Move to next iteration

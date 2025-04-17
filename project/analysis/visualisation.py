@@ -282,7 +282,6 @@ def visualise(location: str, tle_file: str, num_snapshot: int = 94, snapshot_int
                               "type": "buttons",
                           }
                       ],
-                      dragmode='turntable',
                       sliders=[{"steps": [{"args": [[f.name], {"frame": {"duration": 0, "redraw": True},
                                                                "mode": "immediate", }, ],
                                            "label": f.name, "method": "animate", }
@@ -318,21 +317,19 @@ def visualise(location: str, tle_file: str, num_snapshot: int = 94, snapshot_int
 #
 # visualise("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
 #                  60, "Kuiper-630", topology_method="plus_grid")
-#
-#
 # visualise("./Results/plus_grid/starlink-550", "starlink-constellation_tles.txt.tmp", 90,
 #                  60, "Starlink-550", topology_method="plus_grid")
 # visualise("./Results/plus_grid/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
 #                  60, "Telesat-1015", topology_method="plus_grid")
 #
 
-visualise("./Results/x_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
-                 60, "Kuiper-630", topology_method="x_grid")
-visualise("./Results/x_grid/starlink-550", "starlink-constellation_tles.txt.tmp", 90,
-                 60, "Starlink-550", topology_method="x_grid")
-visualise("./Results/x_grid/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
-                 60, "Telesat-1015", topology_method="x_grid")
-
+# visualise("./Results/x_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
+#                  60, "Kuiper-630", topology_method="x_grid")
+# visualise("./Results/x_grid/starlink-550", "starlink-constellation_tles.txt.tmp", 90,
+#                  60, "Starlink-550", topology_method="x_grid")
+# visualise("./Results/x_grid/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
+#                  60, "Telesat-1015", topology_method="x_grid")
+#
 
 # print("Completed")
 #
@@ -350,6 +347,10 @@ visualise("./Results/x_grid/telesat-1015", "telesat-constellation_tles.txt.tmp",
 #           60, "Telesat-1015", topology_type="dynamic", topology_method="mdtd")
 #
 # print("Completed")
+
+
+# visualise("./Results/novel/random/primal/kuiper-630", "kuiper-constellation_tles.txt.tmp", 90,
+#           60, "Kuiper-630", topology_type="dynamic", topology_method="novel")
 
 # References
 # Animation of 3d Plots - https://stackoverflow.com/questions/68100031/animated-3d-surface-plots-with-plotly

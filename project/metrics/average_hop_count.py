@@ -18,7 +18,8 @@ def hop_count(topology_matrix: np.ndarray, distance_matrix: np.ndarray, num_sate
     """
     # Calculate distance matrix for dijkstra function, such that only distances between satellites with an active ISL
     # are included
-    distance_matrix = np.where(topology_matrix == 1, distance_matrix, 0)
+    # distance_matrix = np.where(topology_matrix == 1, distance_matrix, 0)
+    distance_matrix = np.where(topology_matrix > 0.5, distance_matrix, 0)
 
     # Calculate path from source to destination using Dijkstra's Shortest Path Algorithm
     graph = nx.from_numpy_array(distance_matrix)

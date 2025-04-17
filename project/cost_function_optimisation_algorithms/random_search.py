@@ -64,6 +64,9 @@ def random_search(constellation_name: str, num_snapshots: int, num_param_sets: i
 
         # Generate results files (metrics)
         metrics = [x for x in measure.measure_dynamic(constellation_name, output_directory, num_sat, num_snapshots)[1:]]
+
+        print(metrics)
+
         results.append(list(parameter_sets[t]) + metrics)
 
     # Write Results to CSV Format - this code was adapted from documentation

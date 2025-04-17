@@ -1,5 +1,6 @@
 # Libraries
 from astropy.constants import c
+import networkx as nx
 import numpy as np
 from scipy.sparse import csr_array
 from scipy.sparse.csgraph import dijkstra
@@ -15,9 +16,21 @@ def propagation_delay(topology_matrix: np.ndarray, distance_matrix: np.ndarray, 
     :param num_satellites: the number of satellites in the network
     :return: the average propagation delay for all shortest paths between satellite pairs
     """
+
     # Calculate distance matrix for dijkstra function, such that only distances between satellites with an active ISL
     # are included
-    distance_matrix = np.where(topology_matrix == 1, distance_matrix, 0)
+    distance_matrix = np.where(topology_matrix > 0.5, distance_matrix, 0)
+
+    # Connectivity Test
+    # tmp_edges = np.argwhere(distance_matrix > 0).tolist()
+    # G = nx.Graph()
+    # for e in tmp_edges:
+    #     G.add_edge(e[0], e[1])
+    #
+    # if nx.is_connected(G) is False or G.number_of_nodes() != num_satellites:
+    #     subgraphs_count = nx.number_connected_components(G)
+    #     raise ValueError("MDTD does not construct a connected topology - a topology with " + str(subgraphs_count) +
+    #                      " disconnected components was constructed instead.")
 
     # Calculate path from source to destination using Dijkstra's Shortest Path Algorithm
     graph = csr_array(distance_matrix)
@@ -42,6 +55,7 @@ def propagation_delay(topology_matrix: np.ndarray, distance_matrix: np.ndarray, 
 
     # Calculate mean propagation delay - don't consider paths between satellites and themselves. Additionally, this is
     # an undirected graph
+
     mean_pd = np.sum(dist) / ((num_satellites ** 2 - num_satellites)/2)
 
     return max_pd, mean_pd

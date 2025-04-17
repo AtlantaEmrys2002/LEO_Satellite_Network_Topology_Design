@@ -81,6 +81,9 @@ Degree-Constrained Minimum Spanning Tree algorithm with which to construct a DCM
 13. `optimisation_method` - if the `novel` algorithm is utilised to construct a topology and the user wishes to optimise
 the cost function (i.e. `optimise` is `True`), the user can specify `random` (random parameter sets) or `evolutionary` 
 (evolutionary search) as the optimisation method.
+14. `weights` - if the `novel` algorithm is utilised to construct the topology, but does not require cost function 
+coefficient optimisation, cost function coefficients (for alpha, beta, and gamma) must be provided (all coefficients 
+must be in [0,1]).
 
 To visualise resulting topologies, use the `visualise.sh` script (make sure to pass the correct constellations to the 
 `visualise()` function) - see [here](project/analysis/visualisation.py) for more information on using the visualise 
@@ -101,6 +104,10 @@ takes significant execution time. However, a large proportion of this code is au
 access to a significant number of CPU cores, this code will run significantly faster over several days. To generate an overview of the results
 of ```report.sh```, run ```results.sh``` to build a csv file. To build the visualisations of the networks (demonstrating the physical nature of the network over time), 
 please run ```bash visualise.sh``` to build and display all topologies.
+
+A series of results is provided in `Results` (including benchmarks) with the best cost function weights found of all 
+combinations of DCMST construction algorithm, cost function optimisation method, and constellations.
+
 
 ## Acknowledgements
 

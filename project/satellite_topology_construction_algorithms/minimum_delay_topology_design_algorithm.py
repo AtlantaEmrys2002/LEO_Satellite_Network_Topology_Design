@@ -1,4 +1,5 @@
 # Libraries
+import copy
 import data_handling
 import dcmst_construction_algorithms as topology_build
 from metrics import propagation_delay
@@ -49,10 +50,7 @@ def minimum_delay_topology_design_algorithm(constellation_name: str, num_snapsho
                                     + ".npy")
 
         # Ignore edges where satellites not visible to one another
-        distance_matrix = np.where(visibility_matrix == 1, distance_matrix, -1)
-
-        # Ensure no negative values
-        distance_matrix = np.where(distance_matrix > 0, distance_matrix, 0)
+        distance_matrix = np.where(visibility_matrix == 1, distance_matrix, 0)
 
         # Calculate the shortest path between all satellite pairs in the network
         graph = csr_array(distance_matrix)
@@ -60,10 +58,12 @@ def minimum_delay_topology_design_algorithm(constellation_name: str, num_snapsho
         # For each pair of satellites, use Dijkstra to find the shortest path between the pair and add all edges on
         # path to topology
         for sat_i in range(num_satellites):
-            _, result = dijkstra(graph, directed=False, indices=sat_i, return_predecessors=True)
+            shortest_path_lengths, result = dijkstra(graph, directed=False, indices=sat_i, return_predecessors=True)
+
             # Find all edges to add to topology
             edges = np.argwhere((reconstruct_path(csgraph=graph, predecessors=result, directed=False).
                                  todense()).astype(np.int32) > 0).T
+
             new_topology[edges[0], edges[1]] = 1
             new_topology[edges[1], edges[0]] = 1
 
@@ -106,13 +106,27 @@ def minimum_delay_topology_design_algorithm(constellation_name: str, num_snapsho
         degree = np.array(G.degree).T[1]
 
         # Increase connectivity of topology (adding in edges such that degree constraints not violated)
-        new_topology = topology_build.increase_connectivity(new_topology, constraints, degree, distance_matrix,
-                                                            num_satellites)
+        new_topology = topology_build.increase_connectivity(new_topology, constraints, degree,
+                                                            copy.deepcopy(distance_matrix), num_satellites)
+
+        # Used to test for connectivity
+        # tmp_edges = np.argwhere(new_topology > 0.5).tolist()
+        #
+        # G = nx.Graph()
+        # for e in tmp_edges:
+        #     G.add_edge(e[0], e[1])
+        #
+        # if nx.is_connected(G) is False or G.number_of_nodes() != num_satellites:
+        #     subgraphs_count = nx.number_connected_components(G)
+        #     raise ValueError("MDTD does not construct a connected topology - a topology with " + str(subgraphs_count)
+        #     + " disconnected components was constructed instead.")
 
         # If first snapshot, this is the new topology
         if k == 0:
+
+            _, current_prop_delay = propagation_delay(new_topology, copy.deepcopy(distance_matrix), num_satellites)
+
             former_topology = new_topology
-            _, current_prop_delay = propagation_delay(new_topology, distance_matrix, num_satellites)
             previous_propagation_delay = current_prop_delay
 
             # Write topology to file
@@ -120,6 +134,7 @@ def minimum_delay_topology_design_algorithm(constellation_name: str, num_snapsho
 
         else:
             _, current_prop_delay = propagation_delay(new_topology, distance_matrix, num_satellites)
+
             # Assuming that if links are switched, changes are done concurrently, so there is no need to take into
             # account link switch time (it will be constant no matter the number of link switches). If no link switches
             # required, topology is same and will remain the same
