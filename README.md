@@ -40,8 +40,8 @@ satellite network, such as the average hop count, propagation delay, and link ch
 the visibility between pairs of satellites, the cost function used by the novel algorithm, and whether satellites are 
 more vulnerable to solar flares.
 - `satellite_topology_construction_algorithms` - this module provides various functions for constructing topologies of 
-given satellite networks. As well as the novel algorithm proposed in the report, +Grid, xGrid, and MDTD topology 
-- construction algorithms are provided
+given satellite networks. As well as the novel algorithm proposed in the report, +Grid and MDTD topology construction 
+algorithms are provided
 - `tests` - this module provides unit and integration tests for all the modules listed above. Works well with `pytest`.
 
 More information about the purpose of each function is provided in the documentation of this project, as well as the 

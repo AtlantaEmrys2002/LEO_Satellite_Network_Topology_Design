@@ -90,14 +90,14 @@ echo ""
 
 ## Evol Strategy Search Optimisation
 #
-#echo -n "Kuiper Novel Algorithm Topology (ACO with Evolutionary Strategy Search): "
-#python __main__.py --tles kuiper-constellation_tles.txt.tmp --constellation Kuiper-630 --m 34 --n 34 --i 51.9 --rev 14.8 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method evolutionary
+echo -n "Kuiper Novel Algorithm Topology (ACO with Evolutionary Strategy Search): "
+python __main__.py --tles kuiper-constellation_tles.txt.tmp --constellation Kuiper-630 --m 34 --n 34 --i 51.9 --rev 14.8 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method evolutionary
 
 ##echo -n "Kuiper Novel Algorithm Topology (GA with Evolutionary Strategy Search): "
 ##python __main__.py --tles kuiper-constellation_tles.txt.tmp --constellation Kuiper-630 --m 34 --n 34 --i 51.9 --rev 14.8 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method evolutionary
 ##
-echo -n "Kuiper Novel Algorithm Topology (Primal with Evolutionary Strategy Search): "
-python __main__.py --tles kuiper-constellation_tles.txt.tmp --constellation Kuiper-630 --m 34 --n 34 --i 51.9 --rev 14.8 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method evolutionary
+#echo -n "Kuiper Novel Algorithm Topology (Primal with Evolutionary Strategy Search): "
+#python __main__.py --tles kuiper-constellation_tles.txt.tmp --constellation Kuiper-630 --m 34 --n 34 --i 51.9 --rev 14.8 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method evolutionary
 
 ## Starlink
 #
@@ -107,7 +107,7 @@ python __main__.py --tles kuiper-constellation_tles.txt.tmp --constellation Kuip
 #
 #echo -n "Starlink Novel Algorithm Topology (ACO with Random Search): "
 #python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method random
-#
+
 ##echo -n "Starlink Novel Algorithm Topology (GA with Random Search): "
 ##python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method random
 ##
@@ -116,14 +116,14 @@ python __main__.py --tles kuiper-constellation_tles.txt.tmp --constellation Kuip
 #
 ## Evolutionary Strategy Search Optimisation
 #
-##echo -n "Starlink Novel Algorithm Topology (ACO with Evolutionary Strategy Search): "
-##python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method evolutionary
-#
+echo -n "Starlink Novel Algorithm Topology (ACO with Evolutionary Strategy Search): "
+python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method evolutionary
+
 ##echo -n "Starlink Novel Algorithm Topology (GA with Evolutionary Strategy Search): "
 ##python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method evolutionary
 ##
-echo -n "Starlink Novel Algorithm Topology (Primal with Evolutionary Strategy Search): "
-python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method evolutionary
+#echo -n "Starlink Novel Algorithm Topology (Primal with Evolutionary Strategy Search): "
+#python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method evolutionary
 
 ## Telesat
 #
@@ -142,40 +142,15 @@ python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation St
 #
 ## Evolutionary Strategy Search Optimisation
 #
-##echo -n "Telesat Novel Algorithm Topology (ACO with Evolutionary Strategy Search): "
-##python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method evolutionary
-#
+echo -n "Telesat Novel Algorithm Topology (ACO with Evolutionary Strategy Search): "
+python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method evolutionary
+
 ##echo -n "Telesat Novel Algorithm Topology (GA with Evolutionary Strategy Search): "
 ##python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method evolutionary
 ##
-echo -n "Telesat Novel Algorithm Topology (Primal with Evolutionary Strategy Search): "
-python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method evolutionary
+#echo -n "Telesat Novel Algorithm Topology (Primal with Evolutionary Strategy Search): "
+#python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method evolutionary
 
 #echo""
 #echo "Report Recreation Finished"
-#
-#### MACHINE LEARNING ###
-#
-## Machine Learning Search Optimisation
-#
-##python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method machine-learning
-##python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method machine-learning
-##python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method machine-learning
-#
-## Machine Learning Search Optimisation
-#
-##echo -n "Kuiper Novel Algorithm Topology (ACO with Evolutionary Strategy Search): "
-##python __main__.py --tles kuiper-constellation_tles.txt.tmp --constellation Kuiper-630 --m 34 --n 34 --i 51.9 --rev 14.8 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method machine-learning
-##
-##echo -n "Kuiper Novel Algorithm Topology (GA with Evolutionary Strategy Search): "
-##python __main__.py --tles kuiper-constellation_tles.txt.tmp --constellation Kuiper-630 --m 34 --n 34 --i 51.9 --rev 14.8 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method machine-learning
-##
-##echo -n "Kuiper Novel Algorithm Topology (Primal with Evolutionary Strategy Search): "
-##python __main__.py --tles kuiper-constellation_tles.txt.tmp --constellation Kuiper-630 --m 34 --n 34 --i 51.9 --rev 14.8 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method machine-learning
-#
-## Machine Learning Search Optimisation
-#
-##python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco --optimisation_method machine-learning
-##python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst ga --optimisation_method machine-learning
-##python __main__.py --tles telesat-constellation_tles.txt.tmp --constellation Telesat-1015 --m 27 --n 13 --i 98.98 --rev 13.66 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst primal --optimisation_method machine-learning
 #
