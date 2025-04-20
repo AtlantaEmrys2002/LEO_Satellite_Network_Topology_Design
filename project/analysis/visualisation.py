@@ -316,12 +316,14 @@ def visualise(location: str, tle_file: str, num_snapshot: int = 94, snapshot_int
 # print("Building visualisations of static topologies... ", end='\r')
 #
 # visualise("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
-#                  60, "Kuiper-630", topology_method="plus_grid")
+#                  60, "Kuiper-630", topology_type="static", topology_method="plus_grid")
+#
 # visualise("./Results/plus_grid/starlink-550", "starlink-constellation_tles.txt.tmp", 90,
 #                  60, "Starlink-550", topology_method="plus_grid")
+#
 # visualise("./Results/plus_grid/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
 #                  60, "Telesat-1015", topology_method="plus_grid")
-#
+
 
 # visualise("./Results/x_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
 #                  60, "Kuiper-630", topology_method="x_grid")
