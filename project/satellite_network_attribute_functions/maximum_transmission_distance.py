@@ -13,6 +13,8 @@ def maximum_transmission_distance(constellation_name: str) -> float:
         return 10000
     elif "kuiper" in name:
         return 10000
+    elif "iridium" in name:
+        return 10000
     else:
         raise ValueError("No constellation has that name and, therefore, no maximum transmission distance can be "
                          "returned.")

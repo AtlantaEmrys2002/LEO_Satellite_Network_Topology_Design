@@ -6,7 +6,7 @@ from astropy import units as u
 def read_file(file_name):
     """
     Stores raw TLE data rather than convert it to pyephem format. Please note that this function is adapted from Hypatia
-     (read_tles.py in the satgenpy module)
+    (read_tles.py in the satgenpy module)
 
     :param file_name:
     :return:

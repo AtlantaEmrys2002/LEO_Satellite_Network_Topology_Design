@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
     print("Input Parsing Completed")
 
-    print("Building Topology... ", end='\r', flush=True)
+    print("Building Topology... ")
 
     # Generate test data using network description (data from Hypatia)
     data_handling.data_generation(tle_file, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree,
@@ -452,7 +452,7 @@ if __name__ == "__main__":
                 else:
                     raise ValueError("An optimisation method must be specified.")
 
-                print("Building and Evaluating Topologies... ", end='\r', flush=True)
+                print("Building and Evaluating Topologies... ")
 
                 # Run random search optimisation method
                 if optimisation_method == "random":

@@ -17,7 +17,7 @@ def build_results_overview():
         if algorithm != 'novel':
 
             # for each satellite mega-constellation for which a topology is constructed
-            for constellation in ['kuiper-630', 'starlink-550', 'telesat-1015']:
+            for constellation in ['iridium-780', 'kuiper-630', 'starlink-550', 'telesat-1015']:
 
                 # location of results
                 location = './Results/' + algorithm + '/' + constellation + '/results.csv'
@@ -52,7 +52,7 @@ def build_results_overview():
                 for dcmst in ['aco', 'ga', 'primal']:
 
                     # for each satellite mega-constellation for which a topology is constructed
-                    for constellation in ['kuiper-630', 'starlink-550', 'telesat-1015']:
+                    for constellation in ['iridium-780', 'kuiper-630', 'starlink-550', 'telesat-1015']:
 
                         # location of results
                         location = ('./Results/' + algorithm + '/' + optimisation_method + '/' + dcmst + '/' +
