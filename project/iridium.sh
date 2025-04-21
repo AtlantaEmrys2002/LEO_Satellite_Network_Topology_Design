@@ -1,5 +1,5 @@
 # Example used in project demonstration exam - Iridium is relatively small compared with constellations such as Kuiper,
-# Starlink, and Lightspeed (Telesat)
+# Starlink, and Lightspeed (Telesat), with only 66 satellites distributed across 11 near-polar orbits.
 
 echo "DEMONSTRATION EXAMPLE"
 echo ""

@@ -95,6 +95,9 @@ Example:
 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco 
 --optimisation_method random`
 
+A "toy example" is provided - the Iridium constellation has relatively few satellites (66 across 6 orbits) when compared
+with megaconstellations, such as Kuiper, Lightspeed (Telesat) and Starlink. 
+
 Please see report for full citations/references of papers that algorithms are sourced from.
 
 ## Recreating Report
@@ -115,3 +118,5 @@ Please note that certain functions within this code (within the `data_handling` 
 are taken and/or adapted from [Hypatia software code](https://github.com/snkas/hypatia). All code not written 
 by this author is clearly cited/referenced with the appropriate licenses displayed in the relevant files. Otherwise,
 all code has been created, tested, and documented by this author.
+
+&copy; Millicent Riordan 
