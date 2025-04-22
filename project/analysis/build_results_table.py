@@ -11,7 +11,7 @@ def build_results_overview():
     results = []
 
     # for each algorithm
-    for algorithm in ['plus_grid', 'x_grid', 'mdtd', 'novel']:
+    for algorithm in ['plus_grid', 'mdtd', 'novel']:
 
         # benchmarks
         if algorithm != 'novel':
@@ -46,7 +46,7 @@ def build_results_overview():
         else:
 
             # for each method used to optimise cost function
-            for optimisation_method in ['evolutionary', 'machine-learning', 'random']:
+            for optimisation_method in ['evolutionary', 'random']:
 
                 # for each method used to construct a DCMST
                 for dcmst in ['aco', 'ga', 'primal']:
@@ -78,16 +78,21 @@ def build_results_overview():
 
                                     # find the best values for each metric
                                     if not best_result:
-                                        best_result = values
+                                        # best_result = values
+                                        best_result = [values, values, values]
                                     else:
                                         if best_result["mean_latency"] > values["mean_latency"]:
-                                            best_result = values
+                                            # best_result = values
+                                            best_result[0] = values
                                         elif best_result["average_hop_count"] > values["average_hop_count"]:
-                                            best_result = values
+                                            # best_result = values
+                                            best_result[1] = values
                                         elif best_result["link_churn"] > values["link_churn"]:
-                                            best_result = values
-
-                            results.append(best_result)
+                                            # best_result = values
+                                            best_result[2] = values
+                            for k in range(3):
+                                # results.append(best_result)
+                                results.append(best_result[k])
 
     # Write results to overview table
     with open('./results_overview.csv', 'w', newline='') as csvfile:

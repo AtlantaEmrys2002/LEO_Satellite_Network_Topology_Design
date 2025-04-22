@@ -357,8 +357,10 @@ def visualise(location: str, tle_file: str, num_snapshot: int = 94, snapshot_int
 # References
 # Animation of 3d Plots - https://stackoverflow.com/questions/68100031/animated-3d-surface-plots-with-plotly
 # Animation of 3d Scatter - https://community.plotly.com/t/3d-scatter-animation/46368
+# Animation of 3d Surfaces - https://stackoverflow.com/questions/76363493/plotly-animated-3d-surface-plots
 # Animating Traces - https://community.plotly.com/t/how-to-simultaneously-animate-multiple-traces-of-the-same-figure/
 # 64541
+# Arrows - https://stackoverflow.com/questions/43164909/plotlypython-how-to-plot-arrows-in-3d
 # Callback to Frames - https://community.plotly.com/t/dash-animated-3d-graph-with-callback-to-change-animation-frames/
 # 46939
 # Complex Animations in Plotly - https://community.plotly.com/t/how-to-use-plotly-python-for-complex-3d-animations/32983
@@ -371,10 +373,19 @@ def visualise(location: str, tle_file: str, num_snapshot: int = 94, snapshot_int
 # Plotting Orbits with Matplotlib - https://plainenglish.io/blog/plot-satellites-real-time-orbits-with-python-s-
 # matplotlib
 # Plotly Background Colour - https://community.plotly.com/t/how-can-i-change-the-background-color/39007
+# Plotly Bug - https://github.com/plotly/plotly.py/issues/3120#issuecomment-1018308604
+# Plotly Button Colour - https://stackoverflow.com/questions/75371336/how-do-i-change-the-color-of-a-button-color-in-
+# plotly-for-python
+# Plotly Dark Theme - https://community.plotly.com/t/plotly-default-buttons-dark-theme/72412/2
 # Plotly Documentation - https://plotly.com/graphing-libraries/
 # Plotly Recommendation - https://stackoverflow.com/questions/31768031/plotting-points-on-the-surface-of-a-sphere
 # Plotly Removing Axes - https://community.plotly.com/t/how-to-remove-axis-planes-in-plotly-graph-objects-figure/67375
+# Plotly Sliders - https://stackoverflow.com/questions/68667116/add-slider-to-plotly-heatmap-animation-python
+# Plotly Switch - https://community.plotly.com/t/how-to-change-color-of-dbc-switch-button/63389/3
 # Getting Started with Plotly - https://plotly.com/python/getting-started/#overview
+# Plotly Textures - https://community.plotly.com/t/applying-full-color-image-texture-to-create-an-interactive-earth-
+# globe/60166
+# Plotly 3D Surface Bug - https://stackoverflow.com/questions/74470382/plotly-3d-surface-plot-not-appearing
 # Plotting 3D Lines - https://stackoverflow.com/questions/60153352/plotting-multiple-3d-lines-in-one-figure-using-plotly
 # Plotting 3D Spheres - https://stackoverflow.com/questions/70977042/how-to-plot-spheres-in-3d-with-plotly-or-another-
 # library

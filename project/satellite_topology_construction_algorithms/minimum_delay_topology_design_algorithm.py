@@ -13,7 +13,7 @@ import warnings
 def minimum_delay_topology_design_algorithm(constellation_name: str, num_snapshots: int, num_satellites: int,
                                             constraints: np.ndarray, constant: float = 1.0):
     """
-    Satellite ISL topology construction method (originally presented in paper by Lang et al. (found here:
+    Satellite ISL topology construction method (originally presented in paper by Lang et al. found here:
     https://link.springer.com/chapter/10.1007/978-981-15-3442-3_8).
     :param constellation_name: name of satellite network constellation, e.g. Starlink-550
     :param num_snapshots: the number of snapshots of the network over one orbit for which a topology is constructed
@@ -144,3 +144,7 @@ def minimum_delay_topology_design_algorithm(constellation_name: str, num_snapsho
                 data_handling.write_topology_to_file(output_filename, new_topology, k)
             else:
                 data_handling.write_topology_to_file(output_filename, former_topology, k)
+
+# References
+# Disconnected Graphs - https://www.quora.com/How-do-you-remove-edges-in-a-graph-to-create-disconnected-components-
+# algorithm-graph-graph-algorithm-graph-traversal-development
