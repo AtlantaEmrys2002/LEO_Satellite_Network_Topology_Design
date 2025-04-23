@@ -59,10 +59,11 @@ directory) with the following arguments:
 1. `tles_file_name` - the name of the file containing a two-line element set (TLE) description of each satellite within
 the given mega-constellation.
 2. `constellation` - the name of the satellite mega-constellation, e.g. Starlink-550.
-3. `m` - the number of orbits in the mega-constellation.
-4. `n` - the number of satellites per orbit in the mega-constellation.
-5. `i` - the inclination degree of orbits.
-6. `rev` - the mean motion revolutions per day for a satellite within the constellation.
+3. `m` - the number of orbits in the mega-constellation (specify m for each shell if more than 1).
+4. `n` - the number of satellites per orbit in the mega-constellation (specify n for each shell if more than 1).
+5. `i` - the inclination degree of orbits (specify i for each shell if more than 1).
+6. `rev` - the mean motion revolutions per day for a satellite within the constellation ((specify rev for each shell if 
+more than 1)).
 7. `multi` - Boolean indicating whether there are multiple shells within the constellation (i.e. if satellites within 
 the same mega-constellation orbit at different altitudes). The +Grid algorithm will produce unexpected results if 
 `multi` set to True
