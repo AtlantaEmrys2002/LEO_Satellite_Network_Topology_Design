@@ -354,6 +354,9 @@ def visualise(location: str, tle_file: str, num_snapshot: int = 94, snapshot_int
 # visualise("./Results/novel/random/primal/kuiper-630", "kuiper-constellation_tles.txt.tmp", 90,
 #           60, "Kuiper-630", topology_type="dynamic", topology_method="novel")
 
+# visualise("./novel/primal/multishell", "multishell-constellation_tles.txt.tmp", 97,
+#                  60, "Multishell", topology_type="dynamic", topology_method="novel")
+
 # References
 # Animation of 3d Plots - https://stackoverflow.com/questions/68100031/animated-3d-surface-plots-with-plotly
 # Animation of 3d Scatter - https://community.plotly.com/t/3d-scatter-animation/46368

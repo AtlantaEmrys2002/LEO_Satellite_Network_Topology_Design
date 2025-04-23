@@ -44,12 +44,12 @@ if __name__ == "__main__":
     parser.add_argument("--constellation", type=str, help="name of satellite constellation for which a "
                                                           "topology is built (used to name output files)",
                         required=True)
-    parser.add_argument("--m", type=int, help="number of orbits in constellation", required=True)
-    parser.add_argument("--n", type=int, help="number of satellites per orbit", required=True)
-    parser.add_argument("--i", type=float, help="inclination degree of an orbit within the constellation",
-                        required=True)
-    parser.add_argument("--rev", type=float, help="mean motion revolutions per day for satellite network",
-                        required=True)
+    parser.add_argument("--m", nargs="+", type=int, help="number of orbits in constellation", required=True)
+    parser.add_argument("--n", nargs="+", type=int, help="number of satellites per orbit", required=True)
+    parser.add_argument("--i", nargs="+", type=float, help="inclination degree of an orbit within the "
+                                                           "constellation", required=True)
+    parser.add_argument("--rev", nargs="+", type=float, help="mean motion revolutions per day for satellite"
+                                                             " network", required=True)
     parser.add_argument("--snapshot_interval", type=float, help="time intervals (s) between snapshots, e.g."
                                                                 " if 60, a topology is constructed every 60s over 1 "
                                                                 "orbital period", required=True)
@@ -62,7 +62,8 @@ if __name__ == "__main__":
                         required=True)
     parser.add_argument("--isl_terminals", type=int, nargs="+", help="specify as an int or list of ints "
                                                                      "the number of terminals each satellite in the "
-                                                                     "given constellation has", required=True)
+                                                                     "given constellation has ordered according to "
+                                                                     "shell then ID", required=True)
 
     # Optional arguments
     parser.add_argument("--snapshots", type=int, nargs="+", help="ids of the snapshots for which to build "
@@ -111,15 +112,35 @@ if __name__ == "__main__":
 
     # CALCULATE TOTAL SATELLITES
 
+    # Original
+    # total_sat = num_sats_per_orbit * num_orbits
+
     # Calculate the number of satellites in the network
-    total_sat = num_sats_per_orbit * num_orbits
+    if multi_shell is False:
+        # total_sat = num_sats_per_orbit * num_orbits
+        total_sat = num_sats_per_orbit[0] * num_orbits[0]
+    else:
+        total_sat = sum([num_sats_per_orbit[k] * num_orbits[k] for k in range(len(args.m))])
 
     # DETERMINE IF A TOPOLOGY CAN BE BUILT FOR THE NETWORKS #
 
     # Check satellite network has a sufficient number of satellites and orbits - inspired by Hypatia code
-    if total_sat < 3 or num_sats_per_orbit < 3:
-        raise ValueError("Number of satellites must be greater than 3 and number of satellites per orbit must be "
-                         "greater than 3.")
+    if multi_shell is False:
+
+        # if total_sat < 3 or num_sats_per_orbit < 3:
+        if total_sat < 3 or num_sats_per_orbit[0] < 3:
+            raise ValueError("Number of satellites must be greater than 3 and number of satellites per orbit must be "
+                             "greater than 3.")
+
+    else:
+        if total_sat < 3:
+            raise ValueError("Number of satellites must be greater than 3 and number of satellites per orbit must be "
+                             "greater than 3.")
+        for k in num_sats_per_orbit:
+            if k < 3:
+                raise ValueError(
+                    "Number of satellites must be greater than 3 and number of satellites per orbit must be "
+                    "greater than 3.")
 
     # FIND THE MAXIMUM NUMBER OF ISLS EACH SATELLITE CAN ESTABLISH #
 
@@ -149,9 +170,43 @@ if __name__ == "__main__":
 
     print("Building Topology... ")
 
-    # Generate test data using network description (data from Hypatia)
-    data_handling.data_generation(tle_file, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree,
-                                  mean_motion_rev_per_day)
+    if multi_shell is True:
+        for k in range(len(args.m)):
+            # Generate test data using network description (data from Hypatia)
+            data_handling.data_generation(str(k) + tle_file, str(k) + constellation_name, num_orbits[k],
+                                          num_sats_per_orbit[k], inclination_degree[k], mean_motion_rev_per_day[k])
+        for k in range(len(args.m)):
+            # Merge all test data files
+            with open(str(k) + tle_file, 'r') as f:
+                if k != 0:
+                    _, _ = [int(n) for n in f.readline().split()]
+                with open("no_ids" + tle_file, "a") as final_tle:
+                    for line in f:
+                        final_tle.write(line)
+        # Update IDs
+        with open("no_ids" + tle_file, "r") as inp:
+            with open(tle_file, "w") as op:
+                counter = 0
+                identity = 0
+                for k in inp:
+                    if (counter - 1) % 3 == 0:
+                        sid = k.split()[0]
+                        sid = sid + " " + str(identity) + "\n"
+                        op.write(sid)
+                        identity += 1
+                    else:
+                        op.write(k)
+                    counter += 1
+
+    # Original
+
+    else:
+        # Original
+        # Generate test data using network description (data from Hypatia)
+        # data_handling.data_generation(tle_file, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree,
+        #                               mean_motion_rev_per_day)
+        data_handling.data_generation(tle_file, constellation_name, num_orbits[0], num_sats_per_orbit[0],
+                                      inclination_degree[0], mean_motion_rev_per_day[0])
 
     # Read test data into appropriate data structure (dictionary) and extract description of satellite positions,
     # as well as unique orbits, from data
@@ -258,7 +313,10 @@ if __name__ == "__main__":
                 print("Directory to store plus grid (+Grid) topology could not be created.")
 
         # Use Hypatia implementation to create +Grid topology
-        plus_grid.generate_plus_grid_isls(location + "/isls_0.txt", num_orbits, num_sats_per_orbit, isl_shift=0,
+        # plus_grid.generate_plus_grid_isls(location + "/isls_0.txt", num_orbits, num_sats_per_orbit, isl_shift=0,
+        #                                   idx_offset=0)
+
+        plus_grid.generate_plus_grid_isls(location + "/isls_0.txt", num_orbits[0], num_sats_per_orbit[0], isl_shift=0,
                                           idx_offset=0)
 
         print("+Grid Topology Build Completed")
