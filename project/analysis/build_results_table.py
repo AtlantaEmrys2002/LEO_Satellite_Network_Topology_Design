@@ -38,7 +38,7 @@ def build_results_overview():
                             # read values
                             values = dict(algorithm=algorithm, optimisation_method=optimisation_method, dcmst=dcmst,
                                           constellation=constellation, alpha=alpha, beta=beta, gamma=gamma,
-                                          mean_latency=row["mean_latency"], average_hop_count=row["average_hop_count"],
+                                          mean_latency=row['mean_latency'], average_hop_count=row["average_hop_count"],
                                           link_churn=row["link_churn"])
 
                             results.append(values)
@@ -81,13 +81,13 @@ def build_results_overview():
                                         # best_result = values
                                         best_result = [values, values, values]
                                     else:
-                                        if best_result["mean_latency"] > values["mean_latency"]:
+                                        if best_result[0]["mean_latency"] > values["mean_latency"]:
                                             # best_result = values
                                             best_result[0] = values
-                                        elif best_result["average_hop_count"] > values["average_hop_count"]:
+                                        elif best_result[1]["average_hop_count"] > values["average_hop_count"]:
                                             # best_result = values
                                             best_result[1] = values
-                                        elif best_result["link_churn"] > values["link_churn"]:
+                                        elif best_result[2]["link_churn"] > values["link_churn"]:
                                             # best_result = values
                                             best_result[2] = values
                             for k in range(3):
