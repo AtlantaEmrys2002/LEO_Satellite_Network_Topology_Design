@@ -35,9 +35,15 @@ def build_results_overview():
                             beta = float("nan")
                             gamma = float("nan")
 
+                            if algorithm == "plus_grid":
+                                algorithm_formatted = "PlusGrid"
+                            else:
+                                algorithm_formatted = algorithm.upper()
+
                             # read values
-                            values = dict(algorithm=algorithm, optimisation_method=optimisation_method, dcmst=dcmst,
-                                          constellation=constellation, alpha=alpha, beta=beta, gamma=gamma,
+                            values = dict(algorithm=algorithm_formatted, optimisation_method=optimisation_method,
+                                          dcmst=dcmst, constellation=constellation.title(), alpha=alpha, beta=beta,
+                                          gamma=gamma,
                                           mean_latency=row['mean_latency'], average_hop_count=row["average_hop_count"],
                                           link_churn=row["link_churn"])
 
@@ -64,14 +70,19 @@ def build_results_overview():
                             # temporary results storer
                             best_result = []
 
+                            if dcmst != "primal":
+                                dcmst_formatted = dcmst.upper()
+                            else:
+                                dcmst_formatted = dcmst.title()
+
                             # read results
                             with open(location) as csvfile:
                                 reader = csv.DictReader(csvfile)
                                 for row in reader:
                                     # read values
-                                    values = dict(algorithm=algorithm, optimisation_method=optimisation_method,
-                                                  dcmst=dcmst, constellation=constellation, alpha=row["alpha"],
-                                                  beta=row["beta"], gamma=row["gamma"],
+                                    values = dict(algorithm="Novel", optimisation_method=optimisation_method.title(),
+                                                  dcmst=dcmst_formatted, constellation=constellation.title(),
+                                                  alpha=row["alpha"], beta=row["beta"], gamma=row["gamma"],
                                                   mean_latency=row["mean_latency"],
                                                   average_hop_count=row["average_hop_count"],
                                                   link_churn=row["link_churn"])
