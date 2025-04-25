@@ -99,6 +99,9 @@
 
         <span class="c1"># Generate results files (metrics)</span>
         <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">measure</span><span class="o">.</span><span class="n">measure_dynamic</span><span class="p">(</span><span class="n">constellation_name</span><span class="p">,</span> <span class="n">output_directory</span><span class="p">,</span> <span class="n">num_sat</span><span class="p">,</span> <span class="n">num_snapshots</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+
         <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">parameter_sets</span><span class="p">[</span><span class="n">t</span><span class="p">])</span> <span class="o">+</span> <span class="n">metrics</span><span class="p">)</span>
 
     <span class="c1"># Write Results to CSV Format - this code was adapted from documentation</span>

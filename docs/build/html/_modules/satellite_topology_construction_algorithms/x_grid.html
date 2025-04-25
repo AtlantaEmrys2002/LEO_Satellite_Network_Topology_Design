@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>satellite_topology_construction_algorithms.x_grid &#8212; LEO_Satellite_Network_Topology_Design 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=8d563738"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for satellite_topology_construction_algorithms.x_grid</h1><div class="highlight"><pre>
+<span></span><span class="c1">### NOT FULLY IMPLEMENTED ###</span>
+
+
+<span class="c1"># The MIT License (MIT)</span>
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2020 ETH Zurich</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in all</span>
+<span class="c1"># copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+
+<div class="viewcode-block" id="generate_x_grid_isls">
+<a class="viewcode-back" href="../../satellite_topology_construction_algorithms.x_grid.html#satellite_topology_construction_algorithms.x_grid.generate_x_grid_isls">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_x_grid_isls</span><span class="p">(</span><span class="n">output_filename_isls</span><span class="p">,</span> <span class="n">n_orbits</span><span class="p">,</span> <span class="n">n_sats_per_orbit</span><span class="p">,</span> <span class="n">isl_shift</span><span class="p">,</span> <span class="n">idx_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate xGrid ISL file. This code is adapted from Hypatia&#39;s plus-grid - please see report for full citation)</span>
+<span class="sd">    generates a xGrid topology for a given satellite network (it assumes that each satellite has 4 ISL terminals and</span>
+<span class="sd">    orbits at the same altitude). This algorithm does not work for multi-shell constellations. Sourced from here:</span>
+<span class="sd">    https://github.com/snkas/hypatia.</span>
+<span class="sd">    :param output_filename_isls:     Output filename</span>
+<span class="sd">    :param n_orbits:                Number of orbits</span>
+<span class="sd">    :param n_sats_per_orbit:        Number of satellites per orbit</span>
+<span class="sd">    :param isl_shift:               ISL shift between orbits (e.g., if satellite id in orbit is X,</span>
+<span class="sd">                                    does it also connect to the satellite at X in the adjacent orbit)</span>
+<span class="sd">    :param idx_offset:              Index offset (e.g., if you have multiple shells)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">n_orbits</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">n_sats_per_orbit</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Number of x and y must each be at least 3&quot;</span><span class="p">)</span>
+
+    <span class="n">list_isls</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_orbits</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sats_per_orbit</span><span class="p">):</span>
+            <span class="n">sat</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">n_sats_per_orbit</span> <span class="o">+</span> <span class="n">j</span>
+
+            <span class="c1"># Link to the next in the orbit</span>
+            <span class="n">sat_same_orbit</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">n_sats_per_orbit</span> <span class="o">+</span> <span class="p">((</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">n_sats_per_orbit</span><span class="p">)</span>
+
+            <span class="c1"># MODIFIED LINE</span>
+            <span class="c1"># sat_adjacent_orbit = ((i + 1) % n_orbits) * n_sats_per_orbit + ((j + isl_shift) % n_sats_per_orbit)</span>
+            <span class="n">sat_adjacent_orbit</span> <span class="o">=</span> <span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">n_orbits</span><span class="p">)</span> <span class="o">*</span> <span class="n">n_sats_per_orbit</span> <span class="o">+</span> <span class="p">((</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">isl_shift</span><span class="p">)</span> <span class="o">%</span> <span class="n">n_sats_per_orbit</span><span class="p">)</span>
+
+            <span class="c1"># Same orbit</span>
+            <span class="n">list_isls</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">idx_offset</span> <span class="o">+</span> <span class="nb">min</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="n">sat_same_orbit</span><span class="p">),</span> <span class="n">idx_offset</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="n">sat_same_orbit</span><span class="p">)))</span>
+
+            <span class="c1"># Adjacent orbit</span>
+            <span class="n">list_isls</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">idx_offset</span> <span class="o">+</span> <span class="nb">min</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="n">sat_adjacent_orbit</span><span class="p">),</span> <span class="n">idx_offset</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">sat</span><span class="p">,</span> <span class="n">sat_adjacent_orbit</span><span class="p">)))</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_filename_isls</span><span class="p">,</span> <span class="s1">&#39;w+&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="n">list_isls</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">list_isls</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">LEO_Satellite_Network_Topology_Design</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">project</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Millicent Riordan.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

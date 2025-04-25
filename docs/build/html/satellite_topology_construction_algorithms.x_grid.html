@@ -34,6 +34,27 @@
             
   <section id="module-satellite_topology_construction_algorithms.x_grid">
 <span id="satellite-topology-construction-algorithms-x-grid-module"></span><h1>satellite_topology_construction_algorithms.x_grid module<a class="headerlink" href="#module-satellite_topology_construction_algorithms.x_grid" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="satellite_topology_construction_algorithms.x_grid.generate_x_grid_isls">
+<span class="sig-prename descclassname"><span class="pre">satellite_topology_construction_algorithms.x_grid.</span></span><span class="sig-name descname"><span class="pre">generate_x_grid_isls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_filename_isls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_orbits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sats_per_orbit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isl_shift</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/satellite_topology_construction_algorithms/x_grid.html#generate_x_grid_isls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#satellite_topology_construction_algorithms.x_grid.generate_x_grid_isls" title="Link to this definition">¶</a></dt>
+<dd><p>Generate xGrid ISL file. This code is adapted from Hypatia’s plus-grid - please see report for full citation)
+generates a xGrid topology for a given satellite network (it assumes that each satellite has 4 ISL terminals and
+orbits at the same altitude). This algorithm does not work for multi-shell constellations. Sourced from here:
+<a class="reference external" href="https://github.com/snkas/hypatia">https://github.com/snkas/hypatia</a>.
+:param output_filename_isls:     Output filename
+:param n_orbits:                Number of orbits
+:param n_sats_per_orbit:        Number of satellites per orbit
+:param isl_shift:               ISL shift between orbits (e.g., if satellite id in orbit is X,</p>
+<blockquote>
+<div><p>does it also connect to the satellite at X in the adjacent orbit)</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx_offset</strong> – Index offset (e.g., if you have multiple shells)</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

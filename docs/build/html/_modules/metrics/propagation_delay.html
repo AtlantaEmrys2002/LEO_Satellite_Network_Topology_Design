@@ -33,6 +33,7 @@
   <h1>Source code for metrics.propagation_delay</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Libraries</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">c</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">csr_array</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse.csgraph</span><span class="w"> </span><span class="kn">import</span> <span class="n">dijkstra</span>
@@ -50,9 +51,21 @@
 <span class="sd">    :param num_satellites: the number of satellites in the network</span>
 <span class="sd">    :return: the average propagation delay for all shortest paths between satellite pairs</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="c1"># Calculate distance matrix for dijkstra function, such that only distances between satellites with an active ISL</span>
     <span class="c1"># are included</span>
-    <span class="n">distance_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">topology_matrix</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">distance_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">topology_matrix</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Connectivity Test</span>
+    <span class="c1"># tmp_edges = np.argwhere(distance_matrix &gt; 0).tolist()</span>
+    <span class="c1"># G = nx.Graph()</span>
+    <span class="c1"># for e in tmp_edges:</span>
+    <span class="c1">#     G.add_edge(e[0], e[1])</span>
+    <span class="c1">#</span>
+    <span class="c1"># if nx.is_connected(G) is False or G.number_of_nodes() != num_satellites:</span>
+    <span class="c1">#     subgraphs_count = nx.number_connected_components(G)</span>
+    <span class="c1">#     raise ValueError(&quot;MDTD does not construct a connected topology - a topology with &quot; + str(subgraphs_count) +</span>
+    <span class="c1">#                      &quot; disconnected components was constructed instead.&quot;)</span>
 
     <span class="c1"># Calculate path from source to destination using Dijkstra&#39;s Shortest Path Algorithm</span>
     <span class="n">graph</span> <span class="o">=</span> <span class="n">csr_array</span><span class="p">(</span><span class="n">distance_matrix</span><span class="p">)</span>
@@ -77,6 +90,7 @@
 
     <span class="c1"># Calculate mean propagation delay - don&#39;t consider paths between satellites and themselves. Additionally, this is</span>
     <span class="c1"># an undirected graph</span>
+
     <span class="n">mean_pd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="n">num_satellites</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">num_satellites</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">max_pd</span><span class="p">,</span> <span class="n">mean_pd</span></div>

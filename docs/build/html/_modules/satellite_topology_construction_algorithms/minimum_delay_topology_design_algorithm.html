@@ -32,6 +32,7 @@
             
   <h1>Source code for satellite_topology_construction_algorithms.minimum_delay_topology_design_algorithm</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Libraries</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">data_handling</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dcmst_construction_algorithms</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">topology_build</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">propagation_delay</span>
@@ -47,7 +48,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">minimum_delay_topology_design_algorithm</span><span class="p">(</span><span class="n">constellation_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_snapshots</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                                             <span class="n">constraints</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">constant</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Satellite ISL topology construction method (originally presented in paper by Lang et al. (found here:</span>
+<span class="sd">    Satellite ISL topology construction method (originally presented in paper by Lang et al. found here:</span>
 <span class="sd">    https://link.springer.com/chapter/10.1007/978-981-15-3442-3_8).</span>
 <span class="sd">    :param constellation_name: name of satellite network constellation, e.g. Starlink-550</span>
 <span class="sd">    :param num_snapshots: the number of snapshots of the network over one orbit for which a topology is constructed</span>
@@ -63,10 +64,14 @@
     <span class="c1"># Stores previous snapshot&#39;s topology and average propagation delay</span>
     <span class="c1"># N.B. Cannot parallelise this function, as relies on results of previous topology calculations</span>
     <span class="n">former_topology</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">previous_propagation_delay</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Set to value that is guaranteed to be larger than initial propagation delay</span>
+    <span class="n">previous_propagation_delay</span> <span class="o">=</span> <span class="mi">1000000</span>
 
     <span class="c1"># Generates topology for each snapshot</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_snapshots</span><span class="p">):</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Snapshot: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
 
         <span class="c1"># Define output filename</span>
         <span class="n">output_filename</span> <span class="o">=</span> <span class="s1">&#39;./Results/mdtd/&#39;</span> <span class="o">+</span> <span class="n">constellation_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
@@ -80,10 +85,7 @@
                                     <span class="o">+</span> <span class="s2">&quot;.npy&quot;</span><span class="p">)</span>
 
         <span class="c1"># Ignore edges where satellites not visible to one another</span>
-        <span class="n">distance_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">visibility_matrix</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-
-        <span class="c1"># Ensure no negative values</span>
-        <span class="n">distance_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">distance_matrix</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">distance_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">visibility_matrix</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># Calculate the shortest path between all satellite pairs in the network</span>
         <span class="n">graph</span> <span class="o">=</span> <span class="n">csr_array</span><span class="p">(</span><span class="n">distance_matrix</span><span class="p">)</span>
@@ -91,10 +93,12 @@
         <span class="c1"># For each pair of satellites, use Dijkstra to find the shortest path between the pair and add all edges on</span>
         <span class="c1"># path to topology</span>
         <span class="k">for</span> <span class="n">sat_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_satellites</span><span class="p">):</span>
-            <span class="n">_</span><span class="p">,</span> <span class="n">result</span> <span class="o">=</span> <span class="n">dijkstra</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">directed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">sat_i</span><span class="p">,</span> <span class="n">return_predecessors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">shortest_path_lengths</span><span class="p">,</span> <span class="n">result</span> <span class="o">=</span> <span class="n">dijkstra</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">directed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">sat_i</span><span class="p">,</span> <span class="n">return_predecessors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
             <span class="c1"># Find all edges to add to topology</span>
             <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">((</span><span class="n">reconstruct_path</span><span class="p">(</span><span class="n">csgraph</span><span class="o">=</span><span class="n">graph</span><span class="p">,</span> <span class="n">predecessors</span><span class="o">=</span><span class="n">result</span><span class="p">,</span> <span class="n">directed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span>
                                  <span class="n">todense</span><span class="p">())</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
             <span class="n">new_topology</span><span class="p">[</span><span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="n">new_topology</span><span class="p">[</span><span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
 
@@ -137,13 +141,27 @@
         <span class="n">degree</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">degree</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="c1"># Increase connectivity of topology (adding in edges such that degree constraints not violated)</span>
-        <span class="n">new_topology</span> <span class="o">=</span> <span class="n">topology_build</span><span class="o">.</span><span class="n">increase_connectivity</span><span class="p">(</span><span class="n">new_topology</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span>
-                                                            <span class="n">num_satellites</span><span class="p">)</span>
+        <span class="n">new_topology</span> <span class="o">=</span> <span class="n">topology_build</span><span class="o">.</span><span class="n">increase_connectivity</span><span class="p">(</span><span class="n">new_topology</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span>
+                                                            <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">distance_matrix</span><span class="p">),</span> <span class="n">num_satellites</span><span class="p">)</span>
+
+        <span class="c1"># Used to test for connectivity</span>
+        <span class="c1"># tmp_edges = np.argwhere(new_topology &gt; 0.5).tolist()</span>
+        <span class="c1">#</span>
+        <span class="c1"># G = nx.Graph()</span>
+        <span class="c1"># for e in tmp_edges:</span>
+        <span class="c1">#     G.add_edge(e[0], e[1])</span>
+        <span class="c1">#</span>
+        <span class="c1"># if nx.is_connected(G) is False or G.number_of_nodes() != num_satellites:</span>
+        <span class="c1">#     subgraphs_count = nx.number_connected_components(G)</span>
+        <span class="c1">#     raise ValueError(&quot;MDTD does not construct a connected topology - a topology with &quot; + str(subgraphs_count)</span>
+        <span class="c1">#     + &quot; disconnected components was constructed instead.&quot;)</span>
 
         <span class="c1"># If first snapshot, this is the new topology</span>
         <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+            <span class="n">_</span><span class="p">,</span> <span class="n">current_prop_delay</span> <span class="o">=</span> <span class="n">propagation_delay</span><span class="p">(</span><span class="n">new_topology</span><span class="p">,</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">distance_matrix</span><span class="p">),</span> <span class="n">num_satellites</span><span class="p">)</span>
+
             <span class="n">former_topology</span> <span class="o">=</span> <span class="n">new_topology</span>
-            <span class="n">_</span><span class="p">,</span> <span class="n">current_prop_delay</span> <span class="o">=</span> <span class="n">propagation_delay</span><span class="p">(</span><span class="n">new_topology</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">)</span>
             <span class="n">previous_propagation_delay</span> <span class="o">=</span> <span class="n">current_prop_delay</span>
 
             <span class="c1"># Write topology to file</span>
@@ -151,6 +169,7 @@
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">current_prop_delay</span> <span class="o">=</span> <span class="n">propagation_delay</span><span class="p">(</span><span class="n">new_topology</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="n">num_satellites</span><span class="p">)</span>
+
             <span class="c1"># Assuming that if links are switched, changes are done concurrently, so there is no need to take into</span>
             <span class="c1"># account link switch time (it will be constant no matter the number of link switches). If no link switches</span>
             <span class="c1"># required, topology is same and will remain the same</span>
@@ -161,6 +180,10 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">data_handling</span><span class="o">.</span><span class="n">write_topology_to_file</span><span class="p">(</span><span class="n">output_filename</span><span class="p">,</span> <span class="n">former_topology</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span></div>
 
+
+<span class="c1"># References</span>
+<span class="c1"># Disconnected Graphs - https://www.quora.com/How-do-you-remove-edges-in-a-graph-to-create-disconnected-components-</span>
+<span class="c1"># algorithm-graph-graph-algorithm-graph-traversal-development</span>
 </pre></div>
 
           </div>

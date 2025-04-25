@@ -53,7 +53,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Calculate distance matrix for dijkstra function, such that only distances between satellites with an active ISL</span>
     <span class="c1"># are included</span>
-    <span class="n">distance_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">topology_matrix</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># distance_matrix = np.where(topology_matrix == 1, distance_matrix, 0)</span>
+    <span class="n">distance_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">topology_matrix</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">distance_matrix</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
     <span class="c1"># Calculate path from source to destination using Dijkstra&#39;s Shortest Path Algorithm</span>
     <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">from_numpy_array</span><span class="p">(</span><span class="n">distance_matrix</span><span class="p">)</span>
