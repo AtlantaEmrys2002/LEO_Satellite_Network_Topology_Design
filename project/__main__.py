@@ -334,40 +334,40 @@ if __name__ == "__main__":
 
             print("+Grid Evaluation Completed")
 
-    elif topology == "x-grid":
-
-        # Build topology with provided parameters
-
-        # Location to store ISL topology
-        if optimise is False:
-            location = "./x_grid/" + constellation_name.lower()
-        else:
-            location = "./Results/x_grid/" + constellation_name.lower()
-
-        # Check directory for resulting topology exists
-        if os.path.isdir(location) is False:
-            try:
-                os.makedirs(location)
-            except OSError:
-                print("Directory to store x grid (xGrid) topology could not be created.")
-
-        # Use Hypatia implementation to create +Grid topology
-        x_grid.generate_x_grid_isls(location + "/isls_0.txt", num_orbits, num_sats_per_orbit, isl_shift=0, idx_offset=0)
-
-        print("xGrid Topology Build Completed")
-
-        # Return metrics if optimise is true (so topology can be evaluated)
-        if optimise is True:
-            print("Evaluating... ", end='\r', flush=True)
-
-            # Calculate metrics for topology
-            max_pd, mean_pd, av_hop_count, link_churn = measure.measure_static(constellation_name, location +
-                                                                               "/isls_0.txt", total_sat)
-
-            data_handling.write_optimisation_results_to_csv(location, "static", [max_pd, mean_pd,
-                                                                                 av_hop_count, link_churn])
-
-            print("+Grid Evaluation Completed")
+    # elif topology == "x-grid":
+    #
+    #     # Build topology with provided parameters
+    #
+    #     # Location to store ISL topology
+    #     if optimise is False:
+    #         location = "./x_grid/" + constellation_name.lower()
+    #     else:
+    #         location = "./Results/x_grid/" + constellation_name.lower()
+    #
+    #     # Check directory for resulting topology exists
+    #     if os.path.isdir(location) is False:
+    #         try:
+    #             os.makedirs(location)
+    #         except OSError:
+    #             print("Directory to store x grid (xGrid) topology could not be created.")
+    #
+    #     # Use Hypatia implementation to create +Grid topology
+    #     x_grid.generate_x_grid_isls(location + "/isls_0.txt", num_orbits, num_sats_per_orbit, isl_shift=0, idx_offset=0)
+    #
+    #     print("xGrid Topology Build Completed")
+    #
+    #     # Return metrics if optimise is true (so topology can be evaluated)
+    #     if optimise is True:
+    #         print("Evaluating... ", end='\r', flush=True)
+    #
+    #         # Calculate metrics for topology
+    #         max_pd, mean_pd, av_hop_count, link_churn = measure.measure_static(constellation_name, location +
+    #                                                                            "/isls_0.txt", total_sat)
+    #
+    #         data_handling.write_optimisation_results_to_csv(location, "static", [max_pd, mean_pd,
+    #                                                                              av_hop_count, link_churn])
+    #
+    #         print("xGrid Evaluation Completed")
 
     else:
 

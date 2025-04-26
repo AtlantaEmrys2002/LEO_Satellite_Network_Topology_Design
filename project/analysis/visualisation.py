@@ -1,5 +1,6 @@
 # Libraries
 
+import argparse
 from astropy.time import Time
 from astropy import units as u
 import geopandas as gpd
@@ -313,8 +314,46 @@ def visualise(location: str, tle_file: str, num_snapshot: int = 94, snapshot_int
 
 # Run visualisation function
 
-# print("Building visualisations of static topologies... ", end='\r')
-#
+if __name__ == "__main__":
+
+    print("Building topology visualisation... ")
+
+    # Parse inputs to module
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--location", type=str, help="location of files containing topology",
+                        required=True)
+
+    parser.add_argument("--tles", type=str, help="name of tle file containing TLE description of satellite"
+                                                 " positions ", required=True)
+
+    parser.add_argument("--num_snapshots", type=int, help="number of constellation snapshots for which "
+                                                         "dynamic topology was built", required=True)
+
+    parser.add_argument("--snapshot_interval", type=float, help="time (in seconds) between snapshots",
+                        required=True)
+
+    parser.add_argument("--constellation_name", type=str, help="name of constellation to be visualised",
+                        required=True)
+
+    parser.add_argument("--topology-type", type=str, help="options: 'static' or 'dynamic' - indicates "
+                                                          "whether ISLs change over time (dynamic)", required=True)
+
+    parser.add_argument("--method", type=str, help="method with which topology was constructed - options "
+                                                   "include: plus_grid, mdtd, novel", required=True)
+
+    args = parser.parse_args()
+
+    location = args.location
+    tle_file = args.tles
+    num_snapshots = args.num_snapshots
+    snapshot_interval = args.snapshot_interval
+    constellation_name = args.constellation_name
+    topology_type = args.topology_type
+    method = args.method
+
+    visualise(location, tle_file, num_snapshots, snapshot_interval, constellation_name, topology_type, method)
+
 # visualise("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
 #                  60, "Kuiper-630", topology_type="static", topology_method="plus_grid")
 #
@@ -324,14 +363,6 @@ def visualise(location: str, tle_file: str, num_snapshot: int = 94, snapshot_int
 # visualise("./Results/plus_grid/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
 #                  60, "Telesat-1015", topology_method="plus_grid")
 
-
-# visualise("./Results/x_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
-#                  60, "Kuiper-630", topology_method="x_grid")
-# visualise("./Results/x_grid/starlink-550", "starlink-constellation_tles.txt.tmp", 90,
-#                  60, "Starlink-550", topology_method="x_grid")
-# visualise("./Results/x_grid/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
-#                  60, "Telesat-1015", topology_method="x_grid")
-#
 
 # print("Completed")
 #
@@ -348,7 +379,7 @@ def visualise(location: str, tle_file: str, num_snapshot: int = 94, snapshot_int
 # visualise("./Results/mdtd/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
 #           60, "Telesat-1015", topology_type="dynamic", topology_method="mdtd")
 #
-# print("Completed")
+    print("Completed")
 
 
 # visualise("./Results/novel/random/primal/kuiper-630", "kuiper-constellation_tles.txt.tmp", 90,
