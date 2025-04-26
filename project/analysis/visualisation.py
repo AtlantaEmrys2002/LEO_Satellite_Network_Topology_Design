@@ -354,39 +354,7 @@ if __name__ == "__main__":
 
     visualise(location, tle_file, num_snapshots, snapshot_interval, constellation_name, topology_type, method)
 
-# visualise("./Results/plus_grid/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
-#                  60, "Kuiper-630", topology_type="static", topology_method="plus_grid")
-#
-# visualise("./Results/plus_grid/starlink-550", "starlink-constellation_tles.txt.tmp", 90,
-#                  60, "Starlink-550", topology_method="plus_grid")
-#
-# visualise("./Results/plus_grid/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
-#                  60, "Telesat-1015", topology_method="plus_grid")
-
-
-# print("Completed")
-#
-# print("Building visualisations of dynamic topologies... ", end='\r')
-#
-# # MDTD Benchmark
-#
-# visualise("./Results/mdtd/kuiper-630", "kuiper-constellation_tles.txt.tmp", 97,
-#           60, "Kuiper-630", topology_type="dynamic", topology_method="mdtd")
-#
-# visualise("./Results/mdtd/starlink-550", "starlink-constellation_tles.txt.tmp", 90,
-#           60, "Starlink-550", topology_type="dynamic", topology_method="mdtd")
-#
-# visualise("./Results/mdtd/telesat-1015", "telesat-constellation_tles.txt.tmp", 105,
-#           60, "Telesat-1015", topology_type="dynamic", topology_method="mdtd")
-#
     print("Completed")
-
-
-# visualise("./Results/novel/random/primal/kuiper-630", "kuiper-constellation_tles.txt.tmp", 90,
-#           60, "Kuiper-630", topology_type="dynamic", topology_method="novel")
-
-# visualise("./novel/primal/multishell", "multishell-constellation_tles.txt.tmp", 97,
-#                  60, "Multishell", topology_type="dynamic", topology_method="novel")
 
 # References
 # Animation of 3d Plots - https://stackoverflow.com/questions/68100031/animated-3d-surface-plots-with-plotly

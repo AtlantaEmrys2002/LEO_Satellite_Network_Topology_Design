@@ -86,18 +86,39 @@ the cost function (i.e. `optimise` is `True`), the user can specify `random` (ra
 coefficient optimisation, cost function coefficients (for alpha, beta, and gamma) must be provided (all coefficients 
 must be in [0,1]).
 
-To visualise resulting topologies, use the `visualise.sh` script (make sure to pass the correct constellations to the 
-`visualise()` function) - see [here](project/analysis/visualisation.py) for more information on using the visualise 
-function.
-
 Example:
 
 `python __main__.py --tles starlink-constellation_tles.txt.tmp --constellation Starlink-550 --m 72 --n 22 --i 53 --rev 
 15.9 --multi False --optimise True --topology novel --isl_terminals 4 --snapshot_interval 60 --dcmst aco 
 --optimisation_method random`
 
+To visualise resulting topologies, use the command `python analysis/visualisation.py` (make sure to pass the correct 
+constellations to the `visualise()` function) - see [here](project/analysis/visualisation.py) for more information on 
+using the visualise function.
+
+Arguments must be passed to `python analysis/visualisation.py`:
+
+1. `tles` - the name of the file containing a two-line element set (TLE) description of each satellite within
+the given mega-constellation.
+2. `location` - the location of the files containing the topology representations.
+3. `constellation_name` - the name of the satellite mega-constellation, e.g. Starlink-550.
+4. `snapshot_interval` - the number of seconds between each snapshot of the satellite mega-constellation for which a 
+topology is built.
+5. `method` - the name of the algorithm used construct a topology. Options include `plus_grid`, `mdtd`, and `novel`.
+6. `topology-type` - indicates whether ISLs change over time (i.e. if ISLs disconnect, connect, or reconnect over the 
+course of one orbit). Options include: `static` (they don't) and `dynamic` (they do).
+7. `num_snapshots` - the number of constellation snapshots (over one orbital period) for which a topology was built. 
+
+Example:
+
+`python analysis/visualisation.py --tles kuiper-constellation_tles.txt.tmp --location ./Results/plus_grid/kuiper-630 
+--constellation_name Kuiper-630 --snapshot_interval 60 --method plus_grid --topology-type static --num_snapshots 97`
+
+
+
 A "toy example" is provided - the Iridium constellation has relatively few satellites (66 across 6 orbits) when compared
-with megaconstellations, such as Kuiper, Lightspeed (Telesat) and Starlink. 
+with megaconstellations, such as Kuiper, Lightspeed (Telesat) and Starlink. To create topologies for Iridium and 
+visualise them, run `bash visualise.sh`.
 
 Please see report for full citations/references of papers that algorithms are sourced from.
 
