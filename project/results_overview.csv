@@ -1,7 +1,7 @@
 algorithm,optimisation_method,dcmst,constellation,alpha,beta,gamma,mean_latency,average_hop_count,link_churn
-PlusGrid,nan,nan,Kuiper-630,nan,nan,nan,0.06263151245805107,17.014718614718614,0
-PlusGrid,nan,nan,Starlink-550,nan,nan,nan,0.09329313564756123,23.514845230574856,0
-PlusGrid,nan,nan,Telesat-1015,nan,nan,nan,0.0797476328625058,10.0,0
+PlusGrid,nan,nan,Kuiper-630,nan,nan,nan,0.06258187427101432,17.014718614718575,0
+PlusGrid,nan,nan,Starlink-550,nan,nan,nan,0.09323945667728285,23.51484523057484,0
+PlusGrid,nan,nan,Telesat-1015,nan,nan,nan,0.07976903375422309,10.0,0
 MDTD,nan,nan,Kuiper-630,nan,nan,nan,0.059507479040031286,15.362501075186152,7521
 MDTD,nan,nan,Starlink-550,nan,nan,nan,0.07446090055687103,18.281538980738826,18553
 MDTD,nan,nan,Telesat-1015,nan,nan,nan,0.08677063043730385,7.82825218520456,5252

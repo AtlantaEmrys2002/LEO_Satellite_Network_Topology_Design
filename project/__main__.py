@@ -13,7 +13,7 @@ from analysis import measure
 import cost_function_optimisation_algorithms
 import data_handling
 import satellite_network_attribute_functions as satnet
-from satellite_topology_construction_algorithms import (heuristic_topology_design_algorithm_isls, plus_grid, x_grid,
+from satellite_topology_construction_algorithms import (heuristic_topology_design_algorithm_isls, plus_grid,
                                                         minimum_delay_topology_design_algorithm)
 
 # Global Timescale (used for determining how to calculate time with Skyfield functions)
@@ -203,8 +203,8 @@ if __name__ == "__main__":
     else:
         # Original
         # Generate test data using network description (data from Hypatia)
-        # data_handling.data_generation(tle_file, constellation_name, num_orbits, num_sats_per_orbit, inclination_degree,
-        #                               mean_motion_rev_per_day)
+        # data_handling.data_generation(tle_file, constellation_name, num_orbits, num_sats_per_orbit,
+        # inclination_degree, mean_motion_rev_per_day)
         data_handling.data_generation(tle_file, constellation_name, num_orbits[0], num_sats_per_orbit[0],
                                       inclination_degree[0], mean_motion_rev_per_day[0])
 
@@ -326,48 +326,19 @@ if __name__ == "__main__":
             print("Evaluating... ", end='\r', flush=True)
 
             # Calculate metrics for topology
+
+            # (constellation_name: str, topology_file_location: str, num_satellites: int, num_snapshots: int)
+
+            # max_pd, mean_pd, av_hop_count, link_churn = measure.measure_static(constellation_name, location +
+            #                                                                    "/isls_0.txt", total_sat)
+
             max_pd, mean_pd, av_hop_count, link_churn = measure.measure_static(constellation_name, location +
-                                                                               "/isls_0.txt", total_sat)
+                                                                               "/isls_0.txt", total_sat, num_snapshot)
 
             data_handling.write_optimisation_results_to_csv(location, "static", [max_pd, mean_pd,
                                                                                  av_hop_count, link_churn])
 
             print("+Grid Evaluation Completed")
-
-    # elif topology == "x-grid":
-    #
-    #     # Build topology with provided parameters
-    #
-    #     # Location to store ISL topology
-    #     if optimise is False:
-    #         location = "./x_grid/" + constellation_name.lower()
-    #     else:
-    #         location = "./Results/x_grid/" + constellation_name.lower()
-    #
-    #     # Check directory for resulting topology exists
-    #     if os.path.isdir(location) is False:
-    #         try:
-    #             os.makedirs(location)
-    #         except OSError:
-    #             print("Directory to store x grid (xGrid) topology could not be created.")
-    #
-    #     # Use Hypatia implementation to create +Grid topology
-    #     x_grid.generate_x_grid_isls(location + "/isls_0.txt", num_orbits, num_sats_per_orbit, isl_shift=0, idx_offset=0)
-    #
-    #     print("xGrid Topology Build Completed")
-    #
-    #     # Return metrics if optimise is true (so topology can be evaluated)
-    #     if optimise is True:
-    #         print("Evaluating... ", end='\r', flush=True)
-    #
-    #         # Calculate metrics for topology
-    #         max_pd, mean_pd, av_hop_count, link_churn = measure.measure_static(constellation_name, location +
-    #                                                                            "/isls_0.txt", total_sat)
-    #
-    #         data_handling.write_optimisation_results_to_csv(location, "static", [max_pd, mean_pd,
-    #                                                                              av_hop_count, link_churn])
-    #
-    #         print("xGrid Evaluation Completed")
 
     else:
 
