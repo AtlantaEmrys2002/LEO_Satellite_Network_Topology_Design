@@ -1,4 +1,5 @@
 # Libraries
+import argparse
 import numpy as np
 import metrics as metrics
 
@@ -22,35 +23,8 @@ def read_isl_file(isl_file_name: str, num_satellites: int) -> np.ndarray:
     return topology_matrix
 
 
-# def measure_static(constellation_name: str, topology_file_name: str, num_satellites: int) -> (
-#         tuple)[float, float, float, int]:
-#     """
-#     Calculates the maximum propagation delay, mean propagation delay, and average hop count (as well as returning link
-#     churn for completeness) for static satellite network topology.
-#     :param constellation_name: name of satellite network constellation, e.g. Starlink-550
-#     :param topology_file_name: name of .npy file that contains ISl pairs describing a topology
-#     :param num_satellites: the number of satellites within the network
-#     :return:
-#     """
-#     # Read in topology
-#     topology = read_isl_file(topology_file_name, num_satellites)
-#
-#     # Calculates values using distance matrix for snapshot 0
-#     distance = np.load("./" + constellation_name + "/distance_matrices/dist_matrix_0" + ".npy")
-#
-#     # Calculate propagation delay (max and mean) for static topology
-#     max_pd, mean_pd = metrics.propagation_delay(topology, distance, topology[0].size)
-#
-#     # Calculate hop count
-#     av_hop_count = metrics.hop_count(topology, distance, topology[0].size)
-#
-#     # No need to calculate link churn
-#     link_churn = 0
-#
-#     return max_pd, mean_pd, av_hop_count, link_churn
-
-
-def measure_static(constellation_name: str, topology_file_location: str, num_satellites: int, num_snapshots: int) -> (
+def measure_static(constellation_name: str, topology_file_location: str, num_satellites: int, num_snapshots: int,
+                   terminal_output: bool = False) -> (
         tuple)[float, float, float, int]:
     """
     Calculates the maximum propagation delay, mean propagation delay, and average hop count (as well as returning link
@@ -95,10 +69,20 @@ def measure_static(constellation_name: str, topology_file_location: str, num_sat
         raise ValueError("Check metric calculations - it is not possible for satellites in two different positions to "
                          "have a propagation delay value equal to 0. Similarly, hop count is always >= 1.")
 
-    return av_max_pd, av_mean_pd, av_av_hop_count, link_churn
+    if terminal_output is False:
+
+        return av_max_pd, av_mean_pd, av_av_hop_count, link_churn
+
+    else:
+
+        print("Max Prop. Delay: " + str(av_max_pd))
+        print("Average Mean Prop. Delay: " + str(av_mean_pd))
+        print("Av. Av. Hop Count: " + str(av_av_hop_count))
+        print("Link Churn: " + str(link_churn))
 
 
-def measure_dynamic(constellation_name: str, topology_file_location: str, num_satellites: int, num_snapshots: int) -> (
+def measure_dynamic(constellation_name: str, topology_file_location: str, num_satellites: int, num_snapshots: int,
+                    terminal_output: bool = False) -> (
         tuple)[float, float, float, int]:
     """
     Calculates the maximum propagation delay, mean propagation delay, average hop count, and link churn for dynamic
@@ -108,6 +92,7 @@ def measure_dynamic(constellation_name: str, topology_file_location: str, num_sa
     :param num_satellites: the number of satellites within the network
     :param num_snapshots: the number of snapshots of the network over one orbit for which a topology is constructed
     """
+
     # Initialise values
     av_max_pd, av_mean_pd, av_av_hop_count, link_churn = 0, 0, 0, 0
 
@@ -143,4 +128,54 @@ def measure_dynamic(constellation_name: str, topology_file_location: str, num_sa
         raise ValueError("Check metric calculations - it is not possible for satellites in two different positions to "
                          "have a propagation delay value equal to 0. Similarly, hop count is always >= 1.")
 
-    return av_max_pd, av_mean_pd, av_av_hop_count, link_churn
+    # return av_max_pd, av_mean_pd, av_av_hop_count, link_churn
+
+    if terminal_output is False:
+
+        return av_max_pd, av_mean_pd, av_av_hop_count, link_churn
+
+    else:
+
+        print("Average Mean Prop. Delay: " + str(av_mean_pd))
+        print("Av. Av. Hop Count: " + str(av_av_hop_count))
+        print("Link Churn: " + str(link_churn))
+
+
+if __name__ == "__main__":
+    print("Gathering Metrics...")
+
+    # Parse inputs to module
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--constellation_name", type=str, help="name of constellation for which topology "
+                                                               "was constructed", required=True)
+
+    parser.add_argument("--topology_file", type=str, help="location in file system in which topology is "
+                                                          "stored", required=True)
+
+    parser.add_argument("--num_satellites", type=int, help="number of satellites within constellation",
+                        required=True)
+
+    parser.add_argument("--num_snapshots", type=int, help="number of snapshots for which topology was "
+                                                          "constructed", required=True)
+
+    parser.add_argument("--topology_type", type=str, help="type of topology - options include 'static' or"
+                                                          " 'dynamic'", required=True)
+
+    args = parser.parse_args()
+
+    constellation_name = args.constellation_name
+    topology_file = args.topology_file
+    num_satellites = args.num_satellites
+    num_snapshots = args.num_snapshots
+    topology_type = args.topology_type
+
+    if topology_type == "dynamic":
+
+        measure_dynamic(constellation_name=constellation_name, topology_file_location=topology_file,
+                        num_satellites=num_satellites, num_snapshots=num_snapshots, terminal_output=True)
+
+    else:
+        measure_static(constellation_name, topology_file, num_satellites, num_snapshots, terminal_output=True)
+
+    print("Completed")

@@ -45,7 +45,7 @@ def evolutionary_search(constellation_name: str, num_snapshots: int, num_sat: in
     :param step_size: the standard deviation of the Gaussian distribution from which solution mutations are selected
     """
 
-    # N.B. lambda / mu should have no remainder - changed mu to 1 and num_it to 12
+    # N.B. lambda / mu should have no remainder
 
     # Temporary to store results before they are written to files
     results = []
